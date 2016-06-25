@@ -1,0 +1,99 @@
+% chapter included in forwardcom.tex
+\documentclass[forwardcom.tex]{subfiles}
+\begin{document}
+\RaggedRight
+
+\section{Binary format for object files and executable files} \label{objectFileFormat}
+The executable file format must be standardized. The most flexible and well-structured format in common use is probably ELF. It is proposed to use ELF format for object files, function libraries, and executable files. 
+\vspace{2mm}
+
+The details of an ELF format for ForwardCom are specified in a file named elf\_forwardcom.h. This specification includes details for section types, symbol types, relocation types, etc. Additional information about register use (see page \pageref{registerUsageConvention}) and stack use (see page \pageref{predictingStackSize}) is added to the file format. 
+\vspace{2mm}
+
+File names must have extensions that indicate their type. It is proposed to use the following extensions. Assembly code: .as, object file: .ob, library file: .li, executable file: .ex. 
+\vspace{2mm}
+
+\section{Function libraries and link methods} \label{libraryLinkMethods}
+Dynamic link libraries (DLLs) and shared objects (SOs) are not used in the ForwardCom system. Instead, we will use only one type of function libraries that can be used in three different ways: 
+
+\begin{enumerate}
+\item Static linking. \label{staticLinking} The linker finds the required functions in the library and copies them into the executable file. Only the parts of the library that are actually needed by the specific main program are included. This is the normal way that static libraries are used in current systems (.lib files in Windows, .a files in Unix-like systems such as Linux, BSD, and Mac OS). 
+
+\item  Load-time linking. \label{loadTimeLinking} The library may be distributed separately from the executable file. The required parts of the library are loaded into memory together with the executable file, and all links between the main executable and the library functions are resolved by the loader in the same way as for static linking. 
+
+\item  Run-time linking. \label{runtimeLinking} The running program calls a system function that returns a pointer to 
+the library function. The required function is extracted from the library and loaded into memory, preferably at a memory space reserved for this purpose by the main program. Any reference from the newly loaded function to other functions, whether already loaded or not, can be resolved in the same way as for static linking. 
+\end{enumerate}
+
+These methods will improve the performance and remedy many of the problems that we encounter with the traditional DLLs and SOs. A typical program in Windows and Unix systems will require several DLLs or SOs when it is loaded. These dynamic libraries will all be loaded into each their memory block, using an integral number or memory pages each, and possibly scattered over the memory space. This leads to a waste of memory space and poor caching. A further performance disadvantage with shared objects is that they use procedure linkage tables (PLT) and global offset tables (GOT) for all accesses to functions and variables in order to support the rarely used feature of symbol interposition. This requires a lookup in the PLT or GOT for every access to a function or variable in the library, including internal references to globally visible symbols.
+\vspace{2mm}
+
+The ForwardCom system replaces the traditional dynamic linking with method 2 above, which will make the code just as efficient as with static linking because the library sections are contiguous with the main program sections, and all access is immediate with no intermediate tables. The time required to load the library will be similar to the time required for dynamic linking because the bottleneck will be disk access, not calculation of function addresses. 
+\vspace{2mm}
+
+A DLL or SO can share its code section (but not its data section) between multiple running programs that use the same library. A ForwardCom library can share its code section between multiple running instances of the same program, but not between different programs. The amount of memory that is wasted by possibly loading multiple instances of the same library code is more than compensated for by the fact that we are loading only the part of the library that is actually needed and that the library does not require its own memory pages. It is not uncommon in Windows and Unix systems to load a dynamic library of one megabyte and use only one kilobyte of it. 
+\vspace{2mm}
+
+The load-time linking (method 2 above) is efficient in the ForwardCom system because of the way relative addresses are used. The main program typically contains a CONST section immediately followed by a CODE section. The CONST section is addressed relative to the instruction pointer so that these two sections can be placed anywhere in memory as long as they have the same position relative to each other. Now, we can place the CONST section of the library function before the CONST section of the main program, and the CODE section of the library function after the CODE section of the main program. We don't have to change any cross-references in the main program. Only cross references between the main program and the library function and between the CODE and CONST sections of the library function have to be calculated by the loader and inserted in the code.
+\vspace{2mm}
+
+A library function does not necessarily have any DATA and BSS sections. In fact, a thread-safe function has little use of static data. However, if the library function has any DATA and BSS sections, then these sections can be placed anywhere within the ± 2GB range of the DATAP pointer. The references in the library function to its static data have to be calculated relative to the point that DATAP points to; but no references to data in the main program have to be modified when a library is added as long as DATAP still points to the border between the DATA and BSS sections of the main program. 
+\vspace{2mm}
+
+The combined main program and library file can now be loaded into any vacant spaces in memory. It will need only three entries in the memory map: (1) the combined CONST sections of library and main program, (2) the combined CODE sections of main program and library functions, and (3) the combined STACK, DATA, BSS, and HEAP of the main program and the library functions. 
+\vspace{2mm}
+
+Run-time linking works slightly differently. The reference from the main program to the library function goes through a function pointer that is provided when the library is loaded. Any references the other way -- from the library function to functions or global data in the main 
+program -- can be resolved in the same way as for method 1 and 2 or through pointer parameters to the function. The main program should preferably reserve space for the CONST, CODE and DATA/BSS sections of any libraries that it will load at run time. The sizes of these reserved spaces are provided in the header of the executable file. The loader has considerable freedom to place these sections anywhere it can in the event that the reserved spaces are insufficient. The only requirements are that the CONST section of the library function is within a range of $\pm$ 2GB of the CODE section of the library, and the DATA and BSS sections of the library are within $\pm$ 2GB of DATAP. The library function may be compiled with a compiler option that tells it not to use DATAP. The function will load the absolute address of its DATA section into a general purpose register and access its data with this register as pointer. 
+\vspace{2mm}
+
+\section{Library function dispatch system} \label{libraryFunctionDispatchSystem}
+Newer versions of Linux have a feature called Gnu indirect function which makes it possible to choose between different versions of a function at load time depending on, for example, the microprocessor version. This feature will not be copied in the ForwardCom system because it relies on a procedure linkage table (PLT). Instead, we can make a dispatcher system to be used with load-time linking. The library can contain a dispatch function which tells which version of a library function to load. The loader will first load the dispatch function and call it. The dispatch function returns the name of the chosen version of the desired function. The loader then unloads the dispatch function and links the chosen function into the main program. The dispatch function must have access to information about the hardware configuration, command line parameters, environment variables, operating system, user interface framework, and anything else that it might need to choose which version of the function to use.
+
+\section{Predicting the stack size} \label{predictingStackSize}
+In most cases, it is possible to calculate exactly how much stack space an application needs. The compiler knows how much stack space it has allocated in each function. We only have to make the compiler save this information. This can be accomplished in the following way. If a function A calls a function B then we want the compiler to save information about the difference between the value of the stack pointer when A is called and the stack pointer when B is called. These values can then be summed up for the whole chain of nested function calls. If function A can call both function B and function C then each branch of the call tree is analyzed and the value for the branch that uses most stack space is used. If a function is compiled separately into its own object file, then the information must be stored in the object file. 
+\vspace{2mm}
+
+A function can use any amount of memory space below the address pointed to by the stack pointer (a so-called red zone) if this is included in the stack size reported in the object file, provided that the system has a separate system stack. 
+\vspace{2mm}
+
+The amount of stack space that a function uses will depend on the maximum vector length if full vectors are saved on the stack. All values for required stack space are linear functions of the vector length: Stack\_frame\_size = Constant + Factor $\cdot$ Max\_vector\_length. Thus, there are two values to save for each function and branch: Constant and Factor. We need separate calculations for each thread and possibly also information about the number of threads. If there are two stacks then we need to save separate values for the call stack and the data stack. The size of the call stack does not depend on the maximum vector length. 
+\vspace{2mm}
+
+The linker will add up all this information and store it in the header of the executable file. The maximum vector length is known when the program is loaded, so that the loader can finish the calculations and allocate a stack of the calculated size before the program is loaded. This will prevent stack overflow and fragmentation of the stack memory. Some programs will use as many threads as there are CPU cores, for optimal performance. It is not essential, though, to know how many threads will be created because each stack can be placed anywhere in memory if thread memory protection is used (see page \pageref{threadMemoryProtection}). 
+\vspace{2mm}
+
+In theory, it is possible to avoid the need for virtual address translation if the following four conditions are met: 
+
+\begin{itemize}
+\item The required stack size can be predicted and sufficient stack space is allocated when a 
+program is loaded and when additional threads are created. 
+
+\item Static variables are addressed relative to the data section pointer. Multiple running instances of the same program have different values in the data section pointer. 
+
+\item The heap manager can handle fragmented physical memory in case of heap overflow. 
+
+\item There is sufficient memory so that no application needs to be swapped to a hard disk.
+\end{itemize}
+
+A possible alternative to calculating the stack space is to measure the actual stack use the first time a program is run, and then rely on statistics to predict the stack use in subsequent runs. The same method can be used for heap space. This method is simpler, but less reliable. The calculation of stack requirements based on the compiler is sure to cover all branches of a program, while a statistical method will only include branches that have actually been used. 
+\vspace{2mm}
+
+We may implement a hardware register that measures the stack use. This stack-measurement register is updated every time the stack grows. We can reset the stack-measurement register when a program starts and read it when the program finishes. We don't need a hardware register to measure heap size. This information can be retrieved from the heap manager. 
+\vspace{2mm}
+
+These proposals can eliminate or reduce memory fragmentation in many cases so that we only need a small memory map which can be stored on the CPU chip. Each process and each thread will have its own memory map. However, we cannot completely eliminate memory fragmentation and the need for virtual memory translation because of the complications discussed on page \pageref{memoryManagement}.
+
+\section{Exception handling, stack unrolling and debug information} \label{exceptionHandling}
+Executable files must contain information about the stack frame of each function for the sake of exception handling and stack unrolling for programming languages that support structured exception handling. 
+It should also be used for programming languages that do not support structured exception handling in order to facilitate stack tracing by a debugger. 
+\vspace{2mm}
+
+This system should be standardized, and both single stack and dual stack systems should be supported. 
+It is recommended to use a table-based method that does not require a stack frame register. 
+\vspace{2mm}
+
+Debuggers need information about line numbers, variable names, etc. This information should be included in object files when requested. The debug information may be copied into the executable file or saved in a separate file which is stored together with the executable file. It is yet to be decided which system to use. 
+
+
+\end{document}

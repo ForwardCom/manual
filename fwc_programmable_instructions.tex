@@ -1,0 +1,22 @@
+% chapter included in forwardcom.tex
+\documentclass[forwardcom.tex]{subfiles}
+\begin{document}
+\RaggedRight
+
+\chapter{Programmable application-specific instructions}
+Rather than implementing a lot of special instructions for specific applications, we may provide a means for generating user-defined instructions which can be coded in a hardware description language, e. g. VHDL or Verilog. 
+\vspace{2mm}
+
+The microprocessor can have an optional FPGA or similar programmable hardware. This structure can be used for making application-specific instructions or functions, e. g. for coding, encryption, data compression, signal processing, text processing, etc. 
+\vspace{2mm}
+
+If the processor has multiple CPU cores then each core may have its own FPGA. The hardware definition code is stored in its own cache for each core. The operating system should prevent, as far as possible, that the same core is used for different tasks that require different hardware codes. There may be features for allowing an application to monopolize an FPGA or part of it. 
+\vspace{2mm}
+
+If it cannot be avoided that multiple applications use the same FPGA in the same CPU core, then the code, as well as the contents of any memory cells in the FPGA, must be saved on each task switch. This saving may be implemented as lazy, i. e. the contents is only swapped when the second task needs the FPGA structure that contains code for the first task. 
+\vspace{2mm}
+
+There must be instructions for accessing the user-defined functions, including means for input and output, and for adapting to the latency of the user-defined functions.
+
+
+\end{document}

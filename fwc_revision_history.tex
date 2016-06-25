@@ -1,0 +1,44 @@
+% chapter included in forwardcom.tex
+\documentclass[forwardcom.tex]{subfiles}
+\begin{document}
+\RaggedRight
+
+\chapter{Revision history}
+
+\subsubsection{Version 1.02, 2016-06-25.}
+\begin{itemize}
+\item Name changed to ForwardCom.
+\item Moved to github.
+\item Various security features added.
+\item Support for dual stack.
+\item Some instruction formats modified, including more formats for jump and call instructions.
+\item System call, system return and trap instructions added.
+\item New addressing mode for arrays with bounds checking.
+\item Several instructions modified or added.
+\item Memory management and ABI standards described in more detail.
+\item Instruction list in comma separated file instruction\_list.csv.
+\item Object file format defined in file elf\_forwardcom.h
+\end{itemize}
+
+\subsubsection{Version 1.01, 2016-05-10.}
+\begin{itemize}
+\item The instruction set is given the name CRISC1.
+\item The length of a vector register is stored in the register itself. The basic code structure is modified as a consequence of this. Function calling conventions are also simplified as a consequence of this.
+\item All user-level instructions are defined.
+\item The entire text has been rewritten and updated.
+\end{itemize}
+
+\subsubsection{Version 1.00, 2016-03-22.}
+This document is the result of a long discussion on 
+\href{http://www.agner.org/optimize/blog/read.php?i=421}{Agner Fog's blog}
+, starting on 2015-12-27, as well as input from the RISC-V mailing list and the Opencores forum.
+\vspace{2mm}
+
+Additional inspiraction was found in various sources listed on page \pageref{referencesToIntroduction}. 
+\vspace{2mm}
+
+Version 1.00 of this manual was published at 
+\href{http://www.agner.org/optimize}{www.agner.org/optimize}.
+
+
+\end{document}

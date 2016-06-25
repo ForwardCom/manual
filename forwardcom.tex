@@ -1,0 +1,124 @@
+\documentclass{report}
+
+% \usepackage[utf8]{inputenc}
+\usepackage[utf8x]{inputenc}
+\usepackage{hyperref}
+%\usepackage{graphicx}
+%\usepackage{float}
+\usepackage[english]{babel}
+\usepackage{listings}
+\usepackage{subfiles}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{ragged2e} 
+
+% modify style
+\renewcommand{\familydefault}{\sfdefault}
+% \setlength{\parindent}{1cm} % doesn't work.
+
+\begin{document}
+\title{ForwardCom: An open-standard instruction set for high-performance microprocessors}
+\author{Agner Fog}
+\date{\today}
+\maketitle
+%\raggedright
+\RaggedRight
+
+\tableofcontents
+\setcounter{secnumdepth}{1}
+
+% Introduction
+% - Highlights
+% - Background
+% - Design goals
+% - Comparison with other open instruction sets
+% - References and links
+\subfile{fwc_introduction.tex}
+
+% Basic architecture
+% - A fully orthogonal instruction set
+% - Instruction size
+% - Register set
+% - Vector support
+% - Vector loops
+% - Maximum vector length
+% - Instruction masks
+% - Addressing modes
+\subfile{fwc_basic_architecture.tex}
+
+% Instruction formats
+% - Formats and templates
+% - Coding of operands
+% - Coding of masks
+% - Format for jump, call and branch instructions
+% - Assignment of opcodes
+\subfile{fwc_instruction_formats.tex}
+
+% Instruction lists
+% - List of multi-format instructions
+% - List of tiny instructions
+% - List of single-format instructions
+\subfile{fwc_instruction_lists.tex}
+
+% - Description of instructions
+% - Common operations that have no dedicated instruction
+% - Unused instructions
+\subfile{fwc_description_of_instructions.tex}
+
+% Other implementation details
+% - Endianness
+% - Implementation of call stack
+% - Floating point errors and exceptions
+% - Detecting integer overflow
+% - Multithreading
+% - Security features
+\subfile{fwc_other_implementation_details.tex}
+
+% Programmable application-specific instructions
+\subfile{fwc_programmable_instructions.tex}
+
+% Microarchitecture and pipeline design
+\subfile{fwc_microarchitecture_and_pipeline.tex}
+
+% Memory model
+% - Thread memory protection
+% - Memory management
+\subfile{fwc_memory_model.tex}
+
+% System programming
+% - Memory map
+% - Call stack
+% - System calls and system functions
+% - Inter-process calls
+% - Error message handling
+\subfile{fwc_system_programming.tex}
+
+% Standardization of ABI and software ecosystem
+% - Compiler support
+% - Binary data representation
+% - Further conventions for object-oriented languages
+% - Function calling convention
+% - Register usage convention
+% - Name mangling for function overloading
+\subfile{fwc_abi_standard.tex}
+
+% - Binary format for object files and executable files
+% - Function libraries and link methods
+% - Library function dispatch system
+% - Predicting the stack size
+% - Exception handling, stack unrolling and debug information
+\subfile{fwc_object_file_format.tex}
+
+% - Assembly language syntax
+\subfile{fwc_assembly_language_syntax.tex}
+
+% Conclusion
+\subfile{fwc_conclusion.tex}
+
+% Revision history
+\subfile{fwc_revision_history.tex}
+
+% Copyright notice
+\subfile{fwc_copyright_notice.tex}
+
+\end{document}

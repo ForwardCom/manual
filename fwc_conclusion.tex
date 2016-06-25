@@ -1,0 +1,63 @@
+% chapter included in forwardcom.tex
+\documentclass[forwardcom.tex]{subfiles}
+\begin{document}
+\RaggedRight
+
+\chapter{Conclusion}
+The proposed ForwardCom instruction set architecture is a consistent, modular, 
+flexible, orthogonal, scalable and expansible instruction set offering a good compromise between the RISC principle that gives fast decoding, and the CISC principle that gives more compact code and more work done per instruction. Each instruction can be coded in many different variants with different operand types, different memory addressing modes, scalars, vectors, predicates, masks and option bits. Support for efficient vector processing and out-of-order execution is a basic part of the design rather than a suboptimal patch added later as we have seen in other systems.
+\vspace{2mm}
+
+General instructions, such as e. g. addition, can be coded in many different formats with integer operands of different sizes and floating point operands of different precisions. The operands can be scalars or vectors of any length. Operands can be registers, immediate constants, or memory operands with different addressing modes. All in all, the same basic instruction can have many different variants with the same operation code where other instruction sets have many different instructions to cover the same diversity. This simplifies the hardware implementation. The design also has plenty of space for single-format instructions with fewer variants. 
+\vspace{2mm}
+
+The instructions are designed so that the microprocessor pipeline can be simple and efficient. All instructions fit into the same simple and logical template system that will make both hardware and software simpler and more efficient.
+\vspace{2mm}
+
+The decoder front-end can load multiple instructions per clock cycle because it is easy to detect the length of each instruction, and the decoder needs only distinguish between a few different instruction sizes. Actually, the only instruction size that must be supported is single-word. It is 
+possible to make a working program with only single-word (32 bits) instructions, but it is highly recommended to also support double-word instructions. Triple-word instructions is a convenience that may be supported if it can be implemented without reducing the overall decoding speed. Tiny instructions (two in one code word) are useful for making the code more compact. 
+\vspace{2mm}
+
+It is possible to add support for longer instructions in future extensions, but the priority has been to avoid any bottleneck in the decoding of instruction length (which is a serious bottleneck in the x86 architecture). 
+\vspace{2mm}
+
+The code format is designed to be compact in order to save code cache space. This compactness is obtained in several ways. The same instructions can be coded in different sizes with two- and three-operand forms, different sizes of immediate constants, shifted immediate constants, and relative addresses with different sizes of offsets and scale factors, while avoiding absolute addresses that would require 64 bits for the address alone. It is always possible to choose the smallest version of an instruction that fits the particular need. The load on the data cache can be reduced by storing immediate constants in the code rather than in memory operands.
+\vspace{2mm}
+
+Most instructions can have a mask register which is used for predication in scalar instructions and masking in vector instructions. The same mask register is also used for specifying various options such as rounding mode, exception handling, etc., that would otherwise require extra bits in the instruction code. 
+\vspace{2mm}
+
+The introduction of vector registers with variable length is an important improvement over the most common current architectures. The ForwardCom vector system has the following advantages: 
+
+\begin{itemize}
+\item The system is scalable. Different microprocessors can have different maximum vector lengths with no upper limit. It can be used for small embedded systems as well as large supercomputers with very long vectors. 
+
+\item The same code can run on different microprocessors with different maximum vector lengths and automatically utilize the full vector capabilities of each microprocessor. 
+
+\item The code does not have to be recompiled when a new microprocessor version with longer vectors becomes available. Software developers do not have to maintain multiple versions of their software for different vector lengths. 
+
+\item The software can save and restore a vector register in a way that is guaranteed to work with future processors with longer vectors. The inability to do so is a big problem in current architectures. 
+
+\item Only the part of a vector register that is actually used needs to be saved and restored. Each vector register includes information about how many bytes of it are used. Therefore, no unnecessary resources are wasted on saving a full-length vector if it is unused or only partially used. 
+
+\item A special addressing mode supports a very efficient loop structure that will automatically use the maximum vector length on all but the last iteration of an array loop. The last iteration will automatically use a shorter vector to handle the remaining array elements in case the array size is not divisible by the maximum vector length. There is no need to handle the remaining elements separately outside the main loop and no need to make separate versions of the loop for different special cases. 
+
+\item Functions can have variable-length vector registers as parameters. This makes it easy for the compiler to vectorize loops that contain function calls. 
+
+\item Instructions with vector register operands need no extra information about the vector length because this information is included in the vector registers. This makes these instructions more compact. Instructions with vector memory operands do need this extra information, though.
+
+\item The system takes into account the special needs of microprocessors with very long vectors where transport delays across a vector may depend on the vector length.
+\end{itemize}
+
+The memory model is flexible with relative addresses. Everything is position-independent. Memory management is simpler than in many current systems with less need for virtual address translation. There is no translation lookaside buffer (TLB) and no memory paging, but a simple on-chip memory map. Problems with stack overflow, memory fragmentation, etc. can be avoided completely in most cases. Task switches will be fast because of the small memory map and because of the efficient mechanism for saving vector registers. 
+\vspace{2mm}
+
+The principle that a fundamental redesign enables us to learn from history and integrate late additions into the basic design also applies to the whole ecosystem of ABI standards, function libraries, compilers, linkers and operating system. By defining not only an instruction set, but also ABI standards, binary file formats, interface library standards, etc. we get the further advantage that different compilers and different programming languages will be compatible with each other. It will be possible to write different parts of a program in different programming languages and to use the same function libraries with all compilers. Even different operating systems will be compatible to some degree. It is not an impossible goal to be able to run the same binary program file in different operating systems.
+\vspace{2mm}
+
+We have also learned from past mistakes that it is difficult to predict future needs. While the ForwardCom instruction set is intended to be flexible with room for future extensions, we may ask whether the future will bring needs for new features that are difficult to integrate into our design and standards. The best way to prevent such unforeseen problems is to allow input and suggestions from the entire community of hardware and software developers. It is important that the design and standards are developed through an open process that allows everybody to comment and make suggestions. We have already seen the problems of leaving this to a commercial industry. The industry often makes short-term decisions for marketing reasons. Patents, license restrictions and trade secrets harm competition and prevent niche operators from entering the market. New features and instruction set extensions are kept secret for competitive reasons until it is too late to change them in case the IT community comes up with better proposals.
+\vspace{2mm}
+
+The ForwardCom project is developed as a contribution to an open development process based on the philosophy that these problems can be avoided through openness and collaboration.
+
+\end{document}

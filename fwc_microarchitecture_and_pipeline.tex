@@ -1,0 +1,76 @@
+% chapter included in forwardcom.tex
+\documentclass[forwardcom.tex]{subfiles}
+\begin{document}
+\RaggedRight
+
+\chapter{Microarchitecture and pipeline design}
+The ForwardCom instruction set is intended to facilitate a consistent and efficient design of the pipeline of a superscalar microprocessor. Instructions can have one destination operand, up to three or four source operands, a mask register, and a register specifying vector length. The last source operand can be a register, a memory operand or an immediate constant. All other operands are registers, except for memory write instructions. The total number of input registers to an instruction, including source operands, mask, base pointer, index and vector length specifier cannot be more than five.
+\vspace{2mm}
+
+No instruction can have more than one memory operand. No instruction can have both a memory source operand and an immediate operand, though this may be allowed in future extensions. Any extra immediate operand field can be used for option bits. 
+\vspace{2mm}
+
+A high performance pipeline may be designed as superscalar with the following stages.
+\begin{itemize}
+\item  Fetch. Fetching blocks of code from the instruction cache, one cache line at a time, or as determined by the branch prediction machinery. 
+
+\item  Instruction length decode. Determine the length of each instruction and identify tiny instructions. Distribute the first P instructions into each their pipeline lane, where P is the number of parallel lanes implemented in the pipeline. Excess instructions may be queued for the next clock cycle. 
+
+\item  Instruction decode. Identify and classify all operands, opcode and option bits. Determine input and output dependencies.
+
+\item  Register allocation and renaming. 
+
+\item  Instruction queue. 
+
+\item  Put instructions into reservation station. Schedule for address calculator. 
+
+\item  Calculate address and length of memory operand. Check access rights.
+
+\item  Read memory operand. Schedule for execution units.  
+
+\item  Execution units.  
+
+\item  Retire or branch. 
+\end{itemize}
+
+It is not necessary to split instructions into micro-operations if the reading of memory operands is done in a separate pipeline stage and instructions are allowed to stay in the reservation station until the memory operand has been read. 
+\vspace{2mm}
+
+Each stage in the pipeline should ideally require only one clock cycle. Instructions waiting for an operand should stay in the reservation station. Most instructions will use only one clock cycle in the execution unit. Multiplication and floating point addition need a pipelined execution unit with several stages. Division and square root may use a separate state machine. 
+\vspace{2mm}
+
+Jump, branch, call and return instructions also fit into this pipeline design. 
+\vspace{2mm}
+
+The reservation station has to consider all the input and output dependencies of each instruction. Each instruction can have up to five input dependencies and one output dependency. 
+\vspace{2mm}
+
+There can be multiple execution units so that it is possible to run multiple instructions in the same clock cycle if their operands are independent. 
+\vspace{2mm}
+
+An efficient out-of-order processing requires renaming of the general purpose registers and vector registers, but not necessarily the special registers. 
+\vspace{2mm}
+
+Complex instructions and microcode should generally be avoided. We do not have an instruction for saving or restoring all registers during a task switch. Instead, the necessary instructions for saving and restoring registers are implemented as tiny instructions to reduce the size of an instruction sequence that saves all registers. 
+\vspace{2mm}
+
+The following instructions are moderately complex: call, return, div, rem, sqrt, cmp\_swap, save\_cp, restore\_cp. These instructions may be implemented as dedicated state machines. The same applies to traps, Interrupts and system calls. 
+\vspace{2mm}
+
+Some current CPUs have a ``stack engine'' in order to predict the value of the stack pointer for a push, pop or call instruction when preceding stack operations are delayed due to operands that are not available yet. Such a system is not needed if we have a dual stack design (see page \pageref{dualStack}). Even with a single stack design, there is little need for a stack engine because push and pop operations will be rare in critical parts of the code if the function calling conventions in this document are followed (page \pageref{functionCallingConventions}). 
+\vspace{2mm}
+
+Branch prediction is important for the performance. We may implement four different branch prediction algorithms: one for ordinary branches, one for loops, one for indirect jumps, and one for function returns. The long form of branch instructions have an option bit for indicating loop behavior. The short form of branch instructions does not have space for such a bit. The initial guess may be to assume loop behavior if the branch goes backwards and ordinary branch behavior if the branch goes forwards. This assumption may be corrected later, if necessary, by the branch prediction machinery. 
+\vspace{2mm}
+
+The code following a branch is executed speculatively until it is determined whether the prediction was right. We may implement features for running both sides of a branch speculatively at the same time. 
+\vspace{2mm}
+
+The ForwardCom design allows large microprocessors with very long vector registers. This requires special design considerations. The chip layout of vector processors is typically divided into ``data lanes'' so that the vertical transfer of data from a vector element to the corresponding 
+vector element in another vector (i. e. same lane) is faster than the horizontal transfer of data from one vector element to another element at another position of the same vector (i. e. different lane). This means that instructions that transfer data horizontally across a vector, such as broadcast and permute instructions, may have longer latencies than other vector instructions. The scheduler needs to know the instruction latency, and this can be a problem if the latency depends on the distance of data transfer on very long vectors. This problem is addressed by indicating the vector length or the distance of data transfer for such instructions in a separate operand, which always uses the RS register field. This information may be redundant because the vector length is stored in the vector register operands, but the scheduler needs this information as early as possible. The other register operands are typically not ready until the clock cycle where they go to the execution unit, while the vector length is typically known earlier. The microprocessor can read the RS register at the address calculation stage in the pipeline, where it also reads any pointer, index register and vector length for memory operands. This allows the scheduler to predict the latency a few clock cycles in advance. The instruction set provides the extra information about vector length or data transfer length in RS for all instructions that involve horizontal data transfer, including memory broadcast, permute, insert, extract and shift instructions, but not broadcasting of immediate constants. 
+\vspace{2mm}
+
+The data path to the data cache and memory should be quite wide, possibly matching the maximum vector length, because cache access and memory access are typical bottlenecks.
+
+
+\end{document}

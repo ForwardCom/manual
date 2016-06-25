@@ -1,0 +1,127 @@
+% chapter included in forwardcom.tex
+\documentclass[forwardcom.tex]{subfiles}
+\begin{document}
+\RaggedRight
+
+\chapter{Memory model} \label{memoryModel}
+The address space is using unsigned 64-bit addresses and 64-bit pointers. Future extension to 128-bit addresses is possible, but this will probably not be relevant in a foreseeable future. 
+\vspace{2mm}
+
+Absolute addresses are rarely used. Most data objects, functions and jump targets are addressed with signed offsets of 32 bits or less relative to some reference point contained in a 64-bit pointer. This pointer can be the instruction pointer (IP), the data section pointer (DATAP), the stack pointer (SP), or a general purpose register.
+\vspace{2mm}
+
+An application can have access to the following sections of data:
+\vspace{2mm}
+
+\begin{itemize}
+\item Program code (CODE). This memory block is executable with or without read access, but without write access. The CODE section can be shared between multiple processes running the same program. 
+
+\item Constant program data (CONST). This contains constants and tables used by the program without write access. It may be shared between multiple processes. 
+
+\item Static read/write program data sections, which can be initialized (DATA) and uninitialized (BSS). This is used for global data and for static data inside functions. Multiple instances are needed if multiple processes are running the same code. 
+
+\item Stack data (STACK). This is used for non-static data inside functions. Each process or thread has its own stack, addressed relative to the stack pointer. The stack grows downward from high to low addresses when data are added to the stack. 
+
+\item Program heap (HEAP). Used for dynamic memory allocation by an application program. 
+
+\item Thread data (THREADD). Allocated when a thread is created and used for thread-local static data and thread environment block.
+\end{itemize}
+
+References within the CODE section use 8-bit, 16-bit, 24-bit and 32-bit signed references relative to the instruction pointer, scaled by the code word size which is 4 bytes. 
+\vspace{2mm}
+
+The CONST section is preferably placed immediately before the CODE section. Data in the CONST section are mostly addressed relative to the instruction pointer with no scale factor. (In case of a pure Harvard architecture, the CONST section may be placed in readable program 
+memory to be addressed relative to the instruction pointer, or it may be placed in data memory and addressed relative to DATAP). 
+\vspace{2mm}
+
+The DATA and BSS sections are addressed relative to the data section pointer (DATAP) which is a special register that points to some reference point in these sections. The preferred reference point is where DATA ends and BSS begins. Multiple running instances of the same program will have different values of the data section pointer. The CODE and CONST sections contain no direct references to DATA or BSS, only references relative to the data section pointer. This makes it possible for multiple processes to share the same CODE and CONST sections, but have each their private DATA and BSS sections without the need for virtual address translation. The DATA and BSS sections can be placed anywhere in the address space independently of where CONST and CODE are placed.
+\vspace{2mm}
+
+STACK data are addressed relative to the stack pointer (SP). Heap data are addressed through pointers provided by the heap allocation function. 
+\vspace{2mm}
+
+Thread data are addressed relative to a register called thread environment block pointer (THREADP), which is separate for each thread in the process. The thread environment block may be allocated on the stack when a new thread is created. 
+\vspace{2mm}
+
+The STACK, DATA, BSS, HEAP and THREADD data sections are preferably kept together in one contiguous block in order to optimize caching and memory management. 
+\vspace{2mm}
+
+This model allows the program to access up to 8 GB of CODE, 2 GB of CONST, 2 GB of DATA, 2 GB of BSS, 2 GB of THREADD, an almost unlimited size of STACK with 2 GB frames, and an almost unlimited amount of HEAP data. A pointer to the CONST section is provided in the thread environment block in order to access CONST data in the rare case that the distance between code and data exceeds 2 GB or in order to avoid address relocation. 
+\vspace{2mm}
+
+The end of the combined data memory block must have an unused space of the same size as the maximum vector length. This will enable the restore\_cp instruction to read more than necessary when restoring a vector of unknown length. It will also allow a function that searches for the end of a zero-terminated string to read one vector-length piece of the string at a time without causing access violation by reading into unavailable memory space. 
+\vspace{2mm}
+
+Most microprocessor systems have the stack growing backward. The ForwardCom system has the same, but mainly for a different reason. When a vector register is saved on the stack, it is stored as the length followed by the amount of data indicated by the length. When the vector register is restored (using the restore\_cp instruction), it is necessary to read the length followed by the data. The stack pointer must point to the low end where the length is stored, otherwise it would be impossible to find where the length is stored. 
+
+\section{Thread memory protection} \label{threadMemoryProtection}
+Each thread must have its own stack. The thread data (THREADD) may be placed on this stack. The ForwardCom system allows inter-thread memory protection. The stack data of the main thread of a program is accessible to all its child threads, but all other threads in the program can have private data which is not accessible to any other threads, not even to the main thread. Any communication and synchronization between threads must use static memory or memory belonging to the main thread. 
+\vspace{2mm}
+
+It is recommended to use this inter-thread memory protection in all cases except where legacy software requires one memory space shared by all threads. 
+\vspace{2mm}
+
+\subsubsection{Isolated memory blocks} \label{isolatedMemoryBlocks}
+It is possible to make a system function that allocates an isolated memory block surrounded by inaccessible memory on both sides. Such a memory block, which will be accessible only to a specific thread, can be used for example for an input buffer in cases where security requirements are high. Each thread can have only a limited number of such protected memory blocks because of the limited size of the memory map.
+
+\section{Memory management} \label{memoryManagement}
+It is a design goal to minimize memory fragmentation and to minimize the need for virtual address translation. Current designs often have very complicated memory management systems with multilevel address translation, large translation-lookaside-buffers (TLB), and huge page tables. We want to replace the TLB, which has a large number of fixed-size memory blocks, by a memory map with a few memory blocks of variable size. In most cases, the main thread of an application will only need three blocks of memory: CONST (read only), CODE (execute only), and the combined STACK+DATA+BSS+HEAP (read-write). A child thread needs one more entry for its private stack. Similar blocks are defined for system code. 
+\vspace{2mm}
+
+A memory map with such a limited number of entries can easily be implemented on the chip in a very efficient way and it can easily be changed on task switches. Each process and each thread must have its own memory map. The memory is not organized into fixed-size pages. 
+\vspace{2mm}
+
+The memory map supports virtual address translation in the form of a constant offset that defines the distance between the virtual address and the physical address for each map entry. The hardware should not waste time and power on virtual address translation when it is not used.
+\vspace{2mm}
+
+A limited number of extra entries are provided in the memory map to deal with cases where the memory becomes fragmented, but memory fragmentation can be avoided in most cases. The following techniques are provided to simplify memory management and avoid memory fragmentation:
+
+\begin{itemize}
+\item There is only one type of function libraries which can be used for both static and dynamic linking. These are linked with a mechanism that keeps the CONST, CODE and DATA sections contiguous with the similar sections of the main program in most cases. This technique is described on page \pageref{libraryLinkMethods} below.
+
+\item The required stack size is calculated by the compiler and the linker so that stack overflow can be avoided in most cases. This technique is described on page \pageref{predictingStackSize}.
+
+\item The operating system can keep statistical records of the heap use of each program in order to predict the required heap size. The same technique can be used for predicting stack use in cases where the required stack size cannot be predicted exactly (e. g. recursive function calls). 
+\end{itemize}
+
+The memory space may become fragmented despite the use of these techniques. Problems that can result in memory fragmentation are listed below. 
+
+\begin{itemize}
+\item Recursive functions can use unlimited stack space. We may require that the programmer specifies a maximum recursion level in a pragma.
+
+\item Allocation of variable-size arrays on the stack using the alloca function in C. We may require that the programmer specifies a maximum size. 
+
+\item Runtime linking. The program can reserve space for loading and linking function libraries at run time (see page \pageref{runtimeLinking}). The memory may become fragmented if the memory space reserved for this purpose turns out to be insufficient.
+
+\item Script languages and byte code languages. It is difficult to predict the required size of stack and heap when running interpreted or emulated code. It is recommended to use a just-in-time compiler instead. Self-modifying scripts cannot be compiled. The same problem can occur with large user-defined macros.
+
+\item Unpredictable number of threads without protection. The required stack size for a thread may be computed in advance, but in some cases it may be difficult to predict the number of threads that a program will generate. Multiple threads will mostly share the same code sections, but they need separate stacks. The stack of a thread can be placed anywhere in memory without problems if inter-thread memory protection is used. But if memory is shared between threads and the number of threads is unpredictable then the shared 
+memory space may become fragmented. 
+
+\item Unpredictable heap size. Programs that process large amounts of data, e. g. multimedia processing, may need a large heap. A heap can use discontiguous memory, but this will require extra entries in the memory map. 
+
+\item Lazy loading and code overlay. A large program may have certain code units that are rarely used and loaded only when needed. Lazy loading can be useful to save memory, but it may require virtual memory translation and it may cause memory fragmentation. A straightforward solution is to implement such code units as separate executable programs. 
+
+\item Hot patching, i. e. updating of code while it is running. 
+
+\item Shared memory for inter-process communication. This requires extra entries in the memory map as explained below.
+
+\item Many programs running. The memory can become fragmented when many programs of different sizes are loaded and unloaded randomly or swapped to memory. 
+\end{itemize}
+
+A possible remedy against overflow of stack and heap is to place the STACK, DATA, BSS and HEAP data together (in this order) in an address range with large unused virtual address spaces below and above, so that the stack can grow downwards and the heap can grow upwards into the vacant spaces. This method can avoid fragmentation of the virtual address space, but not the physical address space. Fragmentation of the physical address space can be remedied by moving data from a memory block of insufficient size to another block that is larger. This method has the cost of a time delay when the data are moved. 
+\vspace{2mm}
+
+If runtime linking runs into memory problems and lack of memory map entries then it is allowed to mix CONST and CODE sections together in a common section with both read and execute access. If a library function contains constant data that originate from an untrusted source, while the code is trusted, then it is preferred to put the untrusted data into the DATA section rather than the CONST section in order to prevent execution of malicious code placed in the CONST section.
+\vspace{2mm}
+
+\label{sharedMemory}
+Shared memory can be used when there is a need to transfer large amounts of data between two processes. One process shares a part of its memory with another process. The receiving process needs an extra entry in its memory map to indicate read and/or write access rights to the shared memory block. The process that owns the shared memory block does not need any extra entry in its memory map. There is a limit to how many shared memory blocks an application can receive access to, because we want to keep the memory map small. If one program needs to communicate with a large number of other programs then we can use one of these solutions: (1) let the program that needs many connections own the shared memory and give each of its clients access to one part of it, (2) run multiple threads in (or multiple instances of) the program that needs many connections so that each thread has access to only one shared memory block, (3) let multiple communication channels use the same shared memory block or parts of it, (4) communicate through function calls, (5) communicate through network sockets, or (6) communicate through files. 
+\vspace{2mm}
+
+Executable memory cannot be shared between different applications. The mechanism of interprocess calls must be used if one application needs to call a function in another application. This is described on page \pageref{interProcessCalls}. 
+\vspace{2mm}
+
+We can probably keep memory fragmentation so low, by using the principles discussed here, that a relatively small memory map for each thread will be sufficient to cover normal cases. This will be much more efficient than the large TLB and multilevel address translation of current designs. It will save silicon space and power, and we can avoid the cost of TLB misses and page faults, and it will make task switches very fast.
+
+\end{document}

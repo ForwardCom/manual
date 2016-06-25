@@ -1,0 +1,52 @@
+% chapter included in forwardcom.tex
+\documentclass[forwardcom.tex]{subfiles}
+\begin{document}
+\RaggedRight
+
+
+\section{Assembly language syntax} \label{assemblySyntax}
+The definition of a new instruction set should include the definition of a standardized assembly language syntax. The syntax should be suitable for human processing, not only for machine processing. Mnemonic names should be long enough to make sense. Instructions should have the destination operand first. We must avoid a situation similar to the x86 environment where many different syntaxes are in use, with different instruction names and different orders of the operands. 
+\vspace{2mm}
+
+The assembly code has one instruction on each line, consisting of an instruction mnemonic and its operands. 
+It is proposed to add suffix codes to instruction mnemonics, separated by a dot, to indicate the operand type: 8, 16, 32, 64, 128 for integer operand size, and f, d, q for single, double and quadruple precision floating point operands. Add a 'z' to the integer operand type if the result must be zero-extended into a 64-bit general purpose register. Without the 'z', the assembler will pick the shortest instruction regardless of whether the result may overflow into additional bits. For example, add.16 r0,r0,1 may use a tiny instruction with 64 bit operand type that can overflow beyond 16 bits, while add.16z r0,r0,1 must use an instruction with a 16-bit operand type to make sure that the remaining bits of the general purpose register will be zero. 
+\vspace{2mm}
+
+Memory operands are indicated with square brackets. The vector length specifier of a memory operand is indicated as ``, length=register'' after the address operand. A mask register is indicated as ``, mask=register''. Example: 
+\begin{lstlisting}
+   add.f v0, v1, [r2+0x100, length=r3], mask=v4
+\end{lstlisting}
+
+This will add the float vector v1 and the vector memory operand with pointer r2, offset 0x100 and length r3 (bytes) and save the result in v0, using mask v4. 
+\vspace{2mm}
+
+An array operand is indicated as ``(base register)+(index register)*(scale factor)''. If there is a scale factor ($\neq \pm$ 1) then the scale factor must match the operand size indicated by the operand type suffix. A limit to the index is indicated with \\
+``, limit=value''. Example:
+\begin{lstlisting}
+   add.64 r0, r1, [r2+r3*8, limit=999], mask=r4
+\end{lstlisting}
+
+This will load a 64-bit integer from an array of 1000 elements with base address r2 and index r3, where the index is scaled by the operand size (64 bits = 8 bytes), with a limit of r3 $\leq$ 999, add the loaded number with the value of r1 and store the result in r0, using mask r4.
+\vspace{2mm}
+
+The same instruction may alternatively be written in the style of a function: 
+\begin{lstlisting}
+   r0 = add.64 (r1, [r2+r3*8, limit=999], mask=r4)
+\end{lstlisting}
+
+Move instructions may conveniently be written simply with an equal sign, for example:
+\begin{lstlisting}
+   r0 = r1              ; copy general purpose register
+   r2 = 0xFFFF          ; set general purpose register to constant
+   v3 = [r4, length=r5] ; read memory operand into vector register
+\end{lstlisting}
+
+Comments are indicated with a semicolon or a double slash.
+\vspace{2mm}
+
+Traditional assemblers often have metaprogramming features such as macros, preprocessing conditionals and preprocessing loops. The syntaxes used for these features look like awkward ad hoc solutions without no overall logical structure. We would prefer a syntax that makes a clear distinction between metaprogramming and regular assembly code. The metaprogramming syntax should support integer and floating point variables, strings, macros, conditionals and loops in a way that resembles a structured programming language. 
+\vspace{2mm}
+
+
+
+\end{document}

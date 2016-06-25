@@ -1,0 +1,210 @@
+% chapter included in forwardcom.tex
+\documentclass[forwardcom.tex]{subfiles}
+\begin{document}
+\RaggedRight
+
+\chapter{Standardization of ABI and software ecosystem} \label{StandardizationOfAbi}
+The goal of ForwardCom is a vertical redesign that defines new standards not only for the instruction set, but also for the software that uses it. This will have the following advantages.
+
+\begin{itemize}
+\item Different compilers will be compatible. The same function libraries can be used with different compilers. 
+
+\item Different programming languages will be compatible. It will be possible to compile different parts of a program in different programming languages. It will be possible to compile a function library in a programming language different from the program that uses it. 
+
+\item Debuggers, profilers and other development tools will be compatible. 
+
+\item Different operating systems will be compatible. It will be possible to use the same function libraries in different operating systems, except if they use system-specific functions. 
+\end{itemize}
+
+The previous chapter described standardization of system calls, system functions, and error messaging. The present chapter discusses standardization of the following aspects of the software ecosystem. 
+
+\begin{itemize}
+\item Compiler support. 
+
+\item Binary data representation. 
+
+\item Function calling conventions. 
+
+\item Register usage conventions.
+
+\item Name mangling for function overloading
+
+\item Binary format for object files and executable files.
+
+\item Format and link methods for function libraries.
+
+\item Exception handling and stack unrolling.
+
+\item Debug information.
+
+\item Assembly language syntax. 
+
+\end{itemize}
+
+\section{Compiler support} \label{compilerSupport}
+Compilers can have three different levels of support for variable-length vector registers. 
+
+\subsubsection{Level 1}
+The compiler will not use variable-length vectors. The compiler can call a vector function in a function library with a scalar parameter if the function is not available in a scalar version. 
+
+\subsubsection{Level 2}
+The compiler can call vector functions, but not generate such functions. The compiler can vectorize a loop automatically and call a vector library function from such a loop. 
+
+\subsubsection{Level 3}
+Full support. The compiler supports data types for variable-length vectors. These data types can be used for variables, function parameters and function returns. Variable-length vectors can not be included in structures, classes or unions because such composite types must have known sizes. Support for variable-length vectors in static and global variables is optional.
+\vspace{2mm}
+General operations on variable-length vectors can be specified explicitly, including options for applying boolean vector masks.
+
+\subsubsection{Other compiler features}
+The compiler may support pointer arithmetic on function pointers in order to write compact call tables with relative addresses explicitly. The difference between two function pointers should be scaled by the code word size, which is 4. Without this feature, the function pointers have to be type cast to integer pointers and back again. 
+
+\vspace{2mm}
+The compiler may have support for detecting integer and floating point overflow and other numerical errors in try-catch blocks using one of the methods discussed on page \pageref{integerOverflowDetection}.
+
+\vspace{2mm}
+The compiler may support array bounds checking, using the indexed addressing mode with bounds or the conditional trap instruction. 
+
+\section{Binary data representation} \label{binaryDataRepresentation}
+Data are stored in little-endian form in RAM memory. See page \pageref{endianness} for the rationale. 
+\vspace{2mm}
+
+Integer variables are represented with 8, 16, 32, 64, and optionally 128 bits, signed and unsigned. Signed integers use 2's complement representation. Integer overflow wraps around, except in saturated arithmetic instructions. 
+\vspace{2mm}
+
+Floating point numbers are coded with single (32-bit), double (64-bit) and optionally quadruple (128-bit) precision, following the IEEE Standard 754-2008 or any later standard. Half precision (16-bit) is optionally used in immediate constants. Calculation on half precision is not supported, but conversion between half and single precision is optionally supported. 
+\vspace{2mm}
+
+Floating point NAN variables can contain diagnostic information about the cause of errors as discussed on page \pageref{nanPropagation}. 
+\vspace{2mm}
+
+Boolean variables are stored as integers of at least 8 bits with the values 0 and 1 for FALSE and TRUE. Only bit 0 of the boolean variable is used, while the other bits are ignored. This rule makes it possible to use boolean variables as masks and to implement boolean functions such as AND, OR, XOR, and NOT in an efficient way with simple bitwise instructions, rather than the method used in many current systems that have a branch for each variable to check if the whole integer is nonzero. A branch instruction is needed in the compilation of expressions like (A \&\& B) and (A \textbar\textbar{} B) only if the evaluation of B has side effects. 
+\vspace{2mm}
+
+All variables not bigger than 8 bytes should be kept at their natural alignment.
+\vspace{2mm}
+
+Arrays not smaller than 8 bytes must be aligned to addresses divisible by 8. It may be recommended to align large arrays by the cache line size. 
+\vspace{2mm}
+
+Multidimensional arrays are stored in row-major order, except where the programming language makes this impossible. 
+\vspace{2mm}
+
+Text strings may be stored in language-dependent forms, but a standardized form is needed for system functions and for functions that are intended to be compatible with all programming languages. The proposed standard uses UTF-8 encoding. The length of the string may be determined by a terminating zero or a length specifier, or both.
+The rationale is this. The CPU processing time is insignificant for text strings of a length suitable for human reading. The priority is therefore on compactness. Compactness matters if the string is stored in a file or transmitted over a network. UTF-8 is more compact than UTF-16 in most cases, though less compact for some Asian languages. UTF-8 is the most common encoding used on the Internet.
+
+\section{Further conventions for object-oriented languages}
+Object oriented languages require further standards for the binary representation of special features such as virtual function tables, runtime type identification, member pointers, etc. 
+\vspace{2mm}
+
+These details must be standardized within each programming language for the sake of compatibility between different compilers, and if possible also between different programming languages that have compatible features. 
+\vspace{2mm}
+
+Member pointers should be implemented in a way that prioritizes good performance in the general case where only a simple offset (to data) or a pointer (to a function) is required, while additional information for contrived cases of multiple inheritance is added only when needed. 
+
+\section{Function calling convention} \label{functionCallingConventions}
+Function calls will use registers for parameters as much as possible. Integers of up to 64 bits, pointers, references, and boolean scalars are transferred in general purpose registers. Vector parameters can have variable length. Floating point scalars, vectors of any type with a fixed length of up to 16 bytes, and vectors of variable length are transferred in vector registers. 
+\vspace{2mm}
+
+The first 16 parameters to a function that fit into a general purpose register are transferred in register r0 – r15. The first 16 parameters that fit into a vector register are transferred in v0 – v15. The length of a variable-length vector parameter is contained in the same vector register that contains the data. 
+\vspace{2mm}
+
+Composite types are transferred in vector registers if they can be considered "simple tuples" no bigger than 16 bytes. A simple tuple is a structure or class or encapsulated array for which all non-static elements have the same type, which is not a pointer. A union is treated as a structure according to its first element. 
+\vspace{2mm}
+
+Parameters that do not fit into a single register are transferred by a pointer to a memory object allocated by the caller. This applies to: structures and classes with elements of different types, or bigger than 16 bytes. It also applies to objects that require special handling such as a non-standard copy constructor or destructor, and objects that require extra implicit storage such as tables of virtual member functions. It is the responsibility of the caller to call any copy constructor and destructor.
+\vspace{2mm}
+
+If there are not enough registers for all parameters then the additional parameters are provided in a list, which can be stored anywhere in memory. A pointer to this parameter list is transferred in a general purpose register. Such a list is also used if there is a variable argument list. There can be no more than one parameter list, as the same list is used for all purposes. 
+\vspace{2mm}
+
+The rules for a parameter list are as follows. A parameter list is used if there are more than 16 parameters that fit into a general purpose register, if there are more than 16 parameters that fit into a vector register, or if there is a variable argument list. If there are less than 16 general purpose parameters then these parameters are put in general purpose registers, and the next vacant general purpose register is used as pointer to the list. If there are 16 or more general purpose parameters, and a parameter list is needed for any reason, then the first 15 general purpose parameters are put in r0-r14, the list pointer is in r15, and the remaining general purpose parameters are put in the list. If there are more than 16 vector parameters then the first 16 vector parameters are put in v0-v15 and the remaining vector parameters are put in the list. All parameters in the list are placed in the order that they appear in the function definition, regardless of type. Variable arguments are placed last in the list because they always appear last in a function definition. 
+\vspace{2mm}
+
+The list consists of entries of 8 bytes each. A general purpose parameter uses one entry. A vector parameter with a constant size of 8 bytes or less uses one entry. A vector parameter with a constant size of more than 8 bytes or a variable size uses two entries in the list. The first entry is the length (in bytes) and the second entry is a pointer to an array containing the vector. A parameter that would not fit into a register, if one was vacant, is transferred by a pointer in the list according to the same rules as if the pointer was in a register. 
+\vspace{2mm}
+
+The parameter list belongs to the called function in the sense that it is allowed to modify parameters in the list if they are not declared as constant parameters. The same applies to arrays and objects with a pointer in the list. The caller can rely on parameters in the list being unchanged only if they are declared constant. The caller must put the list in a place where it cannot be modified by other threads. 
+\vspace{2mm}
+
+The function return value is in r0 or v0, using the same rules as for function parameters. Multiple return values (if allowed by the programming language) are treated as tuples if possible and returned in v0. Multiple return values of different types may be returned in multiple registers, but it is generally preferred to treat multiple return values as a structure for the sake of compatibility with other programming languages that do not allow multiple return values. 
+\vspace{2mm}
+
+A return value that does not fit into a register is returned in a space allocated by the caller through a pointer transferred by the caller in r0 and returned in r0. Any constructor is called by the callee. 
+\vspace{2mm}
+
+A ``this'' pointer for a class member function is transferred in r0, except if r0 is used for a return object, where the ``this'' pointer is transferred in r1. 
+
+\subsubsection{Rationale}
+It is much more efficient to transfer parameters in registers than on the stack. The present proposal allows up to 32 parameters, including variable length vectors, to be transferred in registers, leaving 15 general purpose registers and 16 vector registers for the function to use for other purposes while handing the parameters. This will cover almost all practical cases, so that parameters only rarely need to be stored in memory. 
+\vspace{2mm}
+
+Nevertheless, we must have precise rules for covering an unlimited number of parameters if the programming language has no limit to the number of parameters. We are putting any extra parameters in a list rather than on the stack as most other systems do. The main reason for this is to make the software independent of whether there is a separate call stack or the same stack is used for return addresses and local variables. The addresses of parameters on the stack would depend on whether there is a return address on the same stack. The list method has further advantages. There will be no disagreement over the order of parameters on the stack and whether the stack should be cleaned up by the caller or the callee. The list can be reused by the caller for multiple calls if the parameters are constant, and the called function can reuse a variable argument list by forwarding it to another function. The function is guaranteed to return properly without messing up the stack even if caller and callee disagree on the number of parameters. Tail calls are possible in all cases regardless of the number and types of parameters. 
+\vspace{2mm}
+
+\section{Register usage convention} \label{registerUsageConvention}
+Most systems have rules that certain registers have callee-save status. This means that a function must save these registers and restore them before it returns, if they are used. The caller can then rely on these registers being unchanged after the function call.
+\vspace{2mm}
+
+Current systems have a problem with assigning callee-save status to vector registers. Future CPU versions may make the vector registers longer, and the instructions for saving the longer registers have not been defined yet. Some systems now have callee-save status on part of a vector register because of poor foresight. It is impossible in current systems to save a vector register in a way that will be compatible with future extensions. 
+\vspace{2mm}
+
+This problem is solved by the ForwardCom design with variable vector length. It is possible to save and restore a vector register of any length, even if this length was not supported at the time the code was compiled. It is also possible to know how much of a long vector register is actually used, because the length of a vector is saved in the register itself, so that we only need to save the part of the register that is actually used. The save\_cp and restore\_cp instructions are designed for this purpose (see page \pageref{saveRestoreVectorRegisters}). Unused vector registers will use only little space for saving. 
+\vspace{2mm}
+
+It still takes a lot of cache space to save the vector registers if they are long. Therefore, we want to minimize the need for saving registers. It is proposed to have two different methods to choose between. These methods are explained here. 
+
+\subsubsection{Method 1}
+This is the default method which can be used in all cases, but not the most efficient method. 
+\vspace{2mm}
+
+The rule is simply that registers r16 – r31 and v16 – v31 have callee-save status.
+\vspace{2mm}
+
+A function can use registers r0 – r15 and v0 – v15 freely. Sixteen registers of each type will be sufficient for most functions. If the function needs additional registers, it must save them. 
+\vspace{2mm}
+
+All system registers and special registers have callee-save status, except in functions that are intended for manipulating these registers.
+
+\subsubsection{Method 2}
+It will be more efficient if we actually know which registers are used by each function. If function A calls function B, and A knows which registers are used by B, then A can simply choose some registers that are not used by B for any data that it needs to save across the call to B. Even a long chain of nested function calls can avoid the need to save any registers as long as there are enough registers. 
+\vspace{2mm}
+
+If function A and B are compiled together in the same process then the compiler can easily manage this information. But if A and B are compiled separately, then we need to store the necessary information about which registers are used. This is possible with the object file format described on page \pageref{objectFileFormat}. The information about register use must be saved in the compiled object file or library file, not in some other file that could possibly come out of sync. 
+\vspace{2mm}
+
+Function B is preferably compiled first into an object file. This object file must contain information about which registers are modified by function B. The necessary information is simply a 64-bit number with one bit for each register that is modified (bit 0-31 for r0-r31, and bit 32-63 for v0-v31). Any registers used for parameters and return value are also marked if they are modified by the function.
+\vspace{2mm}
+
+When function A is compiled next, the compiler will look in the object file for B to see which registers it modifies. The compiler will choose some registers not modified by B for data that need to be saved across the call to B. Registers that are modified by B can advantageously be used in A for temporary variables that do not need to be saved across the call to B. Likewise, it will be advantageous to use the same register for multiple temporary variables if their live ranges do not overlap, in order to modify as few registers as possible. The object file for A will contain a list of registers modified by A, including all registers modified by B and by any other function that A may call. The object file for A contains a reference to function B. This reference must contain information about which registers A expects B to modify. If B is later recompiled, and the new version of B modifies more registers, then the linker will detect the discrepancy and prompt for a recompilation of A.
+\vspace{2mm}
+
+If, for some reason, A is compiled before B or no information is available about B when A is compiled, then the compiler will have to make assumptions about the register use of B. The default assumption is as specified in method 1. Function A may later be recompiled if B violates these assumptions, or simply to improve efficiency. 
+\vspace{2mm}
+
+If two functions A and B are mutually calling each other then the easiest solution is to rely on method 1. The functions should still include the information about register use in their object files. 
+\vspace{2mm}
+
+The compiler should preferentially allocate the lower registers first in order to minimize the problem that different library functions use different registers. It may optionally skip r7 and v7 for the caller to use for masks. 
+\vspace{2mm}
+
+The main program function is allowed to use method 2 and to modify all registers if it includes the necessary information in its object file. 
+\vspace{2mm}
+
+Object files that are contained in a function library must include the information about register use. 
+\vspace{2mm}
+
+System functions and device drivers cannot be accessed in the same way as normal library functions (see page \pageref{systemCallIDSystem}). System functions must obey the rules for method 2, but the system should provide a method for getting information about the register use of each system function. This can be useful for just-in-time compilers. 
+
+\section{Name mangling for function overloading} \label{nameMangling}
+Programming languages that support function overloading use internal names with prefixes and suffixes on the function names in order to distinguish between functions with the same name but different parameters or different classes or namespaces. Many different name mangling schemes are in use, and some are undocumented. It is necessary to standardize the name mangling scheme in order to make it possible to mix different compilers or different programming languages.
+\vspace{2mm}
+
+The most common name mangling schemes are Microsoft and Gnu. The Microsoft scheme uses characters that cannot occur in function names (?@\$). This prevents name clashes, but makes it impossible to call the mangled name directly or to translate e. g. C++ to C. The Gnu scheme generates mangled names that look unwieldy, but contain no special characters that prevent calling the mangled name directly. Therefore, the proposal is to use the Gnu mangling scheme (version 4 or later) with necessary additions for variable-length vectors, etc. 
+\vspace{2mm}
+
+Functions with mangled names may optionally supplement the mangled name with the simple (non-mangled) name as a weak public alias in the object file. This makes it easier to call the function from other programming languages without name mangling. The weak linking of the alias prevents the linker from making error messages for duplicate names, unless a call to the name is ambiguous. 
+
+% This chapter continues in the file
+% fwc_assembly_language_syntax.tex
+
+\end{document}
