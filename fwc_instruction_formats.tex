@@ -630,19 +630,19 @@ pointer offset in IM1 or IM2 (jump/call). & Format 1.4 and 2.7.0. \\
 \hline
 60-61 & 0 jump \newline 1 call & Unconditional jump or call to value of register RS (jump/call)  & Format 1.5. \\
 \hline
-62 & 1 & Return from function (return) & Format 1.4.  \\
+62 & 0 & Return from function (return) & Format 1.4.  \\
 \hline
-62 & 1 & Return from system function (sys\_return) & Format 1.5.  \\
+62 & 0 & Return from system function (sys\_return) & Format 1.5.  \\
 \hline
-63 & 0 & System call. ID in register RT, shared memory block RD, length RS. No mask (sys\_call) & Format 1.4,\newline template A. \\
+63 & 1 & System call. ID in register RT, shared memory block RD, length RS. No mask (sys\_call) & Format 1.4,\newline template A. \\
 \hline
-63 & 0 & System call. ID in constants, shared memory block RD, length RS (sys\_call) & Format 2.7.1, 2.7.4 and 3.0.1. \\
+63 & 1 & System call. ID in constants, shared memory block RD, length RS (sys\_call) & Format 2.7.1, 2.7.4 and 3.0.1. \\
 \hline
-63 & 0 & Unconditional trap. Interrupt number in IM1 (trap). & Format 1.5. \\
+63 & 1 & Unconditional trap. Interrupt number in IM1 (trap). & Format 1.5. \\
 \hline
-63 & 0 & Filler for unused code memory. All fields are all 1's (filler). & Format 1.5. \\
+63 & 1 & Filler for unused code memory. All fields are all 1's (filler). & Format 1.5. \\
 \hline
-63 & 0 & Trap if unsigned RD \textgreater{} IM3. IM2 = 38. Interrupt number is fixed  (cmp\_unsign\_trapabove). & Format 2.7.3. \\
+63 & 1 & Trap if unsigned RD \textgreater{} IM3. IM2 = 38. Interrupt number is fixed  (cmp\_unsign\_trapabove). & Format 2.7.3. \\
 \hline
 \end{longtable}
 
