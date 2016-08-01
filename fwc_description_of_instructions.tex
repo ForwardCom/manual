@@ -393,7 +393,7 @@ Atomic compare and swap instruction, used for thread synchronization and for loc
 
 Further atomic instructions can be implemented, if needed, in format 2.8 with OP1 = 1 and increasing values of OP2.
 
-\subsection{Single-format instructions with g. p. register input and vector register output, or vice versa}
+\subsection{Single-format instructions with g. p. register input and vector output, or vice versa}
 
 \subsubsection{gp2vec}
 The value of a general purpose register is copied to a scalar in a vector register. The length will be the operand size. No type conversion is made.
@@ -471,7 +471,7 @@ If the length of the input vector differs from RS/2 then the length is converted
 Same as expand. Integers are expanded by zero-extension. Floating point operands cannot be used. 
 
 
-\subsection{Single-format instructions that can move data horizontally from one vector element to another}
+\subsection{Single-format instructions that can move data horizontally within vector}
 The latency of these instructions may depend on the distance of moving (specified by RS) for very long vectors.
 
 \subsubsection{extract}
@@ -480,13 +480,16 @@ Extract one element of a vector into a scalar in a vector register. An index out
 \subsubsection{insert}
 Replace one element of a vector by inserting a scalar into the position indicated by the index. An index out of range will leave the vector unchanged. An operand size of 16 bytes can be used, even if this size is not otherwise supported.
 
+\subsubsection{interleave}
+Interleave the inputs from two vectors so that the even-numbered elements come from the first input vector and the odd-numbered elements come from the second input vector. Optional.
+
 \subsubsection{shift\_up}
 Shift elements of a vector up by the number of elements indicated by RS. The lower RS elements of the output will be zero, the upper RS elements of the input are lost.
 \vspace{2mm}
 
 This instruction differs from shift\_expand by indicating the shift count as a number of elements rather than a number of bytes, and by not changing the length of the vector.
 
-\subsubsection{shift\_dn}
+\subsubsection{shift\_down}
 Shift elements of a vector down by the number of elements indicated by RS. The upper RS elements of the output will be zero, the lower RS elements of the input are lost.
 \vspace{2mm}
 
@@ -519,6 +522,13 @@ Finally, permute instructions can be used for gathering and scattering data with
 \subsubsection{broadcast}
 Copies the first element of the input vector to all elements of the output vector. An element size of 16 bytes (128 bits) is supported if the maximum vector length is more than 16 bytes, even if this size is not otherwise supported.
 
+\subsubsection{repeat\_block}
+This does the same as broadcast, but with larger blocks of data. The block size, which must be a multiple of 4, is given by a general purpose register. There may be a maximum limit to the block size. The hardware implementation may read the block size register in the address-calculation stage in the pipeline. 
+This instruction is useful in matrix multiplication. Optional.
+
+\subsubsection{repeat\_within\_blocks}
+This divides a vector into blocks and broadcasts the first element of each block to the rest of the block. For example, if the input vector contains (0,1,2,3,4,5,6,7,8) and the block size is 3 times the operand size, then the result will be (0,0,0,3,3,3,6,6,6).
+The operand size must be at least 4 bytes, and the block size must be a multiple of the operand size. The block size is given by a general purpose register. There may be a maximum limit to the block size. The hardware implementation may read the block size register in the address-calculation stage in the pipeline. This instruction is useful in matrix multiplication. Optional.
 
 \subsection{Other single-format vector instructions}
 
@@ -789,6 +799,41 @@ v2 = shift_rightu.64(v2,v3) // carry out
 \vspace{2mm}
 
 If the numbers A and B are longer than the maximum vector length then the algorithm is repeated. If the vector length is more than 64 * 8 bytes then the calculation of the additional carry involves more than 64 bits, which again requires a big number algorithm.
+
+\subsubsection{Matrix multiplication} \label{matrixMultiplication}
+Matrix operations can be difficult because they may involve a lot of permutations. The following example shows the multiplication of two $4\times4$ matrixes of floating point numbers, assuming that the vector registers are long enough to contain an entire matrix.
+
+\vspace{2mm}
+
+\begin{lstlisting}[frame=none]
+v1 = first_matrix        // first matrix, 4x4 floats
+v2 = second_matrix       // second matrix, 4x4 floats
+r0 = 4                   // loop counter
+r1 = 16                  // row length in bytes
+r2 = 64                  // size of entire matrix in bytes
+r3 = 1                   // shift count, elements
+r4 = 4                   // shift count, elements
+v0 = broadcast.f(0,r2)   // make a matrix of zeroes
+LOOP:                    // label
+   v3 = repeat_within_blocks.f(v1,r1,r2) // repeat column
+   v4 = repeat_block.f(v2,r1,r2)         // repeat row
+   v0 = mul_add.f(v0,v3,v4)  // multiply rows and columns
+   v1 = shift_down.f(v1,r3)  // next column
+   v2 = shift_down.f(v2,r4)  // next row
+   add_jmpnzero(r0,-1,LOOP)  // loop 4 times
+// Result is in v0.
+// You may roll out the loop and calculate partial sums separately to
+// reduce the loop-carried dependency chain of v0
+\end{lstlisting}
+\vspace{2mm}
+
+
+
+
+
+
+
+
 
 
 \section{Unused instructions} \label{unusedInstructions}
