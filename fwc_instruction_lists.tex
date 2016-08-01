@@ -398,10 +398,10 @@ AND combination of all the bits, and bit 1 is the OR combination of
 all the bits. The remaining bits are reserved for future use. \\
 shift\_expand & 1.2 & 18 & Shift vector RT up by RS bytes and extend the vector length by RS. The lower RS bytes of RD will be zero. \\
 shift\_reduce & 1.2 & 19 & Shift vector RT down RS bytes and reduce the length by RS. The lower RS bytes of RT are lost. \\
-shift\_up      & 1.2 & 20 & Shift elements of vector RT up RS elements. The lower RS elements of RD will be zero, the upper RS elements of RT are lost. \\
-shift\_dn      & 1.2 & 21 & Shift elements of vector RT down RS elements. The upper RS
+shift\_up     & 1.2 & 20 & Shift elements of vector RT up RS elements. The lower RS elements of RD will be zero, the upper RS elements of RT are lost. \\
+shift\_down   & 1.2 & 21 & Shift elements of vector RT down RS elements. The upper RS
 elements of RD will be zero, the lower RS elements of RT are lost. \\
-div\_ex\_s     & 1.2 & 24 & Divide vector of double-size signed integers RS by signed integers RT. RS has element size 2$\cdot$OS. These are divided by the even numbered
+div\_ex\_s    & 1.2 & 24 & Divide vector of double-size signed integers RS by signed integers RT. RS has element size 2$\cdot$OS. These are divided by the even numbered
 elements of RT with size OS. The results are stored in
 the even-numbered elements of RD. The remainders are stored in
 the odd-numbered elements of RD. (Optional for vectors). \\
@@ -474,19 +474,29 @@ add           & 1.3 C & 59 & Add broadcast half precision floating point constan
 precision vector (optional). \\
 mul           & 1.3 C & 60 & Multiply broadcast half precision floating point constant with single precision vector (optional). \\
 mul           & 1.3 C & 61 & Multiply broadcast half precision floating point constant with double precision vector (optional). \\
-permute       & 2.5 & 2, 8  & The vector elements of RT are permuted within each block of size RS bytes, using indices in RU. Each index is relative to the
+
+concatenate   & 2.5 & 2, 8 & A vector RT of length RS and a vector RU of length RS are
+concatenated into a vector RD of length 2$\cdot$RS. \\
+
+permute       & 2.5 & 2, 9 & The vector elements of RT are permuted within each block of size RS bytes, using indices in RU. Each index is relative to the
 beginning of a block. An index out of range produces zero. The
 maximum block size is implementation dependent. \\
-concatenate   & 2.5 & 2, 9 & A vector RT of length RS and a vector RU of length RS are
-concatenated into a vector RD of length 2$\cdot$RS. \\
+
+interleave    & 2.5 & 2,10 & Interleave elements of vectors RT and RU to produce vector RD of length RS. Even-numbered elements of the destination come from RT and odd-numbered elements from RU. (optional). \\
+
 truth\_tab3   & 2.5 & 3, 8 & Boolean function of three inputs, given by a truth table (optional). \\
 truth\_tab4   & 2.5 & 4, 8 & Boolean function of four inputs, given by a truth table (optional). \\
 mul\_add      & 2.5 & 3, 9 & RD = $\pm$ RS $\pm$ RT $\cdot$ RU (optional but recommended). \\
-add\_add      & 2.5 & 3, 10 & RD = $\pm$ RS $\pm$ RT $\pm$ RU (optional). \\
-add\_add\_add & 2.5 & 3, 11 & RD = $\pm$ RS $\pm$ RT $\pm$ RU $\pm$ IM2 
+add\_add      & 2.5 & 3,10 & RD = $\pm$ RS $\pm$ RT $\pm$ RU (optional). \\
+add\_add\_add & 2.5 & 3,11 & RD = $\pm$ RS $\pm$ RT $\pm$ RU $\pm$ IM2 
 Add three vector register operands and a 16-bit constant IM2 (optional). \\
-add\_add\_add & 2.5 & 4, 11 & RD = $\pm$ RD $\pm$ RS $\pm$ RT $\pm$ RU
+add\_add\_add & 2.5 & 4,11 & RD = $\pm$ RD $\pm$ RS $\pm$ RT $\pm$ RU
 Add four vector register operands (optional). \\
+
+repeat\_block  & 2.5 & 8, 8 & Repeat a block of data to make a longer vector. RT is input vector containing data block to repeat. RU is length of block to repeat (g. p. register). RS is length of destination vector RD. (optional. RU must be a multiple of 4). \\
+
+repeat\_within \_blocks & 2.5 & 8, 9 & Broadcast the first element of each block of data in a vector to the entire block. RT is input vector containing data blocks. RU is length of each block (g. p. register). RS is length of destination vector RD. The operand size must be at least 4 bytes. (optional). \\
+
 load\_hi      & 2.7 & 16 & Make vector of two elements. dest[0] = 0, dest[1] = IM2. \\
 insert\_hi    & 2.7 & 17 & Make vector of two elements. dest[0] = src1[0], dest[1] = IM2. \\
 make\_mask    & 2.7 & 18 & Make vector where bit 0 of each element comes from bits in IM2, the remaining bits come from RS. \\
