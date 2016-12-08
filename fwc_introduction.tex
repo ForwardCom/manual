@@ -24,7 +24,7 @@ This manual and all associated code is maintained at
 \item The ForwardCom design is scalable to support small embedded systems as well as large supercomputers and vector processors without losing binary compatibility.
 \item Vector registers of variable length are provided for efficient handling of large data sets.
 \item Array loops are implemented  in a new flexible way that automatically uses the maximum vector length supported by the microprocessor in all but the last iteration of a loop. The last iteration automatically uses a vector length that fits the remaining number of elements. No extra code is needed to deal with remaining data and special cases. There is no need to compile the code separately for different microprocessors with different vector lengths.
-\item No recompilation or update of software is needed when a new microprocessor with longer vector registers becomes available. The software is guaranteed to be forward compatible and take advantage of the longer vectors
+\item No recompilation or update of software is needed when a new microprocessor with a different vector register length becomes available. The software is guaranteed to be forward compatible and take advantage of the longer vectors
 of new microprocessor models.
 \item Strong security features are a fundamental part of the hardware and software design.
 \item Memory management is simpler and more efficient than in traditional systems. 
@@ -47,7 +47,7 @@ Some commonly used instruction sets are poorly designed from the beginning. Thes
 The design should be based on an open process. Krste Asanović and David Patterson have presented compelling arguments for why an open instruction set should be preferred. Openness can be crucial for the success of a technical design. For example, the original IBM PC in the early 1980's had an advantage over competing computers because the open architecture allowed other hardware and software producers to make compatible equipment. IBM lost their market dominance when they switched to the proprietary Micro Channel Architecture in 1987. The successes of open source software are well known and need no further discussion here. The only thing that is missing for a complete computer ecosystem based on open standards is an open microprocessor architecture. This will open the market also for smaller microprocessor producers and niche products.
 \vspace{2mm}
 
-This manual is based on discussions in various Internet forums. The specifications are preliminary. The development of a new standard should benefit from a long experimental phase, and it would be unwise to make it a fixed standard at this initial stage.
+This project is based on discussions in various Internet forums. The specifications are preliminary. The development of a new standard should benefit from a long experimental phase, and it would be unwise to make it a fixed standard at this initial stage.
 
 
 \section{Design goals}
@@ -68,7 +68,7 @@ The ForwardCom instruction set architecture is based on the following priorities
 \item Decisions about instructions and extensions should not be determined by the short term marketing considerations of an oligopolistic microprocessor industry but by the long term needs of the entire hardware and software community and organizations.
 \item The design should allow the construction of forward compatible software that will run optimally without recompilation on future processors with larger vector registers.
 \item The design should allow application-specific extensions.
-\item The basic aspects of the ecosystem of ABI standard, assembler, compilers, function libraries, system functions, user interface framework, etc. should also be standardized for maximum compatibility.
+\item The basic aspects of the entire ecosystem of ABI standard, assembler, compilers, function libraries, system functions, user interface framework, etc. should also be standardized for maximum compatibility.
 \end{itemize}
 
 A new instruction set will not easily get success on a commercial market, even if it is better than legacy systems, because the market prefers backward compatibility with existing software and hardware. It is unlikely that the ForwardCom instruction set will make a successful commercial product within a short time frame, but the discussion about what an ideal instruction set and software ecosystem might look like is still useful. The ForwardCom project has already generated so many important new ideas that it is worth pursuing further, even if we don't know where this will end. The present work can be useful if the need for introducing a new instruction set architecture should arise for other reasons. It will be particularly useful for large vector processors, for applications where security is important, for real-time operating systems, as well as for projects where the patent and license restrictions of other architectures would be an obstacle.

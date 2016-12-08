@@ -88,10 +88,10 @@ It is a problem that an exception caused by a single element in a vector will in
 NAN values will be propagated through the sequence of floating point calculations. A NAN can contain a bit pattern of diagnostic information called the payload, and this bit pattern is propagated to the result. A problem arises when two different NANs are combined, for example NAN1 + NAN2. The IEEE standard (754-2008) specifies that only one of the two NAN operands is propagated to the result. This violates the fundamental principle that addition is commutative. The result can be inconsistent when a compiler swaps the two operands. Another problem with the IEEE standard is that NAN values are not propagated through the max and min instructions according to this standard.
 \vspace{2mm}
 
-Here, it is proposed to deviate from this unfortunate standard and output the OR combination of the input NAN payloads when multiple NAN operands are combined. This will make the propagation of NANs more useful and consistent. Different bits in the NAN payload can be used for indicating different error conditions. If multiple different error conditions have arisen in a sequence of calculations then all these conditions can be traced in the final result. This better propagation of NAN values is enabled by setting bit 22 in the numeric control register or in a mask register.
+Here, it is proposed to deviate from this unfortunate standard and output the OR combination of the input NAN payloads when multiple NAN operands are combined. This will make the propagation of NANs more useful and consistent. Different bits in the NAN payload can be used for indicating different error conditions. If multiple different error conditions have arisen in a sequence of calculations then all these conditions can be traced in the final result. This better propagation of NAN values is enabled by setting bit 21 in the numeric control register or in a mask register.
 \vspace{2mm}
 
-The implementation will use only one bit in the NAN payload for each error condition. A quiet NAN has bit number -1 of the significand set, while the remaining bits are available for any payload information. The ForwardCom processor puts diagnostic information in the payload if better NAN propagation is enabled by bit 22 in the numeric control register or a mask register. Bit number -2 in the significand indicates invalid arithmetic operations such as 0/0, $0\cdot\infty$, $\infty-\infty$, etc. Bit number -3 indicates a square root of a negative number, and other complex number results. The remaining payload bits are available for other purposes such as function libraries.
+The implementation will use only one bit in the NAN payload for each error condition. A quiet NAN has bit number -1 of the significand set, while the remaining bits are available for any payload information. The ForwardCom processor puts diagnostic information in the payload if better NAN propagation is enabled by bit 21 in the numeric control register or a mask register. Bit number -2 in the significand indicates invalid arithmetic operations such as 0/0, $0\cdot\infty$, $\infty-\infty$, etc. Bit number -3 indicates a square root of a negative number, and other complex number results. The remaining payload bits are available for other purposes such as function libraries.
 \vspace{2mm}
 
 Other methods for generating error messages in function libraries are discussed on page \pageref{errorMessageHandling}.
@@ -100,8 +100,8 @@ Other methods for generating error messages in function libraries are discussed 
 
 \section{Detecting integer overflow} 
 \label{integerOverflowDetection}
-There is no common standard method for detecting overflow in integer calculations. The detection of overflow in signed integer operations is a real nightmare in some programming languages like C++ (see e. g. \\
-\href{http://stackoverflow.com/questions/199333/how-to-detect-integer-overflow-in-c-c}{stackoverflow.com/questions/199333/how-to-detect-integer-overflow-in-c-c}.
+There is no common standard method for detecting overflow in integer calculations. The detection of overflow in signed integer operations is a real nightmare in some programming languages like C++ (see e. g. 
+\href{http://stackoverflow.com/questions/199333/how-to-detect-integer-overflow-in-c-c}{stackoverflow.com/questions/199333/how-to-detect-integer-overflow-in-c-c}).
 \vspace{2mm}
 
 It would be nice to have a reliable way of detecting integer overflow and perhaps to propagate it through a series of calculations, analogous to the NAN propagation for floating point calculations, so that errors can be checked at the end of a series of calculations rather than after each operation. Compilers could support this method by offering overflow detection with a try/catch block. It is more likely that compilers will support integer overflow detection if the hardware offers a reasonable method.
@@ -119,15 +119,10 @@ This method will be efficient for scalar integer calculations, but wasteful for 
 
 \item Use one element of a vector for the overflow bits of all the other elements. This method may be tempting because it does not waste as much register space as the previous method, but it will have inferior performance because of the transport delay when moving overflow bits to a distant part of a long vector.
 
-\item Add extra bits in the vector registers for overflow information. All vector registers will have one extra overflow bit for each 32 bits of normal data. These overflow bits are preserved when a vector register is saved and restored with the save\_cp and restore\_cp instructions, but they are lost when the vector is saved as normal data. The behavior of the overflow bits is controlled by the following bits in the numeric control register or a mask register. \\
-Bit 2: detect unsigned integer overflow. \\
-Bit 3: detect signed integer overflow. \\
-Bit 4: detect floating point overflow (tentative). \\
-Bit 5: detect floating point invalid operations (tentative). \\
-Bit 6: propagate overflow information from input operands by OR'ing the result of the current instruction with the overflow bits of all vector register input operands. 
+\item Add extra bits in the vector registers for overflow information. All vector registers will have one extra overflow bit for each 32 bits of normal data. These overflow bits are preserved when a vector register is saved and restored with the save\_cp and restore\_cp instructions, but they are lost when the vector is saved as normal data. The behavior of the overflow bits is controlled by bits in the numeric control register or a mask register to enable the detection and propagation of signed and unsigned integer overflow.
 An extra instruction must be provided for extracting the overflow bits from a vector register.
 
-\item Generate a trap in case of integer overflow. Use a mask register or the numeric control register as in method 4. Bit 7 enables a trap on the conditions indicated by bit 2 (unsigned integer overflow) or bit 3 (signed integer overflow). This method requires little extra code, but it is subject to the problem that the behavior of vector code depends on the vector length in case of traps, as explained in the previous chapter for floating point errors.
+\item Generate a trap in case of integer overflow. Use a mask register or the numeric control register to control this behavior. Bit 6 enables a trap for unsigned integer overflow and bit 7 enables a trap for signed integer overflow. This method requires little extra code, but it is subject to the problem that the behavior of vector code depends on the vector length in case of traps, as explained in the previous chapter for floating point errors.
 \end{enumerate}
 
 Method 2 is tentatively supported here with the optional instructions add\_oc, etc., described on page \pageref{instructionsWithOverflowCheck}. 
