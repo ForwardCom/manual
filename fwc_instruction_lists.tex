@@ -38,7 +38,7 @@ OP1 & Operation code OP1. \\
 \hline
 OP2 & Additional operation code OP2. Zero if none. \\
 \hline
-OP3 bits used & Number of bits of OP3 field used for options. OP3 is used for shift count in format 2.5 and 2.9 only if the value specified here is zero. \\
+IM3 bits used & Number of bits of IM3 field used for options. IM3 is used for shift count in format 2.5 and 2.9 only if the value specified here is zero. \\
 \hline
 Operand types general purpose registers & Hexadecimal number indicating required and optional support for each operand type with general purpose registers. See table \ref{table:OperandTypesInInstructionList} below for meaning of each bit. \\
 \hline
@@ -68,7 +68,7 @@ Description & Description of the instruction and comments. \\
 Number with three hexadecimal digits. \newline
 The leftmost digit is the value of the IL field (0-3). \newline
 The middle digit is he value of mode field or the combined M+mode field (0-9).\newline
-The rightmost digit is the sub-mode defined by OP3 in mode 2.4.x and 2.8.x or OP1 in mode 2.7.x. Zero otherwise. \newline
+The rightmost digit is the sub-mode defined by OP2 in mode 2.4.x and 2.8.x or OP1 in mode 2.7.x. Zero otherwise. \newline
 For example 0x283 means format 2.8.3.
 }  \\
 \hline
@@ -109,14 +109,16 @@ For example 0x283 means format 2.8.3.
   &  0x0008000 & Format 2.4.1: Two vector reg., memory op. with 16-bit offset. \\
   &  0x0010000 & Format 2.4.2: Two vector reg., memory op. with negative index. \\
   &  0x0020000 & Format 2.4.3: Two vector reg., scalar mem. op. index and limit. \\
-  &  0x0040000 & Format 2.5: Three vector reg., shifted 16-bit immediate. \\
-  &  0x0080000 & Format 2.8.0: Three g. p. reg., memory op. with 16-bit offset. \\
-  &  0x0100000 & Format 2.8.1: Two g. p. reg., memory op. with unscaled index. \\
-  &  0x0200000 & Format 2.8.2: Two g. p. reg., memory op. with scaled index. \\
-  &  0x0400000 & Format 2.8.3: Two g. p. reg., memory op. with index and limit. \\
-  &  0x0800000 & Format 2.9: Three g. p. reg., shifted 16-bit immediate. \\
-  &  0x1000000 & Format 3.1: Three g. p. registers, 64-bit imm. (optional). \\
-  &  0x2000000 & Format 3.3: Three vector registers, 64-bit imm. (optional). \\
+  &  0x0100000 & Format 2.4.6: Four vector reg. \\
+  &  0x0200000 & Format 2.4.7: Three vector registers, 16-bit immediate.\\
+  &  0x0400000 & Format 2.8.0: Three g. p. reg., memory op. with 16-bit offset. \\
+  &  0x0800000 & Format 2.8.1: Two g. p. reg., memory op. with unscaled index. \\
+  &  0x1000000 & Format 2.8.2: Two g. p. reg., memory op. with scaled index. \\
+  &  0x2000000 & Format 2.8.3: Two g. p. reg., memory op. with index and limit.\\  
+  & 0x10000000 & Format 2.8.6: Two g. p. reg., memory op. with index and limit.\\
+  & 0x20000000 & Format 2.8.7: Two g. p. reg., memory op. with index and limit.\\  
+  & 0x40000000 & Format 3.1: Three g. p. registers, 64-bit imm. (optional). \\
+  & 0x80000000 & Format 3.3: Three vector registers, 64-bit imm. (optional). \\
 \hline
 \multirow{12}{*}{\parbox[t]{18mm}{4. Jump instruction}} 
   &  \multicolumn{2}{|l|}{
@@ -189,7 +191,6 @@ Immediate operand type for single-format instructions}
 33 & 4-bit signed integer converted to float. \\
 34 & 8-bit signed integer converted to float. \\
 35 & 16-bit signed integer converted to float. \\
-39 & 16-bit signed integer shifted by specified count, converted to float. \\
 64 & half precision floating point. \\
 65 & single precision floating point. \\
 66 & double precision floating point. \\
@@ -212,14 +213,14 @@ List of multi-format instructions}
 \bfseries Instruction & \bfseries OP1 & \bfseries Source ope-rands & \bfseries Description \\
 \hline
 nop          &  0 & 0 & No operation. \\
-move         &  1 & 1 & Copy value. \\
-store        &  2 & 1 & Store value to memory. \\
+store        &  1 & 1 & Store value to memory. \\
+move         &  2 & 1 & Copy value. \\
 prefetch     &  3 & 1 & Prefetch from memory. \\
 sign\_extend &  4 & 1 & Sign-extend smaller integer to 64 bits. \\
+compare      &  7 & 2 & Compare. Uses condition codes, see p. \pageref{table:conditionCodesForCompareInstruction}. \\
 add          &  8 & 2 & src1 + src2. \\
 sub          &  9 & 2 & src1 - src2. \\
 sub\_r       & 10 & 2 & src2 - src1. \\
-compare      & 11 & 2 & Compare. Uses condition codes, see p. \pageref{table:conditionCodesForCompareInstruction}. \\
 mul          & 12 & 2 & src1 $\cdot$ src2. \\ 
 mul\_hi\_s   & 13 & 2 & (src1 $\cdot$ src2) \textgreater\textgreater{} OS, signed (integer only). \\
 mul\_hi\_u   & 14 & 2 & (src1 $\cdot$ src2) \textgreater\textgreater{}  OS, unsigned (integer only). \\
@@ -243,8 +244,8 @@ extract\_bit & 40 & 2 & Extract bit. (src1 \textgreater\textgreater{} src2) \& 1
 set\_bit     & 41 & 2 & Set bit. src1 \textbar{} (1 \textless\textless{} src2). \\
 clear\_bit   & 42 & 2 & Clear bit. src1 \& \~{} (1 \textless\textless{} src2). \\
 toggle\_bit  & 43 & 2 & Toggle bit. src1 \^{} (1 \textless\textless{} src2). \\
-mul\_add     & 46 & 3 & $\pm$ src1 $\pm$ src2 $\cdot$ src3 (optional). \\
-add\_add     & 47 & 3 & $\pm$ src1 $\pm$ src2 $\pm$ src3 (optional). \\
+mul\_add     & 48 & 3 & $\pm$ src1 $\pm$ src2 $\cdot$ src3 (optional). \\
+add\_add     & 49 & 3 & $\pm$ src1 $\pm$ src2 $\pm$ src3 (optional). \\
 userdef55 - userdef62
              & 55-62 & 2 & Reserved for user-defined instructions. \\
 undef        & 63 & 2 & Undefined code. Guaranteed to generate trap in all future implementations. \\
@@ -304,12 +305,13 @@ sub           & 22 & RD --= RS, single precision float vector. \\
 sub           & 23 & RD --= RS, double precision float vector. \\
 mul           & 24 & RD *= RS, single precision float vector. \\
 mul           & 25 & RD *= RS, double precision float vector. \\
-add\_cps      & 28 & Get size of compressed image for RD and add it to general purpose register RS. \\
-sub\_cps      & 29 & Get size of compressed image for RD and subtract it from general purpose register RS. \\
+add\_cps      & 28 & Get size of compressed image for RD and add it to pointer register RS. \\
+sub\_cps      & 29 & Get size of compressed image for RD and subtract it from pointer register RS. \\
 restore\_cp   & 30 & Restore vector register RD from compressed image pointed to by RS. \\
 save\_cp      & 31 & Save vector register RD to compressed image pointed to by RS. \\
 \hline
 \end{longtable}
+\vspace{2mm}
 
 \section{List of single-format instructions}
 These instructions are mostly available in only one or a few formats.
@@ -322,26 +324,26 @@ These instructions are mostly available in only one or a few formats.
 \hline
 \bfseries Instruction & \bfseries Format &\bfseries OP1 & \bfseries Description \\
 \hline
-bitscan\_f    & 1.0   &  1 & Bit scan forward. Find index to lowest set bit in RS (optional). \\
-bitscan\_r    & 1.0   &  2 & Bit scan reverse. Find index to highest set bit in RS (optional). \\
-round\_d2     & 1.0   &  3 & Round down RS to nearest power of 2. \\
-round\_u2     & 1.0   &  4 & Round up RS to nearest power of 2. \\
-move          & 1.1   &  0 & Move 16-bit sign-extended constant to general purpose register RD. \\
-move\_u       & 1.1   &  1 & Move 16-bit zero-extended constant to general purpose register RD
+bitscan\_f    & 1.0   &  1 & Bit scan forward. Find index to lowest set bit. \\
+bitscan\_r    & 1.0   &  2 & Bit scan reverse. Find index to highest set bit. \\
+round\_d2     & 1.0   &  3 & Round down to nearest power of 2. \\
+round\_u2     & 1.0   &  4 & Round up to nearest power of 2. \\
+move          & 1.1   &  0 & Move 16-bit sign-extended constant to general purpose register. \\
+move\_u       & 1.1   &  1 & Move 16-bit zero-extended constant to general purpose register 
 (can be used as first step of loading a 32-bit constant if double size
 instructions are not supported). \\
-add           & 1.1   &  2  & Add 16-bit sign-extended constant to RD. \\
-sub           & 1.1   &  3  & Subtract 16-bit sign-extended constant from RD. \\
-subr          & 1.1   &  4  & Subtract RD from 16-bit sign-extended constant. \\
-mul           & 1.1   &  5  & Multiply RD with 16-bit sign-extended constant. \\
-div           & 1.1   &  6  & Divide RD with 16-bit sign-extended constant. \\
-add           & 1.1   &  7  & Shift 16-bit signed constant left by 16 and add to RD. \\
+add           & 1.1   &  2  & Add 16-bit sign-extended constant. \\
+sub           & 1.1   &  3  & Subtract 16-bit sign-extended constant. \\
+subr          & 1.1   &  4  & Subtract reverse from 16-bit sign-extended constant. \\
+mul           & 1.1   &  5  & Multiply with 16-bit sign-extended constant. \\
+div           & 1.1   &  6  & Divide with 16-bit sign-extended constant. \\
+add           & 1.1   &  7  & RD = (IM1,IM2) \textless\textless{} 16. Shift 16-bit signed constant left by 16 and add. \\
 move          & 1.1   & 16  & RD = IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits and shift left by the unsigned value IM1. \\
 add           & 1.1   & 17  & RD += IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits, shift left by the unsigned value IM1, add to RD. \\
 and           & 1.1   & 18  & RD \&= IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits, shift left by the unsigned value IM1, AND with RD. \\
 or            & 1.1   & 19  & RD \textbar{}= IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits, shift left by the unsigned value IM1, OR with RD. \\
 xor           & 1.1   & 20  & RD \^{}= IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits, shift left by the unsigned value IM1, XOR with RD. \\
-abs           & 1.8   &  0  & Absolute value of integer. Use saturation if IM1 = 1. \\
+abs           & 1.8   &  0  & Absolute value of integer. IM1 determines handling of overflow: 0: wrap around, 1: saturate, 2: zero. \\
 shift\_add    & 1.8   &  1  & Shift and add. RD += RS \textless\textless{} IM1 (shift right zero extended if IM1 negative). \\
 read\_spe     & 1.8   & 32  & Read special register RS into g. p. register RD. \\
 write\_spe    & 1.8   & 33  & Write g. p. register RS to special register RD. \\
@@ -351,16 +353,17 @@ read\_perf    & 1.8   & 36  & Read performance counter. \\
 read\_perfs   & 1.8   & 37  & Read performance counter, serializing. \\
 read\_sys     & 1.8   & 38  & Read system register RS into g. p. register RD. \\
 write\_sys    & 1.8   & 39  & Write g. p. register RS to system register RD. \\
-load\_hi      & 2.6   &  0  & Load 32-bit constant into the high part of a general purpose register. The low part is zero. RD = IM2 \textless\textless{} 32. \\
-insert\_hi    & 2.6   &  1  & Insert 32-bit constant into the high part of a general purpose register, leaving the low part unchanged.
-RD = (RS \& 0xFFFFFFFF) \textbar{} (IM2 \textless\textless{} 32). \\
-add\_unsigned & 2.6   &  2  & Add zero-extended 32-bit constant to general purpose register. \\
-sub\_unsigned & 2.6   &  3  & Subtract zero-extended 32-bit constant from general purpose register. \\
-add\_hi       & 2.6   &  4  & Add 32-bit constant to high part of general purpose register. RD = RS + (IM2 \textless\textless{} 32). \\
-and\_hi       & 2.6   &  5  & AND high part of general purpose register with 32-bit constant. RD = RS \& (IM2 \textless\textless{} 32). \\
-or\_hi        & 2.6   &  6  & OR high part of general purpose register with 32-bit constant. RD = RS \textbar{} (IM2 \textless\textless{} 32). \\
-xor\_hi       & 2.6   &  7  & XOR high part of general purpose register with 32-bit constant. RD = RS \^{} (IM2 \textless\textless{} 32). \\
-address       & 2.6   & 32  & RD = RS + IM2, RS can be THREADP (28), DATAP (29) or IP (30). \\
+
+load\_hi      & 2.9   &  0  & Load 32-bit constant into the high part of a general purpose register. The low part is zero. RD = IM2 \textless\textless{} 32. \\
+insert\_hi    & 2.9   &  1  & Insert 32-bit constant into the high part of a general purpose register, leaving the low part unchanged.
+RD = (RT \& 0xFFFFFFFF) \textbar{} (IM2 \textless\textless{} 32). \\
+add\_unsigned & 2.9   &  2  & Add zero-extended 32-bit constant to general purpose register. \\
+sub\_unsigned & 2.9   &  3  & Subtract zero-extended 32-bit constant from general purpose register. \\
+add\_hi       & 2.9   &  4  & Add 32-bit constant to high part of general purpose register. RD = RT + (IM2 \textless\textless{} 32). \\
+and\_hi       & 2.9   &  5  & AND high part of general purpose register with 32-bit constant. RD = RT \& (IM2 \textless\textless{} 32). \\
+or\_hi        & 2.9   &  6  & OR high part of general purpose register with 32-bit constant. RD = RT \textbar{} (IM2 \textless\textless{} 32). \\
+xor\_hi       & 2.9   &  7  & XOR high part of general purpose register with 32-bit constant. RD = RT \^{} (IM2 \textless\textless{} 32). \\
+address       & 2.9   & 32  & RD = RT + IM2, RT can be THREADP (28), DATAP (29) or IP (30). \\
 \hline
 \end{longtable}
 
@@ -370,12 +373,12 @@ address       & 2.6   & 32  & RD = RS + IM2, RS can be THREADP (28), DATAP (29) 
 \endfirsthead
 \endhead
 \hline
-\bfseries Instruction & \bfseries Format &\bfseries OP1, OP2 & \bfseries Description \\
+\bfseries Instruction & \bfseries Format &\bfseries OP1. OP2 & \bfseries Description \\
 \hline
 set\_len      & 1.2 &  0 & RD = vector register RT with length changed to value of RS. \\
-get\_len      & 1.2 &  1 & Get length of vector register RS into general purpose register RD. \\
-set\_num      & 1.2 &  2 & Change the length of vector register to RS$\cdot$OS. \\
-get\_num      & 1.2 &  3 & Get length of vector register divided by the operand size. \\
+get\_len      & 1.2 &  1 & Get length of vector register RT into general purpose register RD. \\
+set\_num      & 1.2 &  2 & Change the length of vector register RT to RS$\cdot$OS. \\
+get\_num      & 1.2 &  3 & Get length of vector register RT divided by the operand size. \\
 compress      & 1.2 &  4 & Compress vector RT of length RS to a vector of half the length and half the element size. Double precision $\rightarrow$ single precision, 64-bit
 integer $\rightarrow$ 32-bit integer, etc. \\
 compress\_ss  & 1.2 &  5 & Compress integer vector RT of length RS to a vector of half the length and half the element size, signed with saturation (optional). \\
@@ -384,7 +387,7 @@ expand        & 1.2 &  7 & Expand vector RT of length RS/2 and half the specifie
 precision $\rightarrow$ single precision, 32-bit integer $\rightarrow$ 64-bit integer with sign extension, etc. \\
 expand\_us    & 1.2 &  8 & Expand integer vector RT of length RS/2 and half the specified element size to a vector of length RS with the specified element
 size. 32-bit integer $\rightarrow$ 64-bit integer with zero extension, etc. \\
-compress\_sparse&1.2 &  9 & Compress sparse vector elements indicated by mask bits into contiguous vector. RS = length of input vector. (optional). \\
+compress\_ sparse&1.2 &  9 & Compress sparse vector elements indicated by mask bits into contiguous vector. RS = length of input vector. (optional). \\
 expand\_sparse& 1.2 & 10 & Expand contiguous vector into sparse vector with positions
 indicated by mask bits. RS = length of output vector. (optional). \\
 extract       & 1.2 & 11 & Extract one element from vector RT, starting at offset RS$\cdot$OS, with size OS into scalar in vector register RD. \\
@@ -424,12 +427,19 @@ mul\_oc       & 1.2 & 41 & multiply with overflow check (optional). \\
 div\_oc       & 1.2 & 42 & divide with overflow check (optional). \\
 input         & 1.2 & 48 & read from input port. RD = vector register, RT = port address, RS = vector length (privileged instruction). \\
 output        & 1.2 & 49 & write to output port. RD = vector register source operand, RT = port address, RS = vector length (privileged instruction). \\
+
 gp2vec        & 1.3 B &  0 & Move value of general purpose register RS to scalar in vector register RD. \\
-set\_bits\_x   & 1.3 B &  1 & Set all bits except one. RD = RS \textbar{} \~{} (1 \textless\textless{} IM1). \\
-clear\_bits\_x & 1.3 B &  2 & Clear all bits except one. RD = RS \& (1 \textless\textless{} IM1). \\
-make\_sequence& 1.3 B &  3 & Make a vector with RS sequential numbers. First value is IM1. \\
-mask\_length  & 1.3 B &  4 & Make mask with true in the first RS bytes. Option bits in IM1. \\
-vec2gp        & 1.3 B &  8 & Move value of first element of vector register RS to general purpose register RD. \\
+
+vec2gp        & 1.3 B &  1 & Move value of first element of vector register RS to general purpose register RD. \\
+
+set\_bits\_x   & 1.3 B &  2 & Set all bits except one. RD = RS \textbar{} \~{} (1 \textless\textless{} IM1). \\
+
+clear\_bits\_x & 1.3 B &  3 & Clear all bits except one. RD = RS \& (1 \textless\textless{} IM1). \\
+
+make\_sequen-ce& 1.3 B &  4 & Make a vector with RS sequential numbers. First value is IM1. \\
+
+mask\_length  & 1.3 B &  5 & Make mask with true in the first RS bytes. Option bits in IM1. \\
+
 bitscan\_f    & 1.3 B &  9 & Bit scan forward. Find index to lowest set bit in RS (optional for vectors). \\
 bitscan\_r    & 1.3 B & 10 & Bit scan reverse. Find index to highest set bit in RS (optional for vectors). \\
 
@@ -439,19 +449,22 @@ int2float     & 1.3 B & 13 & Conversion of integer to floating point with same o
 round         & 1.3 B & 14 & Round floating point to integer in floating point  representation. The rounding mode is specified in IM1. \\
 round2n       & 1.3 B & 15 & Round to nearest multiple of $2^n$. \newline 
 RD = $2^n\cdot$ round($2^{-n}\cdot$ RS). $n$ is a signed integer constant in IM1 (optional). \\
-abs           & 1.3 B & 16 & Absolute value of integer. Uses saturation if IM1 = 1. \\
-popcount      & 1.3 B & 17 & Count the number of bits in RS that are 1. \\
+abs           & 1.3 B & 16 & Absolute value of integer. IM1 determines handling of overflow: 0: wrap around, 1: saturate, 2: zero. \\
+popcount      & 1.3 B & 17 & Count the number of bits in RS that are 1 (optional for vectors). \\
 broadcast     & 1.3 B & 18 & Broadcast 8-bit constant into all elements of RD with length RS (31 in RS field gives scalar output). \\
 fp\_category  & 1.3 B & 19 & Check if floating point numbers belong to the categories indicated by constant. \\
 byte\_reverse & 1.3 B & 20 & Reverse the order of bytes in each element of vector. \\
 bit\_reverse  & 1.3 B & 21 & Reverse the order of bits in each element of vector (optional). \\
+
+insert\_bit   & 1.3 B & 23 & Replace bit number IM1 in RD by bit number 0 from RS. \\
+
 truth\_tab2   & 1.3 B & 24 & Boolean function of two inputs, given by a truth table. \\
 read\_spev    & 1.3 B & 30 & Read special register RT into vector register RD with  length RS. \\
-move          & 1.3 C & 32 & Move 16 bit constant to 16-bit scalar (optional). \\
-add           & 1.3 C & 33 & Add broadcast 16 bit constant to 16-bit vector elements (optional). \\
-and           & 1.3 C & 34 & AND broadcast 16 bit constant with 16-bit vector elements (optional). \\
-or            & 1.3 C & 35 & OR broadcast 16 bit constant with 16-bit vector elements (optional). \\
-xor           & 1.3 C & 36 & XOR broadcast 16 bit constant with 16-bit vector elements (optional). \\
+move          & 1.3 C & 32 & Move 16 bit integer constant to 16-bit scalar (optional). \\
+add           & 1.3 C & 33 & Add broadcasted 16 bit constant to 16-bit vector elements (optional). \\
+and           & 1.3 C & 34 & AND broadcasted 16 bit constant with 16-bit vector elements (optional). \\
+or            & 1.3 C & 35 & OR broadcasted 16 bit constant with 16-bit vector elements (optional). \\
+xor           & 1.3 C & 36 & XOR broadcasted 16 bit constant with 16-bit vector elements (optional). \\
 move          & 1.3 C & 38 & RD = IM2 \textless\textless{} IM1. Sign-extend IM2 to 32 bits and shift left by the unsigned value IM1 to make 32 bit scalar (optional). \\
 move          & 1.3 C & 39 & RD = IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits and shift left by the unsigned value IM1 to make 64 bit scalar (optional). \\
 add           & 1.3 C & 40 & RD += IM2 \textless\textless{} IM1. Add broadcast shifted signed constant to 32-bit vector elements (optional). \\
@@ -462,11 +475,11 @@ or            & 1.3 C & 44 & RD \textbar{}= IM2 \textless\textless{} IM1. OR bro
 or            & 1.3 C & 45 & RD \textbar{}= IM2 \textless\textless{} IM1. OR broadcast shifted signed constant with 64-bit vector elements (optional). \\
 xor           & 1.3 C & 46 & RD \^{}= IM2 \textless\textless{} IM1. XOR broadcast shifted signed constant with 32-bit vector elements (optional). \\
 xor           & 1.3 C & 47 & RD \^{}= IM2 \textless\textless{} IM1. XOR broadcast shifted signed constant with 64-bit vector elements (optional). \\
-add           & 1.3 C & 48 & RD += IM21 \textless\textless{} 16. Add broadcast signed 16-bit constant shifted left by 16 to 32-bit vector elements (optional). \\
-add           & 1.3 C & 49 & RD += IM21 \textless\textless{} 16. Add broadcast signed 16-bit constant shifted left by 16 to 64-bit vector elements (optional). \\
-mov           & 1.3 C & 56 & Move converted half precision floating point constant to single
+add           & 1.3 C & 48 & RD += (IM1,IM2) \textless\textless{} 16. Add broadcast signed 16-bit constant shifted left by 16 to 32-bit vector elements (optional). \\
+add           & 1.3 C & 49 & RD += (IM1,IM2) \textless\textless{} 16. Add broadcast signed 16-bit constant shifted left by 16 to 64-bit vector elements (optional). \\
+move          & 1.3 C & 56 & Move converted half precision floating point constant to single
 precision scalar (optional). \\
-mov           & 1.3 C & 57 & Move converted half precision floating point constant to double
+move          & 1.3 C & 57 & Move converted half precision floating point constant to double
 precision scalar (optional). \\
 add           & 1.3 C & 58 & Add broadcast half precision floating point constant to single
 precision vector (optional). \\
@@ -475,38 +488,35 @@ precision vector (optional). \\
 mul           & 1.3 C & 60 & Multiply broadcast half precision floating point constant with single precision vector (optional). \\
 mul           & 1.3 C & 61 & Multiply broadcast half precision floating point constant with double precision vector (optional). \\
 
-concatenate   & 2.5 & 2, 8 & A vector RT of length RS and a vector RU of length RS are
+concatenate   & 2.4.6 & 0.1 & A vector RU of length RS and a vector RT of length RS are
 concatenated into a vector RD of length 2$\cdot$RS. \\
 
-permute       & 2.5 & 2, 9 & The vector elements of RT are permuted within each block of size RS bytes, using indices in RU. Each index is relative to the
+permute       & 2.4.6 & 1.1 & The vector elements of RU are permuted within each block of size RS bytes, using indices in RT. Each index is relative to the
 beginning of a block. An index out of range produces zero. The
 maximum block size is implementation dependent. \\
 
-interleave    & 2.5 & 2,10 & Interleave elements of vectors RT and RU to produce vector RD of length RS. Even-numbered elements of the destination come from RT and odd-numbered elements from RU. (optional). \\
+interleave    & 2.4.6 & 2.1 & Interleave elements of vectors RU and RT of length RS/2 to produce vector RD of length RS. Even-numbered elements of the destination come from RU and odd-numbered elements from RT. (optional). \\
 
-truth\_tab3   & 2.5 & 3, 8 & Boolean function of three inputs, given by a truth table (optional). \\
-truth\_tab4   & 2.5 & 4, 8 & Boolean function of four inputs, given by a truth table (optional). \\
-mul\_add      & 2.5 & 3, 9 & RD = $\pm$ RS $\pm$ RT $\cdot$ RU (optional but recommended). \\
-add\_add      & 2.5 & 3,10 & RD = $\pm$ RS $\pm$ RT $\pm$ RU (optional). \\
-add\_add\_add & 2.5 & 3,11 & RD = $\pm$ RS $\pm$ RT $\pm$ RU $\pm$ IM2 
-Add three vector register operands and a 16-bit constant IM2 (optional). \\
-add\_add\_add & 2.5 & 4,11 & RD = $\pm$ RD $\pm$ RS $\pm$ RT $\pm$ RU
-Add four vector register operands (optional). \\
+truth\_tab3   & 2.4.6 & 3.1 & Boolean function of three inputs, given by a truth table (optional). \\
 
-repeat\_block  & 2.5 & 8, 8 & Repeat a block of data to make a longer vector. RT is input vector containing data block to repeat. RU is length of block to repeat (g. p. register). RS is length of destination vector RD. (optional. RU must be a multiple of 4). \\
+repeat\_block  & 2.4.6 & 8.1 & Repeat a block of data to make a longer vector. RT is input vector containing data block to repeat. IM2 is length in bytes of the block to repeat (must be a multiple of 4). RS is the length of destination vector RD. (optional). \\
 
-repeat\_within \_blocks & 2.5 & 8, 9 & Broadcast the first element of each block of data in a vector to the entire block. RT is input vector containing data blocks. RU is length of each block (g. p. register). RS is length of destination vector RD. The operand size must be at least 4 bytes. (optional). \\
+repeat\_within \_blocks & 2.4.6 & 9.1 & Broadcast the first element of each block of data in a vector to the entire block. RT is input vector containing data blocks. IM2 is length in bytes of each block (must be a multiple of the operand size). RS is length of destination vector RD. The operand size must be at least 4 bytes. (optional). \\
 
-load\_hi      & 2.7 & 16 & Make vector of two elements. dest[0] = 0, dest[1] = IM2. \\
-insert\_hi    & 2.7 & 17 & Make vector of two elements. dest[0] = src1[0], dest[1] = IM2. \\
-make\_mask    & 2.7 & 18 & Make vector where bit 0 of each element comes from bits in IM2, the remaining bits come from RS. \\
-replace       & 2.7 & 19 & Replace elements in RS by constant IM2. \\
-replace\_even & 2.7 & 20 & Replace even-numbered elements in RS by constant
+test\_bits\_or & 2.4.7 & 0.1 & Generate boolean vector that is true when at least one of the indicated bits is 1. Bit 0 in each element of RD is 1 when (RS \& (IM2$<<$IM3)) $\neq$ 0. Remaining bits are taken from RT.\\
+
+test\_bits\_and & 2.4.7 & 1.1 & Generate boolean vector that is true when all of the indicated bits are 1. Bit 0 in each element of RD is 1 when (RS \& (IM2$<<$IM3)) = (IM2$<<$IM3). Remaining bits are taken from RT.\\
+
+load\_hi      & 2.5 & 0 & Make vector of two elements. dest[0] = 0, dest[1] = IM2. \\
+insert\_hi    & 2.5 & 1 & Make vector of two elements. dest[0] = src1[0], dest[1] = IM2. \\
+make\_mask    & 2.5 & 2 & Make vector where bit 0 of each element comes from bits in IM2, the remaining bits come from RT. \\
+replace       & 2.5 & 3 & Replace elements in RT by constant IM2. \\
+replace\_even & 2.5 & 4 & Replace even-numbered elements in RT by constant
 IM2. \\
-replace\_odd  & 2.7 & 21 & Replace odd-numbered elements in RS by constant
+replace\_odd  & 2.5 & 5 & Replace odd-numbered elements in RT by constant
 IM2. \\
-broadcast     & 2.7 & 22 & Broadcast 32-bit constant into all elements of RD with length RS (31 in RS field gives scalar output). \\
-permute       & 2.7 & 33 & The vector elements of RT are permuted within each block of size RS bytes. The 4$\cdot$n bits of IM2 are used as index with 4 bits for
+broadcast     & 2.5 & 6 & Broadcast 32-bit constant into all elements of RD with length RS (31 in RS field gives scalar output). \\
+permute       & 2.5 & 8 & The vector elements of RT are permuted within each block of size RS bytes. The 4$\cdot$n bits of IM2 are used as index with 4 bits for
 each element in blocks of size n. The same pattern is used in each
 block. The number of elements in each block, n = RS / OS $\leq$ 8. \\
 \hline
@@ -520,24 +530,21 @@ block. The number of elements in each block, n = RS / OS $\leq$ 8. \\
 \hline
 \bfseries Instruction & \bfseries Format &\bfseries OP1, OP2 & \bfseries Description \\
 \hline
-store         & 2.7 B & 48 & Store 32-bit constant IM2 to memory operand with base RT and 8-bit offset IM1 (optional). \\
-fence         & 2.4.x & 0, 8 & Memory fence. read, write or full indicated by OP3.  \\
-cmp\_swap     & 2.8.x & 1, 8 & Atomic compare and exchange.  \\
-read\_insert  & 2.4.0 2.4.3 & 2, 8 & Replace one element in vector RD, starting at offset 
-RS$\cdot$OS, with scalar memory operand (optional).  \\
-move\_store   & 2.4.x & 3, 8 & Conditional move and store.\newline
-                               Mask bits = 01 or 11: store RU.\newline 
-                               Mask bits = 10: store zero. \newline
-                               Mask bits = 11: store RD. \newline
-                               (optional). \\
-extract\_store& 2.4.0 & 3, 9 & Extract one element from vector RD, starting at offset RS$\cdot$OS, with size OS into memory operand with base RT and offset IM2 (optional). \\
-extract\_store& 2.4.3 & 3, 9 & Extract one element from vector RD, starting at offset RS$\cdot$OS, with size OS into memory operand with base RT, scaled index RU and unsigned limit RU $\leq$ IM2 (optional). \\
-compress\_store&2.4.1 & 3, 10 & Compress vector RD of length RS to a vector of half the length and half the element size. Double precision $\rightarrow$ single precision, 64-bit integer $\rightarrow$ 32-bit integer, etc. Store at memory with base RT, offset IM2, length RS/2 (optional). \\
-add\_store    & 2.4.x & 4, 8 & Add RD and RU, store the result to memory operand (optional). \\
-sub\_store    & 2.4.x & 4, 9 & Subtract RU from RD, store the result to memory operand (optional). \\
-mul\_store    & 2.4.x & 4, 10 & Multiply RD and RU, store the result to memory operand (optional). \\
-read\_memory\_\newline map  & 2.4.2 & 48, 8 & Read memory map. RD = map entry, RT = memory pointer, RS = vector length and negative index to both source and destination (privileged). \\
-write\_memory\_\newline map & 2.4.2 & 48, 9 & Write memory map. RD = map entry, RT = memory pointer, RS = vector length and negative index to both source and destination (privileged). \\
+store         & 2.7 B & 48 & Store 32-bit constant IM2 to memory operand [RS+IM1] (optional). \\
+
+fence         & 2.7 B & 49 & Memory fence at address [RS+IM2]. read, write or full indicated by IM1.\\
+
+read\_insert  & 2.7 A & 50 & Replace one element in vector RD, starting at offset 
+RS$\cdot$OS, with scalar memory operand [RT+IM2] (optional).  \\
+
+extract\_store& 2.7 A & 51 & Extract one element from vector RD, starting at offset RS$\cdot$OS, with size OS into memory operand [RT+IM2] (optional). \\
+
+compress\_ store& 2.7 A & 52 & Compress vector RD of length RS to a vector of half the length and half the element size. Double precision $\rightarrow$ single precision, 64-bit integer $\rightarrow$ 32-bit integer, etc. Store at memory [RT+IM2] with length RS/2 (optional).\\
+
+cmp\_swap     & 2.7 A & 54 & Atomic compare and exchange with address [RT+IM2].\\
+
+read\_memory\_\newline map  & 2.7 A & 62 & Read memory map. RD = map entry, RT = memory pointer, RS = vector length and negative index to both source and destination (privileged). \\
+write\_memory\_\newline map & 2.7 A & 63 & Write memory map. RD = map entry, RT = memory pointer, RS = vector length and negative index to both source and destination (privileged). \\
 
 \hline
 \end{longtable}

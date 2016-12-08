@@ -3,7 +3,6 @@
 \begin{document}
 \RaggedRight
 
-
 \chapter{System programming}
 
 The system instructions have not been fully defined yet. There is more work to do making an efficient system design. However, the first experimental implementations of ForwardCom will be without operating system so the system design does not have to be fixed yet. It is preferred to spend more time on optimizing the system design rather than to define a complete standard at this early stage of development.
@@ -68,16 +67,13 @@ Task switches will be very fast because we have replaced the large page tables a
 It is possible to have either a unified stack for function data and return addresses or two separate stacks. See page \pageref{callStackAlternatives}. ForwardCom currently supports both systems. The two-stack system is safer and more efficient, while the single-stack system may be used for small processors where the simpler single-stack system is preferred.
 \vspace{2mm}
 
-The two-stack system has the call stack stored inside the CPU rather than in RAM memory. A method is required for saving this stack to memory when it is full. This method may be similar to the method used for saving the memory map, as described above, using vector-size memory access. It should be possible to manipulate the call stack for task switches and for stack unrolling in the exception handler.
+The two-stack system has the call stack stored inside the CPU rather than in RAM memory. A method is required for saving this stack to memory when it is full. This method may use vector-size memory access. It should be possible to manipulate the call stack for task switches and for stack unrolling in the exception handler.
 
 \section{System calls and system functions} \label{systemCallIDSystem}
-Calls to system functions are made with a system call instruction (sys\_call). The system call instruction does not use addresses, but ID numbers. Each ID number consists of a function ID in the lower half and a module ID in the upper half. The module ID identifies a system module or device driver. The system core has ID = 0. Each part of the ID can be either 16 bits or 32 bits so that the combined ID is either 32 bits or 64 bits. 
+Calls to system functions are made with a system call instruction (sys\_call). The system call instruction does not use addresses, but ID numbers. Each ID number consists of a function ID in the lower half and a module ID in the upper half. The module ID identifies a system module or device driver. The system core has ID = 0. Each part of the ID can be either 16 bits or 32 bits so that the combined ID is 32, 48, or 64 bits. 
 \vspace{2mm}
 
-System add-on modules and device drivers do not necessarily have fixed ID numbers because this would require some central authority to assign these ID numbers. Instead, the program will have to ask for the ID number by giving the name of the module. The functions within a module can have fixed or variable ID numbers.
-\vspace{2mm}
-
-There will be a system function (with a fixed ID number) which takes the names of module and function as input and returns the ID number. The ID number can be retrieved in this way before the first call to the function.
+System add-on modules and device drivers do not necessarily have fixed ID numbers because this would require some central authority to assign these ID numbers. Instead, the program will have to translate the module name to an ID number before the first call to a module. This translation is done by a system function with a fixed ID number. The functions within a module can have fixed or variable ID numbers.
 \vspace{2mm}
 
 The ID number of a system function can be put into the program in three ways: 
@@ -106,7 +102,7 @@ function. This can be read access or write access or both. These access rights a
 It is not possible to use callback function pointers with a system call because executable memory cannot be shared with a system function. Instead, the system function can call an exported function provided by the application, using the method for inter-process calls, described below.
 \vspace{2mm}
 
-Device driver functions should preferably have separate stacks. The system call goes first to the system core which assigns a stack to the device driver function and makes a memory map for it before dispatching the call to the desired function. Preferably, no stack is used during this dispatching. The two registers identifying a shared memory block are copied to special registers which are accessible to the called function. The system function runs in the same thread as the application that called it, but not with the same stack. 
+Device driver functions should preferably have separate stacks. The system call goes first to the system core which assigns a stack to the device driver function and makes a memory map for it before dispatching the call to the desired function. Preferably, no stack is used during this dispatching. The two registers identifying a shared memory block are copied to special registers which are accessible to the called system function. The system function runs in the same thread as the application that called it, but not with the same stack. 
 \vspace{2mm}
 
 The old values of instruction pointer, stack pointer, DATAP and memory map are saved in system registers, to be restored by the system return instruction. 
@@ -135,9 +131,9 @@ There is a need for a standardized way of reporting errors that occur in a progr
 
 \item A trap is generated because of a numerical error. The program fails to catch it as an exception, or the programming language has no support for structured exception handling. The operating system must make an informative error message. 
 
-\item A program can run in different environments that require different forms of error handling. 
+\item A program can run in different environments that require different forms of error reporting. 
 
-\item A function library in source code form, a class library, or any other piece of code needs to report an error without knowing which user interface paradigm is used (e. g. console mode or graphical user interface). It needs a standardized way of reporting the error to the operating system or to the user interface framework, which must present an error 
+\item A function library in source code form, a class library, or any other piece of code needs to report an error without knowing which user interface paradigm is used (e. g. console mode or graphical user interface or server mode). It needs a standardized way of reporting the error to the operating system or to the user interface framework, which must present an error 
 message to the user in the way that is appropriate for the user interface (e. g. pop up a message box, print to stderr, print to a log file, or send a message to an administrator).
 \end{enumerate}
 

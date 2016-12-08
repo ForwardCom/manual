@@ -4,7 +4,7 @@
 \RaggedRight
 
 \chapter{Microarchitecture and pipeline design}
-The ForwardCom instruction set is intended to facilitate a consistent and efficient design of the pipeline of a superscalar microprocessor. Instructions can have one destination operand, up to three or four source operands, a mask register, and a register specifying vector length. The last source operand can be a register, a memory operand or an immediate constant. All other operands are registers, except for memory write instructions. The total number of input registers to an instruction, including source operands, mask, base pointer, index and vector length specifier cannot be more than five.
+The ForwardCom instruction set is intended to facilitate a consistent and efficient design of the pipeline of a superscalar microprocessor. Instructions can have no more than one destination operand, up to three or four source operands, a mask register, a fallback register, and a register specifying vector length. The last source operand can be a register, a memory operand or an immediate constant. All other operands are registers, except for memory write instructions. The total number of input registers to an instruction, including source operands, mask, fallback, memory base pointer, index, and vector length specifier cannot exceed four, or optionally five.
 \vspace{2mm}
 
 No instruction can have more than one memory operand. No instruction can have both a memory source operand and an immediate operand, though this may be allowed in future extensions. Any extra immediate operand field can be used for option bits. 
@@ -14,9 +14,9 @@ A high performance pipeline may be designed as superscalar with the following st
 \begin{itemize}
 \item  Fetch. Fetching blocks of code from the instruction cache, one cache line at a time, or as determined by the branch prediction machinery. 
 
-\item  Instruction length decode. Determine the length of each instruction and identify tiny instructions. Distribute the first P instructions into each their pipeline lane, where P is the number of parallel lanes implemented in the pipeline. Excess instructions may be queued for the next clock cycle. 
+\item  Instruction length decode. Determine the length of each instruction and identify tiny instructions. Distribute the first P instructions into each their pipeline lane, where P is the number of parallel lanes implemented in the pipeline. Excess instructions may be queued for the next clock cycle. The length of an instruction is determined by two bits of the first code word in order to simplify this process.
 
-\item  Instruction decode. Identify and classify all operands, opcode and option bits. Determine input and output dependencies.
+\item  Instruction decode. Identify and classify all operands, opcode and option bits. Determine input and output dependencies. A consistent template system simplifies this step.
 
 \item  Register allocation and renaming. 
 
@@ -42,10 +42,10 @@ Each stage in the pipeline should ideally require only one clock cycle. Instruct
 Jump, branch, call and return instructions also fit into this pipeline design. 
 \vspace{2mm}
 
-The reservation station has to consider all the input and output dependencies of each instruction. Each instruction can have up to five input dependencies and one output dependency. 
+The reservation station has to consider all the input and output dependencies of each instruction. Each instruction can have up to four or five input dependencies and one output dependency. 
 \vspace{2mm}
 
-There can be multiple execution units so that it is possible to run multiple instructions in the same clock cycle if their operands are independent. 
+There may be multiple execution units so that it is possible to run multiple instructions in the same clock cycle if their operands are independent. 
 \vspace{2mm}
 
 An efficient out-of-order processing requires renaming of the general purpose registers and vector registers, but not necessarily the special registers. 

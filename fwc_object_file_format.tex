@@ -79,7 +79,7 @@ program is loaded and when additional threads are created.
 A possible alternative to calculating the stack space is to measure the actual stack use the first time a program is run, and then rely on statistics to predict the stack use in subsequent runs. The same method can be used for heap space. This method is simpler, but less reliable. The calculation of stack requirements based on the compiler is sure to cover all branches of a program, while a statistical method will only include branches that have actually been used. 
 \vspace{2mm}
 
-We may implement a hardware register that measures the stack use. This stack-measurement register is updated every time the stack grows. We can reset the stack-measurement register when a program starts and read it when the program finishes. We don't need a hardware register to measure heap size. This information can be retrieved from the heap manager. 
+We may implement a hardware register that measures the stack use. This stack-measurement register is updated every time the stack grows. We can reset the stack-measurement register when a program starts and read it when the program finishes. This method can be useful if the program contains recursive function calls. We don't need a hardware register to measure heap size. This information can be retrieved from the heap manager. 
 \vspace{2mm}
 
 These proposals can eliminate or reduce memory fragmentation in many cases so that we only need a small memory map which can be stored on the CPU chip. Each process and each thread will have its own memory map. However, we cannot completely eliminate memory fragmentation and the need for virtual memory translation because of the complications discussed on page \pageref{memoryManagement}.

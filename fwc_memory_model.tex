@@ -115,6 +115,9 @@ A possible remedy against overflow of stack and heap is to place the STACK, DATA
 If runtime linking runs into memory problems and lack of memory map entries then it is allowed to mix CONST and CODE sections together in a common section with both read and execute access. If a library function contains constant data that originate from an untrusted source, while the code is trusted, then it is preferred to put the untrusted data into the DATA section rather than the CONST section in order to prevent execution of malicious code placed in the CONST section.
 \vspace{2mm}
 
+An application that needs many independent memory blocks can make a separate thread to service each memory block. Each thread has its own memory map with an entry for its private memory block.
+\vspace{2mm}
+
 \label{sharedMemory}
 Shared memory can be used when there is a need to transfer large amounts of data between two processes. One process shares a part of its memory with another process. The receiving process needs an extra entry in its memory map to indicate read and/or write access rights to the shared memory block. The process that owns the shared memory block does not need any extra entry in its memory map. There is a limit to how many shared memory blocks an application can receive access to, because we want to keep the memory map small. If one program needs to communicate with a large number of other programs then we can use one of these solutions: (1) let the program that needs many connections own the shared memory and give each of its clients access to one part of it, (2) run multiple threads in (or multiple instances of) the program that needs many connections so that each thread has access to only one shared memory block, (3) let multiple communication channels use the same shared memory block or parts of it, (4) communicate through function calls, (5) communicate through network sockets, or (6) communicate through files. 
 \vspace{2mm}
@@ -122,6 +125,10 @@ Shared memory can be used when there is a need to transfer large amounts of data
 Executable memory cannot be shared between different applications. The mechanism of interprocess calls must be used if one application needs to call a function in another application. This is described on page \pageref{interProcessCalls}. 
 \vspace{2mm}
 
-We can probably keep memory fragmentation so low, by using the principles discussed here, that a relatively small memory map for each thread will be sufficient to cover normal cases. This will be much more efficient than the large TLB and multilevel address translation of current designs. It will save silicon space and power, and we can avoid the cost of TLB misses and page faults, and it will make task switches very fast.
+We can probably keep memory fragmentation so low, by using the principles discussed here, that a relatively small memory map for each thread will be sufficient to cover normal cases. This will be much more efficient than the large TLB and multilevel address translation of current designs. It will save silicon space and power; we can avoid the cost of TLB misses and page faults, and it will make task switches very fast. The actual size of the memory map will depend on the hardware implementation.
+\vspace{2mm}
+
+This system puts the priority on performance-critical applications. The programmer will be able to get top performance by observing some discipline to avoid memory fragmentation, for example by recycling allocated memory. However, the system should also be able to run less well-behaved applications. Applications that cause heavy memory fragmentation are probably built with less regard for performance. The system should have methods to allow such applications to work, perhaps even software based methods to deal with memory fragmentation, but we can regard it as acceptable to make a system that prioritizes the performance of well-behaved applications at the cost of inferior performance for applications that cause heavy memory fragmentation.
+
 
 \end{document}
