@@ -92,34 +92,41 @@ A floating point operand in src1 is treated as an integer with the same size. Th
 
 These instructions can be implemented with an 8-bit immediate constant for src2 instead of the larger constant that would be needed if we used AND, OR, XOR instructions for manipulating single bits. These instructions can also be used with floating point numbers, mainly for manipulating the sign bit.
 
-\subsubsection{mul\_add}
+\subsubsection{mul\_add}  \label{mulAdd}
 Fused multiply and add.
 \vspace{2mm}
 
 dest = $\pm$ src1 $\pm$ (src2 $\cdot$ src3)
 \vspace{2mm}
 
-The fused multiply-and-add instruction can often improve the performance of floating point code significantly.
+The fused multiply-and-add instruction can often improve the performance of floating point code significantly. The intermediate product is calculated with extended precision according to IEEE 754-2008.
 \vspace{2mm}
 
 Only instruction formats that allow three operands are supported.
 \vspace{2mm}
 
-The signs of the operands can be inverted as indicated by bits 0-3 of the IM3 field in formats 2.4.x and 2.8.x:
+The signs of the operands can be inverted as indicated by the following 4-bit code
+
+\begin{longtable} {|p{20mm}|p{20mm}|p{75mm}|}
+\caption{Control bits for mul\_add} 
+\label{table:ControlBitsForMulAdd} \\
+\endfirsthead
+\endhead
+\hline
+\bfseries Format 2.4.x and 2.8.x & \bfseries Other formats with mask & \bfseries Meaning   \\
+\hline
+IM3 bit 0 & mask bit 2 & change sign of src1 in even-numbered vector elements \\
+IM3 bit 1 & mask bit 3 & change sign of src1 in odd-numbered vector elements \\
+IM3 bit 2 & mask bit 4 & change sign of src2$\cdot$src3 in even-numbered vector elements \\
+IM3 bit 3 & mask bit 5 & change sign of src2$\cdot$src3 in odd-numbered vector elements \\
+\hline
+\end{longtable}
+
 \vspace{2mm}
+These option bits make it possible to do multiply-and-add, multiply-and-subtract, multiply-and-reverse-subtract, etc. It can also do multiply with alternating add and subtract, which is useful in calculations with complex numbers. 
+There is no sign change if there is no IM3 field and no mask. 
 
-bit 0: change sign of src1 in even-numbered vector elements
-
-bit 1: change sign of src1 in odd-numbered vector elements
-
-bit 2: change sign of src2$\cdot$src3 in even-numbered vector elements
-
-bit 3: change sign of src2$\cdot$src3 in odd-numbered vector elements
 \vspace{2mm}
-
-This makes it possible to do multiply-and-add, multiply-and-subtract, multiply-and-reverse-subtract, etc. It can also do multiply with alternating add and subtract, which is useful in calculations with complex numbers. There is no sign change in other formats where the IM3 field is absent. 
-\vspace{2mm}
-
 Support for integer operands is optional. Support for floating point operands is optional but desired.
 
 \subsubsection{add\_add}  \label{addAdd}
@@ -129,23 +136,29 @@ This is two additions in one instruction.
 dest = $\pm$ src1 $\pm$ src2 $\pm$ src3
 \vspace{2mm}
 
+For optimal precision with floating point operands, the intermediate sum of the two numerically largest operands should preferably be calculated with extended precision.
+\vspace{2mm}
+
 Only instruction formats that allow three operands are supported.
 \vspace{2mm}
 
-The signs of the operands can be inverted as indicated by bits 0-2 of the IM3 field in formats 2.4.x and 2.8.x:
-\vspace{2mm}
+The signs of the operands can be inverted as indicated by the following 3-bit code
 
-bit 0: change sign of src1
+\begin{longtable} {|p{20mm}|p{20mm}|p{75mm}|}
+\caption{Control bits for mul\_add} 
+\label{table:ControlBitsForMulAdd} \\
+\endfirsthead
+\endhead
+\hline
+\bfseries Format 2.4.x and 2.8.x & \bfseries Other formats with mask & \bfseries Meaning   \\
+\hline
+IM3 bit 0 & mask bit 2 & change sign of src1 \\
+IM3 bit 1 & mask bit 3 & change sign of src2 \\
+IM3 bit 2 & mask bit 4 & change sign of src3 \\
+\hline
+\end{longtable}
 
-bit 1: change sign of src2
-
-bit 2: change sign of src3
-\vspace{2mm}
-
-There is no sign change in other formats where the IM3 field is absent.
-\vspace{2mm}
-
-The precision for floating point operands is preferably better than the least significant bit of the numerically highest operand, but the intermediate result is not necessarily calculated with unlimited precision.
+There is no sign change if there is no IM3 field and no mask. 
 \vspace{2mm}
 
 This instruction should only be supported if it can be implemented so that it is faster than two consecutive add instructions. It may be supported for integer operands or floating point or both.
@@ -193,14 +206,16 @@ The condition codes are provided from different sources, depending on the instru
 \hline
 0.1 0.3     & IM1 bit 0-3 & numeric control register \\
 \hline
-0.7 0.9        & numeric control register bit 2-5 & numeric control register \\
+0.7 0.9        & zero & numeric control register \\
 \hline
-2.4.x 2.8.x       & IM3 bit 0-3 & mask \\
+2.4.x 2.8.x       & IM3 bit 0-3 & mask  \\
 \hline
 \end{longtable}
 
+The condition code is zero (indicating compare for equal) if there is no mask, no IM1 and no IM3 field. The remaining bits are taken from the numeric control register if there is no mask.
+
 \vspace{2mm}
-Masking and fallback is possible. Alternative use of the fallback register (RU) as an extra boolean operand is supported with at least the following formats: 2.4.6, 2.4.7, 2.8.0, 2.8.6, and 2.8.7. This option  is controlled by bits 4-5 of IM3:
+Masking and fallback is possible. Alternative use of the fallback register (RU) as an extra boolean operand is supported with formats 2.4.x and 2.8.x. This option is controlled by bits 4-5 of IM3:
 
 \begin{longtable} {|p{25mm}|p{100mm}|}
 \caption{Alternative use of fallback register} 
