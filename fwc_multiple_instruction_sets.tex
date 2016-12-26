@@ -1,0 +1,134 @@
+% chapter included in forwardcom.tex
+\documentclass[forwardcom.tex]{subfiles}
+\begin{document}
+\RaggedRight
+
+\chapter{Support for multiple instruction sets}
+
+A microprocessor may support multiple instruction sets. It will be useful for compatibility with legacy software that a microprocessor with support for ForwardCom also supports one or more older instruction sets. Such a microprocessor will have different modes, one for each instruction set. Instructions of different instruction sets cannot be mixed freely.
+\vspace{2mm}
+
+The transitions between ForwardCom and other instruction sets can be implemented with instructions dedicated to this purpose or with software interrupts with a dedicated interrupt number. 
+\vspace{2mm}
+
+If mode transitions are allowed only in system code then it is not necessary to save any registers across the mode switch. But if mode transitions are possible also in application code then the following principles should be applied:
+
+\begin{itemize}
+\item The instruction that makes the mode switch must be aligned to an address divisible by 4.
+
+\item The hardware or operating system must make sure that all general purpose registers are preserved across a mode switch between ForwardCom and another instruction set if similar registers exist in the other instruction set.
+
+\item The software must set up stack pointers and other special registers immediately before or after the mode switch.
+
+\item The software must take care of differences in function calling conventions between the two modes.
+
+\item The hardware or operating system must make sure that the contents of at least the first eight vector registers is preserved across the mode switch. The remaining vector registers must be cleared if they are not preserved.
+
+\item If the target instruction set has a lower maximum vector length than the actual length of a vector register before conversion, then the length is truncated to the maximum length for the target instruction set.
+
+\item The vector length information is lost in the transition from ForwardCom to another instruction set if the other instruction set has no similar way of representing vector length.
+
+\item Lhe length of each vector register is set to a value that is sufficient to contain the nonzero part of the register, or longer, when converting from another instruction set to ForwardCom, 
+
+\end{itemize}
+
+Details that are specific to a particular other instruction set are discussed in the following sections.
+
+\section{Transitions between ForwardCom and x86-64}
+Transitions between ForwardCom and the x86-64 instruction set (with the AVX512 extension) involve the following registers:
+
+\begin{longtable} {|p{20mm}|p{20mm}|p{80mm}|}
+\caption{ForwardCom and x86-64 registers} 
+\label{table:ForwardComAndX64Registers}
+\\
+\endfirsthead
+\endhead
+\hline
+\bfseries x86-64 & \bfseries ForwardCom & \bfseries Comments  \\
+\hline
+rax & r0 &   \\ 
+rcx & r1 &  \\ 
+rdx & r2 &  \\ 
+rbx & r3 &  \\ 
+rsp & r4 & Stack pointer. Must be set before or after conversion to x86-64. \\
+rbp & r5 &  \\ 
+rsi & r6 &  \\ 
+rdi & r7 &  \\ 
+r8 - r15 & r8 - r15 &  \\
+\hline
+ & r16-r30  & Not converted \\
+ & r31 & Stack pointer. Must be set after conversion to ForwardCom. \\
+\hline
+flags &  & Flags register. Not converted. \\
+\hline
+k0 - k7 &  & Mask registers. Not converted. \\
+\hline
+zmm0 - zmm7 & v0 - v7 & Vector registers. Converted. \\
+zmm8 - zmm31 & v8 - v31 & Vector registers. Converted or cleared. \\
+\hline
+\end{longtable}
+
+\vspace{2mm}
+It is possible to make multi-mode functions that can be called from either ForwardCom or x86-64 mode in the following way. The first four bytes of a multi-mode function consist of a short x86-64 jump instruction, which is two bytes long, followed by two bytes of zero. The jump leads to an x86-64 implementation of the code. The four bytes will be interpreted as a NOP (no operation) if the processor is in ForwardCom mode. After this follows a ForwardCom implementation of the function.
+
+
+\section{Transitions between ForwardCom and ARM}
+
+Transitions between ForwardCom and the ARM (AArch64) instruction set involve the following registers:
+
+\begin{longtable} {|p{20mm}|p{20mm}|p{80mm}|}
+\caption{ForwardCom and ARM registers} 
+\label{table:ForwardComAndARMRegisters}
+\\
+\endfirsthead
+\endhead
+\hline
+\bfseries ARM & \bfseries ForwardCom & \bfseries Comments  \\
+\hline
+r0 - r30 & r0 - r30 &   \\ 
+\hline
+r31 & r31 & Stack pointer in both instruction sets \\
+\hline
+v0 - v7 & v0 - v7 & Vector registers. Converted \\ 
+\hline
+v8 - v31 & v8 - v31 & Vector registers. Converted or cleared \\
+\hline
+p0 - p15 &  & Predicate registers. Not converted \\
+\hline
+\end{longtable}
+
+\vspace{2mm}
+The Scalable Vector Extensions (SVE) is a future extension to the ARM architecture that 
+allows the length of vector registers to vary from 128 to 2048 bits in increments of 128 bits. The details of SVE have not been announced yet (December 2016) and it is not quite clear how the vector lengths will be controlled. It is therefore too early to tell whether 
+the vector length information can be converted in a useful way during transitions between ForwardCom and ARM with SVE.
+
+\section{Transitions between ForwardCom and RISC-V}
+
+Transitions between ForwardCom and the RISC-V instruction set involve the following registers:
+
+\begin{longtable} {|p{20mm}|p{20mm}|p{80mm}|}
+\caption{ForwardCom and RISC-V registers} 
+\label{table:ForwardComAndRISCVRegisters}
+\\
+\endfirsthead
+\endhead
+\hline
+\bfseries RISC-V & \bfseries ForwardCom & \bfseries Comments  \\
+\hline
+x0 &  &  Always zero. \\
+\hline
+x1 - x31 & r1 - r31 & General purpose registeers. x1 = link register,
+x14 = stack pointer, x15 = thread pointer. \\
+\hline
+f0 - f7 & v0 - v7 & Floating point and vector registers. Converted. \\ 
+\hline
+f8 - f31 & v8 - v31 & Floating point and vector registers. Converted or cleared. \\
+\hline
+\end{longtable}
+
+\vspace{2mm}
+The SIMD / Vector Extensions to RISC-V are not fully developed yet (December 2016). It is therefore too early to tell whether the vector length information can be converted in a useful way during transitions between ForwardCom and RISC-V.
+
+
+
+\end{document}
