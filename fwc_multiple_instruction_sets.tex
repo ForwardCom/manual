@@ -5,7 +5,7 @@
 
 \chapter{Support for multiple instruction sets}
 
-A microprocessor may support multiple instruction sets. It will be useful for compatibility with legacy software that a microprocessor with support for ForwardCom also supports one or more older instruction sets. Such a microprocessor will have different modes, one for each instruction set. Instructions of different instruction sets cannot be mixed freely.
+A microprocessor may support multiple instruction sets. It will be useful for compatibility with legacy software that a microprocessor with support for ForwardCom also supports one or more older instruction sets. Such a microprocessor will have different modes, one for each instruction set. Instructions of different instruction sets cannot be mixed freely. Virtualization support might be useful so that we can have one virtual machine for each instruction set.
 \vspace{2mm}
 
 The transitions between ForwardCom and other instruction sets can be implemented with instructions dedicated to this purpose or with software interrupts with a dedicated interrupt number. 
