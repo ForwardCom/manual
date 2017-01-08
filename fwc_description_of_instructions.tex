@@ -74,6 +74,52 @@ A NAN operand that is not propagated will generate a trap if flag bit 29 is set.
 \subsubsection{Bitwise boolean instructions}
 These instructions include: and, and\_not, or, xor. Floating point operands are handled in the same way as integer operands.
 
+\subsubsection{Signed shift instructions}
+These instructions include: shift and shift\_rev.
+
+\begin{longtable} {|p{20mm}|p{60mm}|p{50mm}|}
+\caption{Signed shift instructions} 
+\label{table:SignedShiftInstructions} \\
+\endfirsthead
+\endhead
+\hline
+\bfseries Instruction & \bfseries Integer operands & \bfseries Floating point operands   \\
+\hline
+shift      & src1 $<<$ src2 \newline src1 $>>$ -src2 with sign extension if src2 negative &
+  src1 $ \cdot 2^{src2} $ \\
+\hline
+shift\_rev & src2 $<<$ src1 \newline src2 $>>$ -src1 with sign extension if src1 negative & src2 $ \cdot 2^{src1} $ \\
+\hline
+\end{longtable}
+
+Integer operands will be shifted left when the count is positive, and shifted right with
+sign extension when the count is negative.
+\vspace{2mm}
+
+Floating point operands are treated differently. The shift count is added to the floating
+point exponent to multiply by an integer power of 2 (positive or negative).
+The shift count is interpreted as a signed integer. Overflow will produce
+infinity. The result will be zero rather than a subnormal number in case of underflow,
+regardless of bit 20 in the mask or numeric control register. The reason for this is that
+speed has priority here. This instruction will typically take a single clock cycle, while
+floating point multiplication by a power of 2 takes multiple clock cycles. 
+
+
+\subsubsection{Unsigned shift instruction}
+
+shift\_rightu: 
+
+src1 $>>$ src2 if src2 positive
+
+src1 $<<$ -src2 if src2 negative
+\vspace{2mm}
+
+Right shifts use zero extension. 
+
+Floating point operands are treated
+as integers.
+
+
 \subsubsection{Bit manipulation instructions}
 The following instructions are provided for manipulating bits: 
 \vspace{2mm}

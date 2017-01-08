@@ -220,7 +220,7 @@ sign\_extend &  4 & 1 & Sign-extend smaller integer to 64 bits. \\
 compare      &  7 & 2 & Compare. Uses condition codes, see p. \pageref{table:conditionCodesForCompareInstruction}. \\
 add          &  8 & 2 & src1 + src2. \\
 sub          &  9 & 2 & src1 - src2. \\
-sub\_r       & 10 & 2 & src2 - src1. \\
+sub\_rev       & 10 & 2 & src2 - src1. \\
 mul          & 12 & 2 & src1 $\cdot$ src2. \\ 
 mul\_hi\_s   & 13 & 2 & (src1 $\cdot$ src2) \textgreater\textgreater{} OS, signed (integer only). \\
 mul\_hi\_u   & 14 & 2 & (src1 $\cdot$ src2) \textgreater\textgreater{}  OS, unsigned (integer only). \\
@@ -236,9 +236,11 @@ and          & 32 & 2 & src1 \& src2. \\
 and\_not     & 33 & 2 & src1 \& (\~{}src2). \\
 or           & 34 & 2 & src1 \textbar{} src2. \\
 xor          & 35 & 2 & src1 \^{} src2. \\
-shift\_left  & 36 & 2 & src1 \textless\textless{} src2.  \\
-shift\_rightu& 37 & 2 & src1 \textgreater\textgreater{} src2, zero extended. \\
-shift\_rights& 38 & 2 & src1 \textgreater\textgreater{} src2, sign extended. \\
+
+shift        & 36 & 2 & src1 \textless\textless{} src2. See description. \\
+shift\_rev   & 37 & 2 & src2 \textless\textless{} src1. See description. \\
+shift\_rightu& 38 & 2 & src1 \textgreater\textgreater{} src2, zero extended. \\
+
 rotate       & 39 & 2 & Rotate left if src2 positive, right if negative. \\
 extract\_bit & 40 & 2 & Extract bit. (src1 \textgreater\textgreater{} src2) \& 1. \\
 set\_bit     & 41 & 2 & Set bit. src1 \textbar{} (1 \textless\textless{} src2). \\
@@ -274,7 +276,7 @@ nop           &  0 & No operation. \\
 move          &  1 & RD = sign-extended constant RS. \\
 add           &  2 & RD += sign-extended constant RS. \\
 sub           &  3 & RD --= sign-extended constant RS. \\
-shift\_left   &  4 & RD \textless\textless{}= unsigned constant RS. \\
+shift         &  4 & RD \textless\textless{}= unsigned constant RS. \\
 shift\_rightu &  5 & RD \textgreater\textgreater{}= unsigned constant RS (zero extended). \\
 move          &  8 & RD = register operand RS. \\
 add           &  9 & RD += register operand RS. \\
