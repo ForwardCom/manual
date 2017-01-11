@@ -44,6 +44,39 @@ Prefetch memory operand into cache. Different variants can be specified by IM3 f
 \subsubsection{sign\_extend}
 The input can be an 8-bit, 16-bit or 32-bit integer. This integer is sign-extended to produce a 64-bit output in a general purpose register or a scalar in a vector register. If the input is a vector then only the first element in each 64-bit block of the input vector is used. Floating point types cannot be used.
 
+\subsubsection{div, div\_rev, and div\_u}
+The multi-format division instructions div, div\_rev, and div\_u have different rounding modes. The rounding mode for integer operands is controlled by IM3 in format 2.4.x and 2.8.x as follows:
+
+\begin{longtable} {|p{25mm}|p{80mm}|}
+\caption{division instructions} 
+\label{table:DivInstructions} \\
+\endfirsthead
+\endhead
+\hline
+\bfseries IM3 bits 0-3 & \bfseries Meaning   \\
+\hline
+ 0 0 0 0 & Truncate towards zero \\
+\hline
+ 0 1 0 0 & Nearest or even \\
+ 0 1 0 1 & Down \\
+ 0 1 1 0 & Up \\
+ 0 1 1 1 & Truncate towards zero \\
+\hline
+ 1 0 0 0 & Rounding mode determined by bits 18-19 of mask or numeric control register \\
+\hline
+other values & Not allowed \\ 
+\hline
+\end{longtable}
+Truncation is always used with integer operands in formats with no IM3 field.
+
+\vspace{2mm}
+The rounding mode for floating point operands is controlled by the mask or numeric control register. IM3 must be zero for floating point operands.
+
+\vspace{2mm}
+These division instructions are supported for general purpose registers, integer scalars,
+floating point scalars, and floating point vectors. Support for integer vectors is optional.
+
+
 \subsubsection{min and max}
 min(src1,src2) = src1 \textless{} src2 ? src1 : src2
 
