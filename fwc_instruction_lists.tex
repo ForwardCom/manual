@@ -221,13 +221,15 @@ compare      &  7 & 2 & Compare. Uses condition codes, see p. \pageref{table:con
 add          &  8 & 2 & src1 + src2. \\
 sub          &  9 & 2 & src1 - src2. \\
 sub\_rev       & 10 & 2 & src2 - src1. \\
-mul          & 12 & 2 & src1 $\cdot$ src2. \\ 
-mul\_hi\_s   & 13 & 2 & (src1 $\cdot$ src2) \textgreater\textgreater{} OS, signed (integer only). \\
-mul\_hi\_u   & 14 & 2 & (src1 $\cdot$ src2) \textgreater\textgreater{}  OS, unsigned (integer only). \\
-mul\_ex\_s   & 15 & 2 & Multiply even-numbered signed integer vector elements to double size result. \\
-mul\_ex\_u   & 16 & 2 & Multiply even-numbered unsigned integer vector elements to double size result. \\
-div          & 17 & 2 & src1 / src2 (optional for integer vectors). \\
-rem          & 18 & 2 & Modulo (optional for integer vectors). \\
+mul          & 11 & 2 & src1 $\cdot$ src2. \\ 
+mul\_hi\_s   & 12 & 2 & (src1 $\cdot$ src2) \textgreater\textgreater{} OS, signed (integer only). \\
+mul\_hi\_u   & 13 & 2 & (src1 $\cdot$ src2) \textgreater\textgreater{}  OS, unsigned (integer only). \\
+mul\_ex\_s   & 14 & 2 & Multiply even-numbered signed integer vector elements to double size result. \\
+mul\_ex\_u   & 15 & 2 & Multiply even-numbered unsigned integer vector elements to double size result. \\
+div          & 16 & 2 & src1 / src2, signed division (optional for integer vectors). \\
+div\_rev     & 17 & 2 & src2 / src1, signed division (optional for integer vectors). \\
+div\_u       & 18 & 2 & src1 / src2, unsigned integer division (optional for vectors). \\
+rem          & 19 & 2 & Modulo, unsigned for integers (optional for integer vectors). \\
 min          & 20 & 2 & Signed minimum. \\
 max          & 21 & 2 & Signed maximum. \\
 min\_u       & 22 & 2 & Minimum. unsigned for integers, abs for f.p. \\
@@ -338,7 +340,7 @@ add           & 1.1   &  2  & Add 16-bit sign-extended constant. \\
 sub           & 1.1   &  3  & Subtract 16-bit sign-extended constant. \\
 subr          & 1.1   &  4  & Subtract reverse from 16-bit sign-extended constant. \\
 mul           & 1.1   &  5  & Multiply with 16-bit sign-extended constant. \\
-div           & 1.1   &  6  & Divide with 16-bit sign-extended constant. \\
+div           & 1.1   &  6  & Divide signed integer with 16-bit sign-extended constant. \\
 add           & 1.1   &  7  & RD = (IM1,IM2) \textless\textless{} 16. Shift 16-bit signed constant left by 16 and add. \\
 move          & 1.1   & 16  & RD = IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits and shift left by the unsigned value IM1. \\
 add           & 1.1   & 17  & RD += IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits, shift left by the unsigned value IM1, add to RD. \\
@@ -407,7 +409,7 @@ shift\_up     & 1.2 & 20 & Shift elements of vector RT up RS elements. The lower
 shift\_down   & 1.2 & 21 & Shift elements of vector RT down RS elements. The upper RS
 elements of RD will be zero, the lower RS elements of RT are lost. \\
 div\_ex\_s    & 1.2 & 24 & Divide vector of double-size signed integers RS by signed integers RT. RS has element size 2$\cdot$OS. These are divided by the even numbered
-elements of RT with size OS. The results are stored in
+elements of RT with size OS. The truncated results are stored in
 the even-numbered elements of RD. The remainders are stored in
 the odd-numbered elements of RD. (Optional for vectors). \\
 div\_ex\_u    & 1.2 & 25 & Same, with unsigned integers. (Optional for vectors). \\
