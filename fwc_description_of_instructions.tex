@@ -3,257 +3,702 @@
 \begin{document}
 \RaggedRight
 
+\chapter{Description of instructions}
 
-\section{Description of instructions}
-Instructions that need special explanation are described in this section.
+\subsection{Data move and conversion instructions}
 
-\subsection{Multi-format instructions}
-\subsubsection{nop}
-It is recommended to code NOPs as 32-bit words of all zeroes. The processor is allowed to skip this type of NOPs as fast as it can at an early stage in the pipeline. A pair of tiny instructions where the second instruction is a NOP can be treated as a single instruction.
+\subsubsection{broadcast}
+
+\label{table:broadcastInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 13 & vector, g.p. register, and scalar \\ \hline
+1.3 B & 18 & vector, g.p. register, and 8-bit signed constant \\ \hline
+2.5   &  6 & vector, g.p. register, and 32-bit signed or float constant \\ \hline
+\end{tabular}
 \vspace{2mm}
 
-These NOPs cannot be used as timing delays, only as fillers.
+Broadcast a constant or the first element of a source vector into all
+elements of the destination vector with the length in bytes indicated by the first source operand (RS).
+
+\subsubsection{byte\_reverse}
+
+\label{table:byteReverseInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.3 B & 20 & vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Reverse the order of bytes within each vector element. This is useful for converting big-endian file data.
+
+\subsubsection{clear}
+\label{table:clearInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+Tiny & 16 & vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Clear vector register RD by setting the length to zero. All data are discarded. A cleared register is treated as unused. 
+
+\subsubsection{compress}
+\label{table:compressInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 4 & vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+The elements of a vector are converted to half the element size. The length of the output vector will be half the length of the input vector. The OT field specifies the operand type of the input vector. Double precision floating point numbers are converted to single precision. Integer elements are converted to half the size by discarding the upper bits. Support for the following conversions are optional: single precision float to half precision, quadruple precision to double precision, 8-bit integer to 4-bit.
+\vspace{2mm}
+
+If the length of the input vector differs from the length specified by RS, then the length is converted to RS before compression.
+
+\subsubsection{compress\_sparse}
+\label{table:compressSparseInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 9 & vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Compress sparse vector elements indicated by mask bits into contiguous vector. 
+
+The length of the input vector is indicated by RS (bytes).
+
+The length of the output vector is the number of true mask elements
+times the element size.
+
+\subsubsection{compress\_ss}
+Compress signed with saturation.
+
+See page \pageref{table:compressSsInstruction}.
+
+\subsubsection{compress\_us}
+Compress unsigned with saturation.
+
+See page \pageref{table:compressUsInstruction}.
+
+\subsubsection{concatenate}
+\label{table:concatenateInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.4.6 & 0.1 & vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+A vector RU of length RS bytes and a vector RT of
+length RS bytes are concatenated into a vector RD
+of length 2$\cdot$RS, with RT in the high end.
+
+\subsubsection{expand}
+\label{table:expandInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 7 & vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+This is the opposite of compress. The output vector has the specified length and the input vector has half this length. The OT field specifies the operand type of the output vector. Single precision floating point numbers are converted to double precision. Integers are converted to the double size by sign-extension. Support for the following conversions are optional: half precision float to single precision, double precision to quadruple precision, 4-bit integer to 8-bit.
+\vspace{2mm}
+
+If the length of the input vector differs from RS/2 then the length is converted before expansion. If the resulting length exceeds the maximum vector length for the specified operand type then the extra elements are lost.
+
+\subsubsection{expand\_sparse}
+\label{table:expandSparseInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 10 & vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+This is the opposite of compress\_sparse.
+
+Expand contiguous vector into sparse vector
+with positions indicated by mask bits. 
+
+RS = length of output vector.
+
+\subsubsection{expand\_u}
+\label{table:expandUsInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 8 & integer vectors  \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Same as expand, with zero extension.
+\vspace{2mm}
+
+Integers are expanded by zero-extension. Floating point operands cannot be used. 
+
+\subsubsection{extract}
+\label{table:extractInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 11 & vectors  \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Extract one element from vector RT, starting at offset RS$\cdot$OS, with size OS into scalar in vector register RD. (OS = operand size).
+\vspace{2mm}
+
+An index out of range will produce zero. An operand size of 16 bytes can be used, even if this size is not otherwise supported.
+
+\subsubsection{float2int}
+\label{table:extractInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.3 B & 12 & vectors  \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Conversion of floating point to integer with the same operand size. The rounding mode is specified in bit 0-1 of IM1. See table \ref{table:maskBits} page \pageref{table:maskBits}.
+
+\subsubsection{get\_len}
+\label{table:getLenInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 1 & vectors  \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Get length in bytes of vector register RT into general purpose register RD.
+
+\subsubsection{get\_num}
+\label{table:getNumInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 3 & vectors  \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Get the number of elements in vector register RT into general purpose register RD. This is equal to the length divided by the operand size.
+
+\subsubsection{gp2vec}
+\label{table:gp2vecInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.3 B & 0 & g.p register in, vector register out \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Move integer value of general purpose register RS to
+scalar in vector register RD.
+
+\subsubsection{insert}
+\label{table:insertInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 12 & vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Replace one element in vector RD, starting at
+offset RS$\cdot$OS, with scalar RT. (OS = operand size).
+\vspace{2mm}
+
+An index out of range will leave the vector unchanged. An operand size of 16 bytes can be used, even if this size is not otherwise supported.
+
+\subsubsection{insert\_hi}
+\label{table:insertHiInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.9 & 1 & g.p. register, 32-bit immediate constant \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Insert 32-bit constant into the high part of a
+general purpose register, leaving the low part
+unchanged. RD = (RT \& 0xFFFFFFFF) $|$ (IM2 $<<$ 32).
+\vspace{2mm}
+
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.5 & 1 & vector, 32-bit immediate constant  \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Make vector of two elements. dest[0] =
+src1[0], dest[1] = IM2.
+
+
+\subsubsection{int2float}
+\label{table:int2floatInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.3 B & 13 & vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Conversion of integer to floating point with same operand size.
+
+\subsubsection{interleave}
+\label{table:interleaveInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.4.6 & 2.1 & vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Interleave the inputs from two vectors so that the even-numbered elements come from the first input vector and the odd-numbered elements come from the second input vector. The length in bytes of the destination vector is indicated by a general purpose register. The length of each input vector is half the indicated value.
+
+\subsubsection{load\_hi}
+\label{table:loadHiInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.9 & 0 & g.p register. 32 bit immediate constant \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Load 32-bit constant into the high part of a general purpose register. The low part is zero.
+
+RD = IM2 $<<$ 32.
+\vspace{4mm}
+
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.5 & 0 & vector. 32 bit immediate constant \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Make vector of two elements. dest[0] = 0, dest[1] = IM2.
+\vspace{2mm}
 
 \subsubsection{move}
-Copy value from a register, memory operand or immediate constant to a register. If the destination is a vector register and the source is an immediate constant then the result will be a scalar. The value will not be broadcast because there is no other input operand that specifies the vector length. If a vector is desired then use the broadcast instruction instead.
+\label{table:moveInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 2 & all types \\ \hline
+
+tiny  & 1 & g.p. register, 4-bit sign extended constant \\ \hline
+tiny  & 8 & two g.p. registers \\ \hline
+tiny  & 14 & g.p. register, memory operand with pointer \\ \hline
+tiny  & 17 & single prec. float scalar, 4 bit signed integer constant \\ \hline
+tiny  & 18 & double prec. float scalar, 4 bit signed integer constant \\ \hline
+tiny  & 19 & two vector registers \\ \hline
+1.1 C &  0 & g.p. register, 16-bit sign extended constant \\ \hline
+1.1 C & 16 & g.p. register, 8-bit sign extended constant with left shift \\ \hline
+1.3 C & 32 & vector register 16-bit scalar, 16-bit constant. Optional  \\ \hline
+1.3 C & 38 & vector register 32-bit scalar, 8-bit sign extended constant with left shift. Optional \\ \hline
+1.3 C & 39 & vector register 64-bit scalar, 8-bit sign extended constant with left shift. Optional \\ \hline
+1.3 C & 56 & vector register single precision scalar, half precision immediate constant. Optional \\ \hline
+1.3 C & 57 & vector register double precision scalar, half precision immediate constant. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Copy A value from a register, memory operand or immediate constant to a register. If the destination is a vector register and the source is an immediate constant then the result will be a scalar. The value will not be broadcast because there is no other input operand that specifies the vector length. If a vector is desired then use the broadcast instruction instead.
 \vspace{2mm}
 
 The move instruction with an immediate operand is the preferred method for setting a register to zero.
+
+
+\subsubsection{move\_u}
+\label{table:moveUInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.1 C & 1 & g.p. register, 16 bit unsigned constant \\ \hline
+\end{tabular}
 \vspace{2mm}
 
-The move instruction has several additional tiny and single-format variants. The assembler will normally choose the shortest variant that fits the specified operands.
+Copy 16-bit zero-extended constant to general
+purpose register.
 
+This can be used as the first step of loading a 32-bit constant if double size instructions are not supported.
 
-\subsubsection{store}
-The source and destination operands are swapped so that the value of RD is written to a memory operand. Only formats that specify a memory operand (scalar or vector without broadcast) are allowed.
+\subsubsection{permute}
+\label{table:permuteInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.4.6 & 1.1 & vectors \\ \hline
+2.5   & 8   & vectors and 32 bit immediate constant \\ \hline
+\end{tabular}
 \vspace{2mm}
 
-The size of the memory operand is determined by the operand size OS when a scalar memory operand is specified, or by the vector length register in RS when a vector memory operand is specified.
+This instruction permutes the elements of a vector. The vector is divided into blocks of size RS bytes each. The block size must be a power of 2 and a multiple of the operand size. Elements can be moved arbitrarily between positions within each block, but not between blocks. Each element of the output vector is a copy of an element in the input vector, selected by the corresponding index in an index vector. The indexes are relative to the start of the block they belong to, so that an index of zero will select the first element in the block of the input vector and insert it in the corresponding position of the output vector. The same element in the input vector can be copied to multiple elements in the output vector. An index out of range will produce a zero. The indexes are interpreted as  integers regardless of the operand type.
 \vspace{2mm}
 
-The hardware must be able to handle memory operand sizes that are not powers of 2 without touching additional memory (read and rewrite beyond the memory operand is not allowed unless access from other threads is blocked during the operation and any access violation is suppressed). It is allowed to write the operand in a piecemeal fashion.
+The permute instruction has two versions. The first version specifies the indexes in a vector with the same length and element size as the input vector.
 \vspace{2mm}
 
-Masked operation will store zero or a fallback value. 
+The second version specifies the indexes as a 32-bit immediate constant with 4 bits per element. This constant is split into a maximum of 8 elements with 4 bits in each. If the blocks have more than 8 elements each then the sequence of 8 elements is repeated to fill a block. The same pattern of indexes will be applied to all blocks in the second version of the permute instruction.
 \vspace{2mm}
 
+The maximum block size for the permute instruction is implementation-dependent and given by a special register. The reason for this limitation of block size is that the complexity of the hardware grows quadratically with the block size. A full permutation is possible if the vector length does not exceed the maximum block size. A trap is generated if RS is bigger than the maximum block size.
+\vspace{2mm}
 
-\subsubsection{prefetch}
-Prefetch memory operand into cache. Different variants can be specified by IM3 for format 2.4.x and 2.8.x.
+There are two ways to combine the outputs of multiple permute instructions. One method is to use indexes out of range to produce zeroes for unused outputs and then OR'ing the outputs. Another method is to use masks to combine the outputs.
+\vspace{2mm}
+
+Permute instructions are essential for a vector processor because it is often necessary to rearrange data to facilitate the vector processing. These instructions are useful for reordering data, for transposing a matrix, etc. 
+\vspace{2mm}
+
+Permute instructions can also be used for parallel table lookup when the block size is big enough to contain the entire table.
+\vspace{2mm}
+
+Finally, permute instructions can be used for gathering and scattering data within an area not bigger than the vector length or the block size.
+
+\subsubsection{read\_insert}
+\label{table:readInsertInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.7 A & 50 & vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Replace one element in vector RD, starting
+at offset RS$\cdot$OS, with scalar memory operand
+[RT+IM2].
+
+(OS = operand size).
+
+\subsubsection{repeat\_block}
+\label{table:repeatBlockInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.4.6 & 8.1 & vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Repeat a block of data to make a longer vector. This is the same as broadcast, but with a larger block of data. RT is an input vector containing a data block to repeat. IM2 is the length in bytes of the block to repeat. This must be a multiple of 4. RS is the length of destination vector RD. This instruction is useful for matrix multiplication.
+
+\subsubsection{repeat\_within\_blocks}
+\label{table:repeatWithinBlockInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.4.6 & 9.1 & vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+This divides a vector into blocks and broadcasts the first element of each block to the rest of the block. The block size is given by IM2. This must be a multiple of the operand size, and at least 4 bytes. There may be a maximum limit to the block size. This instruction is useful in matrix multiplication. 
+\vspace{2mm}
+
+For example, if the input vector contains (0,1,2,3,4,5,6,7,8) and the block size is 3 times the operand size, then the result will be (0,0,0,3,3,3,6,6,6).
+
+\subsubsection{replace}
+\label{table:replaceInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.5 & 3 & vectors and 32-bit immediate constant \\ \hline
+3.2 & 3 & vectors and 64-bit immediate constant. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+All elements of src1 are replaced by the integer or floating point constant src2.
+\vspace{2mm}
+
+When used without a mask, the constant is simply broadcast to make a vector of the same length as src1. This is useful for broadcasting a constant to all elements of a vector. Only the length of src1 (in bytes) is used, not its contents, when this instruction is used without a mask.
+\vspace{2mm}
+
+When used with a mask, the elements of src1 are selectively replaced. Elements that are not selected by the mask will be zero or taken from a fallback register.
+
+\subsubsection{replace\_even}
+\label{table:replaceEvenInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.5 & 4 & vectors and 32-bit immediate constant \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Same as replace. Only even-numbered vector elements are replaced.
+
+\subsubsection{replace\_odd}
+\label{table:replaceOddInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.5 & 5 & vectors and 32-bit immediate constant \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Same as replace. Only odd-numbered vector elements are replaced.
+
+\subsubsection{rotate\_up}
+\label{table:rotateUpInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 & 22 & vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Rotate vector up one element. Element number n is moved to position n+1, and the last element is moved to position 0. The length of the vector in bytes is indicated by general purpose register RS.
+
+\subsubsection{rotate\_down}
+\label{table:rotateDownInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 & 23 & vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Rotate vector down one element. Element number n is moved to position n-1, and the first element is moved to the last position. The length of the vector in bytes is indicated by general purpose register RS.
+
+\subsubsection{set\_len}
+\label{table:setLenInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 & 0 & vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Sets the length of a vector register to the number of bytes specified by a general purpose register. If the specified length is more than the maximum length for the specified operand type then the maximum length will be used.
+\vspace{2mm}
+
+If the output vector is longer than the input vector then the extra elements will be zero. If the output vector is shorter than the input vector then the extra elements will be discarded. 
+
+
+\subsubsection{set\_num}
+\label{table:setNumInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 & 2 & vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+The length of vector register RT is changed to the value of general purpose register RS. The length is indicated as number of elements. If the length is increased then the extra elements will be zero. If the length is decreased then the superfluous elements are lost.
+
+\vspace{2mm}
+This instruction differs from set\_len by multiplying RS with the operand size.
+
+\subsubsection{shift\_down}
+\label{table:shiftDownInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 & 21 & vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Shift elements of vector RT down by the number of elements indicated by general purpose register RS. 
+The upper RS elements of RD will be zero, the lower RS elements of RT are lost. The length of the vector is not changed.
+\vspace{2mm}
+
+This instruction differs from shift\_reduce by indicating the shift count as a number of elements rather than a number of bytes, and by not changing the length of the vector.
+
+
+\subsubsection{shift\_expand}
+\label{table:shiftExpandInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 & 18 & vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+The length of a vector is expanded by the specified number of bytes by adding zero-bytes at the low end and shifting all bytes up. If the resulting length is more than the maximum vector length for the specified operand type then the upper bytes are lost.
+
+\subsubsection{shift\_reduce}
+\label{table:shiftReduceInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 & 19 & vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+The length of a vector is reduced by the specified number of bytes by removing bytes at the low end and shifting all bytes down. If the resulting length is less than zero then the result will be a zero-length vector. The specified operand type is ignored.
+
+\subsubsection{shift\_up}
+\label{table:shiftUpInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 & 20 & vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Shift elements of vector RT up by the number of elements indicated by general purpose register RS. 
+The lower RS elements of RD will be zero, the upper RS elements of RT are lost. The length of the vector is not changed.
+\vspace{2mm}
+
+This instruction differs from shift\_expand by indicating the shift count as a number of elements rather than a number of bytes, and by not changing the length of the vector.
 
 \subsubsection{sign\_extend}
+\label{table:signExtendInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 4 & g.p. and integer scalar \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Sign-extend smaller integer to 64 bits.
+
+\vspace{2mm}
 The input can be an 8-bit, 16-bit or 32-bit integer. This integer is sign-extended to produce a 64-bit output in a general purpose register or a scalar in a vector register. If the input is a vector then only the first element in each 64-bit block of the input vector is used. Floating point types cannot be used.
 
-\subsubsection{min and max}
-min(src1,src2) = src1 \textless{} src2 ? src1 : src2
-
-max(src1,src2) = src1 \textless{} src2 ? src1 : src2
+\subsubsection{vec2gp}
+\label{table:vec2gpInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.3 B & 1 & vector register in, g.p. register out \\ \hline
+\end{tabular}
 \vspace{2mm}
 
-The operands are treated as signed. There is also a version for unsigned integers:
+Copy value of first element of vector register RS to general purpose register RD. Integers are sign-extended. Single precision floating point values are zero-extended.
+
+\vspace{2mm}
+\subsection{Data read and write instructions}
+
+\subsubsection{add\_cps}
+\label{table:addCpsInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+tiny & 28 & vector and g.p. register \\ \hline
+\end{tabular}
 \vspace{2mm}
 
-min\_u(src1,src2) = src1 \textless{} src2 ? src1 : src2
-
-max\_u(src1,src2) = src1 \textless{} src2 ? src1 : src2
+Add compressed size.
 \vspace{2mm}
 
-When the unsigned version is applied to floating point operands, it takes the absolute values of the operands, and the instruction name is changed:
+This instruction gets the size of the compressed image for vector RD and adds it to general purpose register RS.
+This is used for updating the stack pointer or any other pointer
+after restoring a vector from a compressed memory image.
 \vspace{2mm}
 
-min\_abs(src1, src2) = min(abs(src1), abs(src2))
+See save\_cp page \pageref{table:saveCpInstruction} for details.
 
-max\_abs(src1, src2) = max(abs(src1), abs(src2))
+\subsubsection{compress\_store}
+\label{table:compressStoreInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.7 A & 52 & vector. Optional \\ \hline
+\end{tabular}
 \vspace{2mm}
 
-The handling of floating point NAN operands is determined by bit 21 of the mask register or the mumeric control register. If bit 21 is zero then the non-NAN operand is output when one of the inputs is NAN, in accordance with the IEEE Standard 754-2008. If bit 21 is one then the NAN input is propagated.
+Compress vector RD of length RS bytes to a vector of half the length and half the element size.
+Double precision $\rightarrow$ single precision, 64-bit integer
+$\rightarrow$ 32-bit integer, etc. Store the compressed vector to memory address [RT+IM2] with length RS/2.
+
+\subsubsection{extract\_store}
+\label{table:extractStoreInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.7 A & 51 & vector. Optional \\ \hline
+\end{tabular}
 \vspace{2mm}
 
-A NAN operand that is not propagated will generate a trap if flag bit 29 is set.
+Extract one element from vector RD, starting at offset RS$\cdot$OS, with size OS into memory operand [RT+IM2].
 
-\subsubsection{Bitwise boolean instructions}
-These instructions include: and, and\_not, or, xor. Floating point operands are handled in the same way as integer operands.
+(OS = operand size).
 
-\subsubsection{Bit manipulation instructions}
-The following instructions are provided for manipulating bits: 
+
+\subsubsection{fence}
+\label{table:fenceInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.7 B & 49 & vector. Optional \\ \hline
+\end{tabular}
 \vspace{2mm}
 
-extract\_b: Extract bit number src2 in src1
-
-set\_b: Change bit number src2 in src1 to 1
-
-clear\_b: Change bit number src2 in src1 to 0
-
-toggle\_b: Change bit number src2 in src1 to its opposite
+Memory fence at address [RS+IM2]. Options indicated by IM1:
 \vspace{2mm}
 
-A floating point operand in src1 is treated as an integer with the same size. The bit index in src2 is interpreted as an 8-bit unsigned integer regardless of the operand type.
-\vspace{2mm}
-
-These instructions can be implemented with an 8-bit immediate constant for src2 instead of the larger constant that would be needed if we used AND, OR, XOR instructions for manipulating single bits. These instructions can also be used with floating point numbers, mainly for manipulating the sign bit.
-
-\subsubsection{mul\_add}
-Fused multiply and add.
-\vspace{2mm}
-
-dest = $\pm$ src1 $\pm$ (src2 $\cdot$ src3)
-\vspace{2mm}
-
-The fused multiply-and-add instruction can often improve the performance of floating point code significantly.
-\vspace{2mm}
-
-Only instruction formats that allow three operands are supported.
-\vspace{2mm}
-
-The signs of the operands can be inverted as indicated by bits 0-3 of the IM3 field in formats 2.4.x and 2.8.x:
-\vspace{2mm}
-
-bit 0: change sign of src1 in even-numbered vector elements
-
-bit 1: change sign of src1 in odd-numbered vector elements
-
-bit 2: change sign of src2$\cdot$src3 in even-numbered vector elements
-
-bit 3: change sign of src2$\cdot$src3 in odd-numbered vector elements
-\vspace{2mm}
-
-This makes it possible to do multiply-and-add, multiply-and-subtract, multiply-and-reverse-subtract, etc. It can also do multiply with alternating add and subtract, which is useful in calculations with complex numbers. There is no sign change in other formats where the IM3 field is absent. 
-\vspace{2mm}
-
-Support for integer operands is optional. Support for floating point operands is optional but desired.
-
-\subsubsection{add\_add}  \label{addAdd}
-This is two additions in one instruction.
-\vspace{2mm}
-
-dest = $\pm$ src1 $\pm$ src2 $\pm$ src3
-\vspace{2mm}
-
-Only instruction formats that allow three operands are supported.
-\vspace{2mm}
-
-The signs of the operands can be inverted as indicated by bits 0-2 of the IM3 field in formats 2.4.x and 2.8.x:
-\vspace{2mm}
-
-bit 0: change sign of src1
-
-bit 1: change sign of src2
-
-bit 2: change sign of src3
-\vspace{2mm}
-
-There is no sign change in other formats where the IM3 field is absent.
-\vspace{2mm}
-
-The precision for floating point operands is preferably better than the least significant bit of the numerically highest operand, but the intermediate result is not necessarily calculated with unlimited precision.
-\vspace{2mm}
-
-This instruction should only be supported if it can be implemented so that it is faster than two consecutive add instructions. It may be supported for integer operands or floating point or both.
-
-\subsubsection{compare} \label{compare}
-The compare instruction compares two source operands and generates a boolean scalar or vector where bit 0 indicates the result, and the remaining bits are copied from the mask or numeric control register. This instruction can do different compare operations depending on the following 4-bit condition code:
-
-\begin{longtable} {|p{14mm}|p{55mm}|p{55mm}|}
-\caption{Condition codes for compare instruction} 
-\label{table:conditionCodesForCompareInstruction} \\
+\begin{longtable}{|p{20mm}|p{50mm}|}
 \endfirsthead
 \endhead
 \hline
-\bfseries Bit & \bfseries Meaning for integer & \bfseries Meaning for float \\
-\hline
-\_ 0 0 0 & a $=$ b & a $=$ b \\
-\_ 0 0 1 & a $\neq$ b & a $\neq$ b \\
-\_ 0 1 0 & a $<$ b & a $<$ b \\
-\_ 0 1 1 & a $\geq$ b & a $\geq$ b \\
-\_ 1 0 0 & a $>$ b & a $>$ b \\
-\_ 1 0 1 & a $\leq$ b & a $\leq$ b \\
-\_ 1 1 0 & abs(a) $<$ abs(b) & abs(a) $<$ abs(b) \\
-\_ 1 1 1 & abs(a) $\geq$ abs(b) & abs(a) $\geq$ abs(b) \\
-\hline
-0 \_ \_ \_ & compare as signed & unordered gives 0 \\
-1 \_ \_ \_ & compare as unsigned & unordered gives 1 \\
-\hline
-\end{longtable}
-Details: The absolute values of integers are corrected for overflow so that $abs(INT\_MIN) > abs(INT\_MAX)$.
-If a and b are both infinity then $a = b$ will be true, but $a-b = 0$ will be unordered.
-You can check if a value is NAN by comparing it for unequal to itself with condition code 1001.
-
-\vspace{2mm}
-The condition codes are provided from different sources, depending on the instruction format:
-
-\begin{longtable} {|p{25mm}|p{50mm}|p{50mm}|}
-\caption{Source of condition codes} 
-\label{table:SourceOfConditionCodes} \\
-\endfirsthead
-\endhead
-\hline
-\bfseries Formats & \bfseries Condition code from & \bfseries Remaining bits from \\
-\hline
-0.0 0.2 0.4 0.5 0.6 0.8 2.0 2.1 2.2 2.3 3.1 3.3 & mask bit 2-5 & mask \\
-\hline
-0.1 0.3     & IM1 bit 0-3 & numeric control register \\
-\hline
-0.7 0.9        & numeric control register bit 2-5 & numeric control register \\
-\hline
-2.4.x 2.8.x       & IM3 bit 0-3 & mask \\
-\hline
-\end{longtable}
-
-\vspace{2mm}
-Masking and fallback is possible. Alternative use of the fallback register (RU) as an extra boolean operand is supported with at least the following formats: 2.4.6, 2.4.7, 2.8.0, 2.8.6, and 2.8.7. This option  is controlled by bits 4-5 of IM3:
-
-\begin{longtable} {|p{25mm}|p{100mm}|}
-\caption{Alternative use of fallback register} 
-\label{table:AlternativeFallbackForCompare} \\
-\endfirsthead
-\endhead
-\hline
-\bfseries bit 5 bit 4 & \bfseries Output \\
-\hline
-\hspace{5mm} 0 0 & mask ? result : fallback \\
-\hline
-\hspace{5mm} 0 1 & mask \& result \& fallback \\
-\hline
-\hspace{5mm} 1 0 & mask \& (result $|$ fallback) \\
-\hline
-\hspace{5mm} 1 1 & mask \& (result \^{} fallback) \\
-\hline
+\bfseries IM1 value & \bfseries meaning \\ \hline
+1 & read fence \\ \hline
+2 & write fence \\ \hline
+3 & read and write fence \\ \hline
 \end{longtable}
 \vspace{2mm}
 
+\subsubsection{move}
+The move instruction, described at page \pageref{table:moveInstruction}
+can read a register from a memory operand.
 
-\subsection{Tiny format instructions}
-\subsubsection{clear}
-This instruction sets the length of a vector register to zero. All contents is lost. The register can then be regarded as unused.
-
-\subsubsection{Push and pop operations}
-There are no push and pop instructions. A general purpose register R can be pushed on the stack with the following pair of tiny instructions:
-
-\begin{lstlisting}[frame=none]
-   sp = add.64(sp,-8)
-   [sp] = store.64(R)
-\end{lstlisting}
-
-A general purpose register R can be popped from the stack with the following pair of tiny instructions:
-
-\begin{lstlisting}[frame=none]
-   R = move.64([sp])
-   sp = sub.64(sp,-8)
-\end{lstlisting}
-
-Note that the constant -8 can be contained in the 4-bit signed field RS, but the constant 8 cannot. This is the reason why we are adding and subtracting -8 rather than doing the opposite with +8.
+\subsubsection{prefetch}
+\label{table:prefetchInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 3 & memory operand. Optional \\ \hline
+\end{tabular}
 \vspace{2mm}
 
-The assembler may support macros named push and pop for these sequences.
+Prefetch memory operand into cache for later read or write.
+Different variants (not yet defined) can be specified by IM3 for format 2.4.x and 2.8.x.
 
-\subsubsection{Saving and restoring vector registers} \label{saveRestoreVectorRegisters}
-When saving a vector register with variable length, we do not want to save the maximum length when only part of the register is used. Therefore, we have the save\_cp and restore\_cp instructions which are intended for saving and restoring a vector register without using more memory than necessary.
+\subsubsection{restore\_cp}
+\label{table:restoreCpInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+tiny & 30 & vector and memory operand \\ \hline
+\end{tabular}
 \vspace{2mm}
 
-Note that the format for the saved image is implementation-dependent. Typically, the save\_cp instruction will save the length of the vector followed by as many bytes as indicated by the length, and the restore\_cp instruction will read the length and then read as many bytes as indicated by the length. 
+Restore compressed image.
 \vspace{2mm}
 
-The microprocessor is allowed to compress the data in any way that it can handle sufficiently fast. For example, a boolean vector that uses only one bit per element can obviously be compressed to a much smaller size. The image for an unused vector register will typically contain only a few bytes of zero for the length.
+This will restore vector register RD from a compressed memory image pointed to by general purpose register RS.
+The memory image must have been written previously with the save\_cp instruction. See save\_cp for details.
+
+\subsubsection{save\_cp}
+\label{table:saveCpInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+tiny & 31 & memory operand and vector \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Save compressed image.
+\vspace{2mm}
+
+This will save vector register RD to a compressed memory image pointed to by general purpose register RS.
+\vspace{2mm}
+
+This instruction is used for saving a vector register to the stack or to any other memory position in an efficient way that includes information about the vector length. When saving a vector register with variable length, we do not want to save the maximum length when only part of the register is used. Instead, we are using the save\_cp and restore\_cp instructions which are intended for saving and restoring a vector register without using more memory than necessary.
+
+\vspace{2mm}
+
+The format of the compressed memory image is implementation-dependent. Typically, it will contain an integer to indicate the vector length, followed by as many bytes of data as the length indicates. Any additional compression is allowed if it can be done sufficiently fast.
+The compressed image of an empty vector will usually be a few bytes of zero to indicate zero length.
+\vspace{2mm}
+
+The size of the compressed image must be a multiple of the stack word size if the pointer register is the stack pointer.
 \vspace{2mm}
 
 The software should never use the saved image for anything else than restoring a vector register on the same microprocessor model that saved it, because the image format is not compatible across microprocessors.
@@ -279,45 +724,1738 @@ A vector register V can be restored (popped) from the stack with the following p
 The same instructions can be used for saving vector registers during a task switch. Unused vector registers will only use very little space when saved in this way.
 \vspace{2mm}
 
-The size of the compressed image, as indicated by the add\_cps and sub\_cps instructions, must be a multiple of 8 when the stack pointer is used in order to keep the stack properly aligned. 
-\vspace{2mm}
-
-It is allowed to use a smaller size that is not a multiple of 8 during a task switch where, typically, another pointer register is used. In this case, a control register may be provided to control the format of the saved image.
-\vspace{2mm}
-
 The restore\_cp instruction is allowed to read more bytes than necessary, up to the maximum vector length plus 8 bytes, and discard any superfluous bytes afterwards when the actual length is known.
 
-\subsection{Single-format instructions that use general purpose registers and special registers}
 
-\subsubsection{read\_spe, write\_spe}
-Read or write a special register. The following special registers are currently defined. The size is 64 bits. These registers are initialized with their default values at program start.
+\subsubsection{store}
+\label{table:storeInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi &  1 & memory operand and g.p. or vector register \\ \hline
+tiny  & 15 & memory operand and g.p. register \\ \hline
+2.7 B & 48 & memory operand and 32-bit constant. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
 
-\begin{longtable} {|p{15mm}|p{100mm}|}
-\caption{List of special registers} 
-\label{table:specialRegisters} \\
+Write the value of a register or constant to a memory operand.
+\vspace{2mm}
+
+The source and destination operands are swapped so that the value of RD is written to a memory operand. Only formats that specify a memory operand (scalar or vector without broadcast) are allowed.
+\vspace{2mm}
+
+The size of the memory operand is determined by the operand size OS when a scalar memory operand is specified, or by the vector length register in RS when a vector memory operand is specified.
+\vspace{2mm}
+
+The hardware must be able to handle memory operand sizes that are not powers of 2 without touching additional memory (read and rewrite beyond the memory operand is not allowed unless access from other threads is blocked during the operation and any access violation is suppressed). It is allowed to write the operand in a piecemeal fashion.
+\vspace{2mm}
+
+Masked operation will store zero or a fallback value. 
+The fallback value is zero if no fallback is specified. Masking cannot leave a memory element untouched.
+
+\subsubsection{sub\_cps}
+\label{table:subCpsInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+tiny & 29 & vector and g.p. register \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Subtract compressed size.
+\vspace{2mm}
+
+This instruction gets the size of the compressed image for vector RD and subtracts it from general purpose register RS.
+This is used for adjusting the stack pointer or any other pointer
+before saving a vector to a compressed memory image.
+\vspace{2mm}
+
+See save\_cp page \pageref{table:saveCpInstruction} for details.
+
+\subsection{General arithmetic instructions}
+
+\subsubsection{abs}
+\label{table:absInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.8 B &  0 & g.p. registers \\ \hline
+1.3 B & 16 & vector registers \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Absolute value of signed number.
+\vspace{2mm}
+
+Signed integers can overflow when the input is the minimum value.
+The handling of overflow for signed integers is controlled by the constant IM1 as follows:
+
+\begin{longtable}{|p{12mm}|p{80mm}|}
 \endfirsthead
 \endhead
 \hline
-\bfseries Special register number & \bfseries Meaning  \\
+\bfseries IM1 & \bfseries result when input is INT\_MIN \\ \hline
+0  & INT\_MIN (wrap around) \\ \hline
+1  & INT\_MAX (saturation)  \\ \hline
+2  & zero                   \\ \hline
+4  & generate trap (interrupt) \\ \hline
+\end{longtable}
+\vspace{2mm}
+
+
+\subsubsection{add}
+\label{table:addInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
-0 & Numeric control register (NUMCONTR)  \\
-1 & Microprocessor brand ID  \\
-2 & Microprocessor version number   \\
-28 & Thread environment block pointer (THREADP)   \\
-29 & Data section pointer (DATAP)  \\
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi &  8 & all types \\ \hline
+tiny  &  2 & g.p. register and 4-bit sign-extended constant \\ \hline
+tiny  &  9 & two g.p. registers \\ \hline
+tiny  & 20 & two vector registers, single precision float \\ \hline
+tiny  & 21 & two vector registers, double precision float \\ \hline
+1.1 C &  2 & g.p. register and 16-bit sign-extended constant \\ \hline
+1.1 C &  7 & g.p. register and 16-bit sign-extended constant shifted left by 16 \\ \hline
+1.1 C & 17 & g.p. register and 8-bit sign-extended constant shifted left by another constant \\ \hline
+2.9   &  2 & g.p. register and 32-bit zero-extended constant (add\_u) \\ \hline
+2.9   &  4 & g.p. register and 32-bit zero-extended constant shifted left by 32 (add\_hi) \\ \hline
+1.3 C & 33 & vector of 16-bit integer elements and broadcast 16 bit integer constant. Optional \\ \hline
+1.3 C & 40 & vector of 32-bit integer elements and broadcast 8-bit sign-extended constant shifted left by another constant. Optional \\ \hline
+1.3 C & 41 & vector of 64-bit integer elements and broadcast 8-bit sign-extended constant shifted left by another constant. Optional \\ \hline
+1.3 C & 58 & single precision floating point vector and broadcast half precision floating point constant. Optional \\ \hline
+1.3 C & 59 & double precision floating point vector and broadcast half precision floating point constant. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Addition.
+
+\subsubsection{add\_add}
+\label{table:addAddInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 49 & all types. Optional \\ \hline
+\end{tabular}
+\vspace{3mm}
+
+This is two additions in one instruction:
+\vspace{2mm}
+
+dest = $\pm$ src1 $\pm$ src2 $\pm$ src3
+\vspace{2mm}
+
+For optimal precision with floating point operands, the intermediate sum of the two numerically largest operands should preferably be calculated first with extended precision.
+\vspace{2mm}
+
+Only instruction formats that allow three operands are supported.
+\vspace{2mm}
+
+The signs of the operands can be inverted as indicated by the following 3-bit code
+
+\begin{longtable} {|p{20mm}|p{20mm}|p{75mm}|}
+\caption{Control bits for mul\_add} 
+\label{table:ControlBitsForAddAdd} \\
+\endfirsthead
+\endhead
+\hline
+\bfseries Format 2.4.x and 2.8.x & \bfseries Other formats with mask & \bfseries Meaning   \\
+\hline
+IM3 bit 2 & mask bit 2 & change sign of src1 \\
+IM3 bit 3 & mask bit 3 & change sign of src2 \\
+IM3 bit 4 & mask bit 4 & change sign of src3 \\
 \hline
 \end{longtable}
 
+There is no sign change if there is no IM3 field and no mask. 
+\vspace{2mm}
 
-\subsubsection{read\_cpb, write\_cpb}
-Read or write processor capabilities register. These registers are used for indicating capabilities of the processor, such as support for optional instructions and limitations to vector lengths. The size is 64 bits. These registers are initialized with their default values at program start.
+This instruction should only be supported if it can be implemented so that it is faster than two consecutive add instructions. It may be supported for integer operands or floating point or both.
+
+\subsubsection{compare} \label{compare}
+\label{table:compareInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi &  7 & all types \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+The compare instruction compares two source operands and generates a boolean scalar or vector where bit 0 indicates the result, and the remaining bits are copied from the mask or numeric control register. This instruction can do different compare operations depending on the following 4-bit condition code:
+
+\begin{longtable} {|p{14mm}|p{55mm}|p{55mm}|}
+\caption{Condition codes for compare instruction} 
+\label{table:conditionCodesForCompareInstruction} \\
+\endfirsthead
+\endhead
+\hline
+\bfseries Bit 5-4-3-2 & \bfseries Meaning for integer & \bfseries Meaning for float \\
+\hline
+\_ 0 0 0 & a $=$ b & a $=$ b \\
+\_ 0 0 1 & a $\neq$ b & a $\neq$ b \\
+\_ 0 1 0 & a $<$ b & a $<$ b \\
+\_ 0 1 1 & a $\geq$ b & a $\geq$ b \\
+\_ 1 0 0 & a $>$ b & a $>$ b \\
+\_ 1 0 1 & a $\leq$ b & a $\leq$ b \\
+\_ 1 1 0 & abs(a) $<$ abs(b) & abs(a) $<$ abs(b) \\
+\_ 1 1 1 & abs(a) $\geq$ abs(b) & abs(a) $\geq$ abs(b) \\
+\hline
+0 \_ \_ \_ & compare as signed & unordered gives 0 \\
+1 \_ \_ \_ & compare as unsigned & unordered gives 1 \\
+\hline
+\end{longtable}
+Details: The absolute values of integers are corrected for overflow so that abs(INT\_MIN) $>$ abs(INT\_MAX).
+If a and b are both infinity then $a = b$ will be true, but $a-b = 0$ will be unordered.
+You can check if a value is NAN by comparing it for unequal to itself with condition code 1001.
+
+\vspace{2mm}
+The condition codes are provided from different sources, depending on the instruction format:
+
+\begin{longtable} {|p{25mm}|p{50mm}|p{50mm}|}
+\caption{Source of condition codes} 
+\label{table:SourceOfConditionCodes} \\
+\endfirsthead
+\endhead
+\hline
+\bfseries Formats & \bfseries Condition code from & \bfseries Remaining bits from \\
+\hline
+0.0 0.2 0.4 0.5 0.6 0.8 2.0 2.1 2.2 2.3 3.1 3.3 & mask bit 2-5 & mask \\
+\hline
+0.1 0.3     & IM1 bit 2-5 & numeric control register \\
+\hline
+0.7 0.9     & zero & numeric control register \\
+\hline
+2.4.x 2.8.x & IM3 bit 2-5 & mask  \\
+\hline
+\end{longtable}
+
+The condition code is zero (indicating compare for equal) if there is no mask, no IM1 and no IM3 field. The remaining bits are taken from the numeric control register if there is no mask.
+
+\vspace{2mm}
+Masking and fallback is possible. Alternative use of the fallback register (RU) as an extra boolean operand is supported with formats 2.4.x and 2.8.x. This option is controlled by bits 0-1 of IM3:
+
+\begin{longtable} {|p{25mm}|p{80mm}|}
+\caption{Alternative use of fallback register} 
+\label{table:AlternativeFallbackForCompare} \\
+\endfirsthead
+\endhead
+\hline
+\bfseries bit 1 bit 0 & \bfseries Output \\
+\hline
+\hspace{5mm} 0 0 & mask ? result : fallback \\
+\hline
+\hspace{5mm} 0 1 & mask \& result \& fallback \\
+\hline
+\hspace{5mm} 1 0 & mask \& (result $|$ fallback) \\
+\hline
+\hspace{5mm} 1 1 & mask \& (result \^{} fallback) \\
+\hline
+\end{longtable}
+\vspace{2mm}
+
+\subsubsection{div}
+\label{table:divInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 16 & all types. Optional for integer vectors \\ \hline
+1.1 C &  6 & g.p. register and 16-bit sign-extended constant \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Signed division.
+
+\vspace{2mm}
+This instruction has multiple rounding modes. The rounding mode for integer operands is controlled by IM3 in format 2.4.x and 2.8.x as follows:
+
+\begin{longtable} {|p{25mm}|p{80mm}|}
+\caption{division instructions} 
+\label{table:DivInstructions} \\
+\endfirsthead
+\endhead
+\hline
+\bfseries IM3 bits 0-3 & \bfseries Meaning   \\
+\hline
+ 0 0 0 0 & Truncate towards zero \\
+\hline
+ 0 1 0 0 & Nearest or even \\
+ 0 1 0 1 & Down \\
+ 0 1 1 0 & Up \\
+ 0 1 1 1 & Truncate towards zero \\
+\hline
+ 1 0 0 0 & Rounding mode determined by bits 18-19 of mask or numeric control register \\
+\hline
+other values & Not allowed \\ 
+\hline
+\end{longtable}
+Truncation is always used with integer operands in formats with no IM3 field.
+
+\vspace{2mm}
+The rounding mode for floating point operands is controlled by the mask or numeric control register. IM3 must be zero for floating point operands.
+
+\vspace{2mm}
+Division of floating point operands by zero gives $\pm$INF.
+
+Division of integer operands by zero gives INT\_MAX or INT\_MIN.
+
+Overflow occurs by division of INT\_MIN by -1. The result will wrap around to give INT\_MIN.
+
+\subsubsection{div\_ex}
+\label{table:divExInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 24 & Integer vectors. Optional for more than one element \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Divide vector of double-size signed integers RS by signed integers RT. RS has element size 2$\cdot$OS. These are divided by the even numbered
+elements of RT with size OS. The truncated results are stored in the even-numbered elements of RD. The remainders are stored in the odd-numbered elements of RD.
+(OS = operand size).
+
+\subsubsection{div\_ex\_u}
+\label{table:divExUInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 25 & Integer vectors. Optional for more than one element \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Divide vector of double-size unsigned integers RS by unsigned integers RT. RS has element size 2$\cdot$OS. These are divided by the even numbered elements of RT with size OS. The truncated results are stored in the even-numbered elements of RD. The remainders are stored in the odd-numbered elements of RD.
+(OS = operand size).
+
+\subsubsection{div\_rev}
+\label{table:divRevInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 17 & all types. Optional for integer vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Same as div, with the two source operands swapped.
+
+The rounding mode is controlled in the same way as for the div instruction.
+
+\subsubsection{div\_u}
+\label{table:divUInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 18 & all integer types. Optional for integer vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Unsigned integer division.
+
+The rounding mode is controlled in the same way as for the div instruction.
+
+\vspace{2mm}
+Division by zero gives UINT\_MAX.
+
+\subsubsection{max}
+\label{table:maxInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 21 & all types \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Get the maximum of two numbers:
+
+max(src1,src2) = src1 \textgreater{} src2 ? src1 : src2
+\vspace{2mm}
+
+Integer operands are treated as signed.
+\vspace{2mm}
+
+The handling of floating point NAN operands is determined by bit 21 of the mask register or the mumeric control register. If bit 21 is zero then the non-NAN operand is output when one of the inputs is NAN, in accordance with the IEEE Standard 754-2008. If bit 21 is one then the NAN input is propagated.
+\vspace{2mm}
+
+A NAN operand that is not propagated will generate a trap if flag bit 29 is set.
+
+\subsubsection{max\_abs}
+\label{table:maxAbsInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 23 & all floating point types \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Gives the maximum of the absolute values of two floating point numbers.
+\vspace{2mm}
+
+max\_abs(src1, src2) = max(abs(src1), abs(src2))
+\vspace{2mm}
+
+NAN values are treated in the same way as for the max instruction.
+
+\subsubsection{max\_u}
+\label{table:maxUInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 23 & all integer types \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Gives the maximum of two unsigned integers.
+\vspace{2mm}
+
+max\_u(src1,src2) = src1 \textgreater{} src2 ? src1 : src2
+
+\subsubsection{min}
+\label{table:minInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 20 & all types \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Get the minimum of two numbers:
+
+min(src1,src2) = src1 \textless{} src2 ? src1 : src2
+\vspace{2mm}
+
+Integer operands are treated as signed.
+\vspace{2mm}
+
+Floating point NAN values are treated in the same way as for the max instruction.
+
+\subsubsection{min\_abs}
+\label{table:minAbsInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 22 & all floating point types \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Gives the minimum of the absolute values of two floating point numbers.
+\vspace{2mm}
+
+min\_abs(src1, src2) = min(abs(src1), abs(src2))
+\vspace{2mm}
+
+NAN values are treated in the same way as for the max instruction.
+
+\subsubsection{min\_u}
+\label{table:minUInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 22 & all integer types \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Gives the minimum of two unsigned integers.
+\vspace{2mm}
+
+min\_u(src1,src2) = src1 \textless{} src2 ? src1 : src2
+
+\subsubsection{mul}
+\label{table:mulInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 11 & all types \\ \hline
+tiny  & 24 & two single precision float vectors \\ \hline
+tiny  & 25 & two double precision float vectors \\ \hline
+1.1 C &  5 & general purpose register and 16-bit sign-extended constant \\ \hline
+1.3 C & 60 & single precision floating point vector and broadcast half-precision floating point constant. Optional \\ \hline
+1.3 C & 61 & double precision floating point vector and broadcast half-precision floating point constant. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Multiplication.
+\vspace{2mm}
+
+The same instruction can be used for signed and unsigned integers.
+
+\subsubsection{mul\_add}
+\label{table:mulAddInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 48 & all types. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Fused multiply and add.
+\vspace{2mm}
+
+dest = $\pm$ src1 $\pm$ (src2 $\cdot$ src3)
+\vspace{2mm}
+
+The fused multiply-and-add instruction can often improve the performance of floating point code significantly. The intermediate product is calculated with extended precision according to the IEEE 754-2008 standard.
+\vspace{2mm}
+
+Only instruction formats that allow three operands are supported.
+\vspace{2mm}
+
+The signs of the operands can be inverted as indicated by the following 4-bit code
+
+\begin{longtable} {|p{20mm}|p{20mm}|p{75mm}|}
+\caption{Control bits for mul\_add} 
+\label{table:ControlBitsForMulAdd} \\
+\endfirsthead
+\endhead
+\hline
+\bfseries Format 2.4.x and 2.8.x & \bfseries Other formats with mask & \bfseries Meaning   \\
+\hline
+IM3 bit 2 & mask bit 2 & change sign of src1 in even-numbered vector elements \\
+IM3 bit 3 & mask bit 3 & change sign of src1 in odd-numbered vector elements \\
+IM3 bit 4 & mask bit 4 & change sign of src2$\cdot$src3 in even-numbered vector elements \\
+IM3 bit 5 & mask bit 5 & change sign of src2$\cdot$src3 in odd-numbered vector elements \\
+\hline
+\end{longtable}
+
+\vspace{2mm}
+These option bits make it possible to do multiply-and-add, multiply-and-subtract, multiply-and-reverse-subtract, etc. It can also do multiply with alternating add and subtract, which is useful in calculations with complex numbers. 
+There is no sign change if there is no IM3 field and no mask. 
+
+\vspace{2mm}
+Support for integer operands is optional. Support for floating point operands is optional but desired.
+
+\subsubsection{mul\_ex}
+\label{table:mulExInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 14 & integer vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Extended multiply, signed.
+\vspace{2mm}
+
+Multiply even-numbered signed integer vector elements to double size result.
+
+\subsubsection{mul\_ex\_u}
+\label{table:mulExUInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 15 & integer vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Extended multiply, unsigned.
+\vspace{2mm}
+
+Multiply even-numbered unsigned integer vector elements to double size result.
+
+\subsubsection{mul\_hi}
+\label{table:mulHiInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 12 & integer vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+High part of signed integer product.
+\vspace{2mm}
+
+dest = (src1 $\cdot$ src2) $>>$ OS
+
+(Signed, OS = operand size in bits).
+
+\subsubsection{mul\_hi\_u}
+\label{table:mulHiUInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 13 & integer vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+High part of unsigned integer product.
+\vspace{2mm}
+
+dest = (src1 $\cdot$ src2) $>>$ OS
+
+(Unsigned, OS = operand size in bits).
+
+
+\subsubsection{rem}
+\label{table:remInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 19 & all types. Optional for vectors of more than one element \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Modulo. 
+
+\vspace{2mm}
+Unsigned for integer operands.
+Signed for floating point operands.
+
+\vspace{2mm}
+A floating point number modulo zero gives NAN.
+An integer modulo zero gives zero.
+
+\subsubsection{round}
+\label{table:roundInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.3 B & 14 & floating point vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Round floating point number to integer in floating point representation.
+\vspace{2mm}
+
+The rounding mode is specified in bit 0-1 of IM1. See table \ref{table:maskBits} page \pageref{table:maskBits}.
+
+\subsubsection{round\_d2}
+\label{table:roundD2Instruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.0 A &  3 & g.p. registers \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Round unsigned integer down to nearest power of 2.
+
+dest = 1 \textless\textless{} bitscan\_r(src1).
+\vspace{2mm}
+
+The result is zero when src1 is zero.
+
+\subsubsection{round\_u2}
+\label{table:roundU2Instruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.0 A &  4 & g.p. registers \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Round unsigned integer up to nearest power of 2.
+
+dest = ((src1 \& (src1-1)) == 0) ? src1 : 1 \textless\textless{}  (bitscan\_r(src1) + 1)
+\vspace{2mm}
+
+The result is zero when src1 is zero.
+
+\subsubsection{round2n}
+\label{table:round2nInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.3 B & 15 & vector registers. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Round to nearest multiple of $2^n$.
+
+dest = $2^n\cdot$ round($2^{-n}\cdot$ src1)
+
+n is a signed
+integer constant in IM1.
+
+\subsubsection{shift}
+\label{table:shiftInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 32 & all types \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Shift left or right, or multiply by a power of 2.
+\vspace{2mm}
+
+\begin{longtable} {|p{60mm}|p{60mm}|}
+% \caption{Shift instructions} 
+\endfirsthead
+\endhead
+\hline
+\bfseries Operands & \bfseries Result \\
+\hline
+integer, src2 $>$ 0  & src1 $<<$ src2 \\
+integer, src2 $<$ 0  & src1 $>>$ -src2, with sign extension \\
+src1 floating point, src2 integer & src1 $ \cdot 2^{src2} $ \\
+\hline
+\end{longtable}
+
+Integer operands will be shifted left when the count is positive, and shifted right with
+sign extension when the count is negative.
+\vspace{2mm}
+
+Floating point operands are treated differently. The shift count is added to the floating point exponent so that the value is multiplied by an integer power of 2 (positive or negative).
+The shift count is interpreted as a signed integer. 
+Overflow will produce infinity. The result will be zero rather than a subnormal number in case of underflow, regardless of bit 20 in the mask or numeric control register. 
+The reason for this is that
+speed has priority here. This instruction will typically take a single clock cycle, while floating point multiplication by a power of 2 takes multiple clock cycles. 
+This is useful for fast multiplication or division by a power of 2.
+
+\vspace{2mm}
+The two operands are swapped in formats with a memory operand so that src1 is the memory operand and src2 is a register. The length of a vector output is determined by the length of the register source operand.
+
+\subsubsection{shift\_add}
+\label{table:shiftAddInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.8 B &  1 & g.p. registers \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Shift and add. 
+\vspace{2mm}
+
+dest = src1 + (src2 \textless\textless{}  src3).
+\vspace{2mm}
+
+src1 uses the same register as dest. src3 is an 8-bit signed immediate constant in IM1.
+\vspace{2mm}
+
+Will shift right with zero extension if src3 is negative.
+
+\subsubsection{sqrt}
+\label{table:sqrtInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 26 & floating point vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Square root.
+\vspace{2mm}
+
+The square root of a negative number gives NAN.
+
+\subsubsection{sub}
+\label{table:subInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi &  9 & all types \\ \hline
+tiny  &  3 & g.p. register and 4-bit sign-extended constant \\ \hline
+tiny  & 10 & two g.p. registers \\ \hline
+tiny  & 22 & two vector registers, single precision float \\ \hline
+tiny  & 23 & two vector registers, double precision float \\ \hline
+2.9   &  3 & g.p. register and 32-bit zero-extended constant (sub\_u) \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Subtraction.
+
+\subsubsection{sub\_rev}
+\label{table:subRevInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 10 & all types \\ \hline
+1.1 C &  3 & g.p. register and 16-bit sign-extended constant \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Reverse subtraction.
+\vspace{2mm}
+
+dest = src2 - src1.
+\vspace{2mm}
+
+
+\subsection{Arithmetic instructions with carry, overflow check, or saturation}
+
+\subsubsection{abs}
+see page \pageref{table:absInstruction}.
+\vspace{2mm}
+
+
+\subsubsection{add\_c}
+\label{table:addCInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 28 & integer vectors with two elements. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Addition with carry.
+\vspace{2mm}
+
+The vector has two elements. The upper element of src1 is used as carry in. The upper element of dest is used as carry out. Only the lower element of src2 is used.
+\vspace{2mm}
+
+Longer vectors are not supported. See page 
+\pageref{highPrecisionArithmetic} for an alternative for longer vectors.
+
+\subsubsection{add\_oc}
+\label{table:addOcInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 38 & vector registers. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Integer addition with overflow check.
+\vspace{2mm}
+
+Instructions with overflow check use the even-numbered vector elements for arithmetic instructions. Each following odd-numbered vector element is used for overflow detection. If the first source operand is a scalar then the result operand will be a vector with two elements.
+\vspace{2mm}
+
+Overflow conditions are indicated with the following bits:
+\vspace{2mm}
+
+bit 0. Unsigned integer overflow (carry).
+
+bit 1. Signed integer overflow.
+
+bit 2. Floating point overflow.
+
+bit 3. Floating point invalid operation.
+\vspace{2mm}
+
+The values are propagated so that the overflow result of the operation is OR'ed with the corresponding values of both input operands.
+\vspace{2mm}
+
+\subsubsection{add\_ss}
+\label{table:addSsInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 30 & integer vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Add signed integers with saturation.
+
+Overflow and underflow produces INT\_MAX and INT\_MIN.
+
+\subsubsection{add\_us}
+\label{table:addUsInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 31 & integer vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Add unsigned integers with saturation.
+
+Overflow produces UINT\_MAX.
+
+\subsubsection{compress\_ss}
+\label{table:compressSsInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 5 & integer vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Compress, signed with saturation.
+\vspace{2mm}
+
+Same as compress (see page \pageref{table:compressInstruction}). Integers are treated as signed and compressed with saturation. Floating point operands cannot be used.
+
+\subsubsection{compress\_us}
+\label{table:compressUsInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 6 & integer vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Compress, unsigned with saturation.
+\vspace{2mm}
+
+Same as compress (see page \pageref{table:compressInstruction}). Integers are treated as unsigned and compressed with saturation. Floating point operands cannot be used.
+
+
+
+
+\subsubsection{div\_oc}
+\label{table:divOcInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 42 & vector registers. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Divide integers with overflow check.
+
+See add\_oc for options.
+
+\subsubsection{mul\_oc}
+\label{table:mulOcInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 41 & vector registers. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Multiply integers with overflow check.
+
+See add\_oc for options.
+
+\subsubsection{mul\_ss}
+\label{table:mulSsInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 34 & integer vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Multiply signed integers with saturation.
+
+Overflow and underflow produces INT\_MAX and INT\_MIN.
+
+\subsubsection{mul\_us}
+\label{table:mulUsInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 35 & integer vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Multiply unsigned integers with saturation.
+
+Overflow produces UINT\_MAX.
+
+\subsubsection{shift\_ss}
+\label{table:shiftSsInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 36 & integer vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Shift signed integers left or right with saturation.
+
+Overflow and underflow produces INT\_MAX and INT\_MIN.
+
+\subsubsection{shift\_us}
+\label{table:shiftUsInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 37 & integer vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Shift unsigned integers left or right with saturation.
+
+Overflow produces UINT\_MAX.
+
+\subsubsection{sub\_b}
+\label{table:subBInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 29 & integer vectors with two elements. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Subtraction with borrow.
+\vspace{2mm}
+
+The vector has two elements. The upper element of src1 is used as borrow in. The upper element of dest is used as borrow out. Only the lower element of src2 is used.
+\vspace{2mm}
+
+Longer vectors are not supported. See page 
+\pageref{highPrecisionArithmetic} for an alternative for longer vectors.
+
+\subsubsection{sub\_oc}
+\label{table:subOcInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 39 & vector registers. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Subtract integers with overflow check.
+
+See add\_oc for options.
+
+\subsubsection{sub\_ss}
+\label{table:subSsInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 32 & integer vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Subtract signed integers with saturation.
+
+Overflow and underflow produces INT\_MAX and INT\_MIN.
+
+\subsubsection{sub\_us}
+\label{table:subUsInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 33 & integer vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Subtract unsigned integers with saturation.
+
+Overflow and underflow produces UINT\_MAX and 0.
+
+
+\subsection{Logic and bit manipulation instructions}
+
+\subsubsection{and}
+\label{table:andInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 28 & all types \\ \hline
+tiny  & 11 & two g.p. registers \\ \hline
+1.1 C & 18 & g.p. register and 8-bit signed constant shifted left by another constant \\ \hline
+2.9   &  5 & g.p. register and 32-bit constant shifted left by 32 (and\_hi) \\ \hline
+1.3 C & 34 & vector of 16-bit integers, and broadcast 16-bit constant. Optional \\ \hline
+1.3 C & 42 & vector of 32-bit integers, and broadcast sign-extended 8-bit constant shifted left by another constant. Optional \\ \hline
+1.3 C & 43 & vector of 64-bit integers, and broadcast sign-extended 8-bit constant shifted left by another constant. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Bitwise boolean and.
+\vspace{2mm}
+
+dest = src1 \& src2
+\vspace{2mm}
+
+Floating point operands are treated as integers.
+
+\subsubsection{and\_bit}
+\label{table:andBitInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 38 & all types \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Clear all bits except one. 
+\vspace{2mm}
+
+dest = src1 \& (1 $<<$ src2).
+
+\vspace{2mm}
+Floating point operands are treated as integers.
+
+\vspace{2mm}
+The two operands are swapped in formats with a memory operand so that src1 is the memory operand and src2 is a register. The length of a vector output is determined by the length of the register source operand.
+
+\subsubsection{and\_not}
+\label{table:andNotInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 29 & all types \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Bitwise and not.
+
+dest = src1 \& \~{}src2
+\vspace{2mm}
+
+Floating point operands are treated as integers.
+
+\subsubsection{bit\_reverse}
+\label{table:bitReverseInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.3 B & 21 & integer vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Reverse the order of bits in each element of a vector.
+
+\subsubsection{bits2bool}
+\label{table:bits2boolInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 14 & integer vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Expand contiguous bits in a vector register to a boolean vector with each bit of the source going into bit 0 of each element of the destination. 
+The remaining bits of each element are copied from the mask or numeric control register.
+
+\subsubsection{bitscan\_f}
+\label{table:bitscanFInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.0 A &  1 & g.p. registers \\ \hline
+1.3 B & 22 & integer vectors. Optional for more than one element \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Bit scan forward. 
+\vspace{2mm}
+
+Find index to lowest set bit, i. e. highest X for which 
+
+(((1 \textless\textless{} X) - 1) \& src1)) == 0.
+\vspace{2mm}
+
+The result is -1 when src1 is zero.
+
+\subsubsection{bitscan\_r}
+\label{table:bitscanRInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.0 A &  2 & g.p. registers \\ \hline
+1.3 B & 23 & integer vectors. Optional for more than one element \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Bit scan reverse. 
+\vspace{2mm}
+
+Find index to highest set bit, i. e. highest X for which (1 \textless\textless{} X) $\leq$ src1.
+\vspace{2mm}
+
+The result is -1 when src1 is zero.
+
+\subsubsection{bool\_reduce}
+\label{table:boolReduceInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 16 & integer vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+The boolean vector RT with length RS bytes is reduced by combining bit 0 of all elements.
+
+The output is a scalar integer where bit 0 is the AND combination of all the bits, and bit
+1 is the OR combination of all the bits. The remaining bits are reserved for future use.
+
+\subsubsection{bool2bits}
+\label{table:bool2bitsInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 15 & integer vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+The boolean vector RT with length RS bytes is packed into the lower n bits of RD, taking bit 0 of each element, where n is the number of elements (n = RS / OS). 
+The length of RD is at least sufficient to contain n bits.
+
+\subsubsection{clear\_bit}
+\label{table:clearBitInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 36 & all types \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Clear bit number src2 in src1.
+\vspace{2mm}
+
+dest = src1 \& \~{}(1 $<<$ src2).
+
+\vspace{2mm}
+Floating point operands are treated as integers.
+
+\vspace{2mm}
+The two operands are swapped in formats with a memory operand so that src1 is the memory operand and src2 is a register. The length of a vector output is determined by the length of the register source operand.
+
+\subsubsection{compare}
+See page \pageref{table:compareInstruction}
+\vspace{2mm}
+
+\subsubsection{fp\_category}
+\label{table:fpCategoryInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.3 B & 17 & floating point vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+The input is a floating point vector. The output is a boolean vector where bit 0 of each element indicates if the input RS belongs to any of the categories indicated by the bits in the immediate operand IM1. The remaining bits are taken from the input RD. Any floating point value will belong to one, and only one, of these categories. 
+
+\begin{longtable} {|p{20mm}|p{90mm}|}
+\caption{Meaning of bits in fp\_category} 
+\label{table:fpCategoryInstructionBits} \\
+\endfirsthead
+\endhead
+\hline
+\bfseries Bit number & \bfseries Meaning  \\
+\hline
+0 & $\pm$ NAN \\
+1 & $\pm$ Zero \\
+2 & $-$ Subnormal \\
+3 & $+$ Subnormal \\
+4 & $-$ Normal \\
+5 & $+$ Normal \\
+6 & $-$ Infinite  \\
+7 & $+$ Infinite  \\
+\hline
+\end{longtable}
+
+\subsubsection{make\_mask}
+\label{table:makeMaskInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.5 &  2 & integer vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Make a mask from the bits of the 32-bit integer constant src2. Each bit of src2 goes into bit 0 of one element of the output. The remaining bits of each element are taken from src1. The length of the output is the same as the length of src1. If there are more than 32 elements in the vector then the bit pattern of src2 is repeated.
+
+\subsubsection{make\_sequence}
+\label{table:makeSequenceInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.3 B &  4 & all vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Makes a vector of length RS bytes. The number of elements is RS/OS, (OS = operand size).
+
+The first element is equal to IM1, the next element is IM1+1, etc.
+Support for floating point is optional.
+
+\subsubsection{mask\_length}
+\label{table:maskLengthInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.3 B &  5 & integer vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Make a boolean vector to mask the first n elements of a vector, where \\
+n = RS/OS. (OS = operand size). 
+The output vector RD will have the same length as the input vector RD. RS indicates the length of the part that is enabled by the mask. IM1 contains the following option bits: \\
+bit 0 = 0: bit 0 will be 1 in the first n elements in the output and 0 in the rest. \\
+bit 0 = 1: bit 0 will be 0 in the first n elements in the output and 1 in the rest. \\
+bit 6 = 1: copy remaining bits from input vector RD. \\
+bit 7 = 1: copy remaining bits from the numeric control register. \\
+Output bits that are not set by any of these options will be zero.
+
+\subsubsection{move\_bits}
+\label{table:moveBitsInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.4.7 & 0.1 & integer vectors. Optional \\ \hline
+2.8.7 & 0.1 & g.p. registers. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Take one or more contiguous bits from one position in the second source operand and insert them into another position the first source operand. This can be used for all kinds of bitfield operations.
+\vspace{2mm}
+
+The position in src2 is the lower 8 bits of IM2. a = IM2 \& 0xFF.
+
+The position in src1 is the upper 8 bits of IM2. b = IM2 $>>$ 0xFF.
+
+The number of bits to move is c = IM3.
+\vspace{2mm}
+
+m = (1 $<<$ c) - 1
+
+dest = (src1 \& \~{}(m$<<$b)) $|$ ((src2 $>>$ a) \& m) $<<$ b
+
+\subsubsection{or}
+\label{table:orInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 30 & all types \\ \hline
+tiny  & 12 & two g.p. registers \\ \hline
+1.1 C & 19 & g.p. register and 8-bit signed constant shifted left by another constant \\ \hline
+2.9   &  6 & g.p. register and 32-bit constant shifted left by 32 (or\_hi) \\ \hline
+1.3 C & 35 & vector of 16-bit integers, and broadcast 16-bit constant. Optional \\ \hline
+1.3 C & 44 & vector of 32-bit integers, and broadcast sign-extended 8-bit constant shifted left by another constant. Optional \\ \hline
+1.3 C & 45 & vector of 64-bit integers, and broadcast sign-extended 8-bit constant shifted left by another constant. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Bitwise boolean or.
+\vspace{2mm}
+
+dest = src1 $|$ src2
+\vspace{2mm}
+
+Floating point operands are treated as integers.
+
+\subsubsection{popcount}
+\label{table:popcountInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.3 B & 24 & integer vectors. Optional for more than one element \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+The popcount instruction counts the number of 1-bits in an integer. It can also be used for parity generation.
+
+\subsubsection{rotate}
+\label{table:rotateInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 34 & all integer types \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Rotate the bits of src1 left if src2 is positive, or right if negative.
+
+\vspace{2mm}
+The two operands are swapped in formats with a memory operand so that src1 is the memory operand and src2 is a register. The length of a vector output is determined by the length of the register source operand.
+
+\subsubsection{set\_bit}
+\label{table:setBitInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 35 & all integer types \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Set bit number src2 in src1 to one.
+\vspace{2mm}
+
+dest = src1 $|$ (1 $<<$ src2)
+
+\vspace{2mm}
+The two operands are swapped in formats with a memory operand so that src1 is the memory operand and src2 is a register. The length of a vector output is determined by the length of the register source operand.
+
+\subsubsection{shift}
+See page \pageref{table:shiftInstruction}
+
+\subsubsection{shift\_u}
+\label{table:shiftUInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 33 & all integer types \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Shift bits left or right, with zero extension.
+
+dest = src1 $<<$ src2, if src2 $>$ 0
+
+dest = src1 $>>$ -src2, if src2 $<$ 0
+
+\vspace{2mm}
+The two operands are swapped in formats with a memory operand so that src1 is the memory operand and src2 is a register. The length of a vector output is determined by the length of the register source operand.
+
+\subsubsection{test\_bit}
+\label{table:testBitInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 39 & all integer types \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Test the value of bit number src2 in src1, and make it the least significant bit of the output (to use as a boolean). The result is zero if src2 is out of range.
+\vspace{2mm}
+
+result = (src1 $>>$ src2) \& 1.
+\vspace{2mm}
+
+The remaining bits of the output are taken from a mask or from the numeric control register if there is no mask. 
+
+\vspace{2mm}
+The two operands are swapped in formats with a memory operand so that src1 is the memory operand and src2 is a register. The length of a vector output is determined by the length of the register source operand.
+
+\vspace{2mm}
+Masking and fallback is possible. Alternative use of the mask register and the fallback register (RU) as extra boolean operands is supported with formats 2.4.x and 2.8.x. These options are controlled by bit 0-1 of the constant IM3 in the same way as for the compare instruction (see page \pageref{table:AlternativeFallbackForCompare}). Bit 2 inverts the result, bit 3 inverts the fallback, and bit 4 inverts the mask. These options are summarized in the following table, giving the value of bit 0 of the destination register.
+
+\begin{longtable} {|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{60mm}|}
+\caption{Alternative use of mask and fallback register controlled by IM3} 
+\label{table:AlternativeMaskUseForTestBit} \\
+\endfirsthead
+\endhead
+\hline
+\bfseries bit 4 & \bfseries bit 3 & \bfseries bit 2 & \bfseries bit 1 & \bfseries bit 0 & \bfseries Output \\
+\hline
+0 & 0 & 0 & 0 & 0 & mask ? result : fallback \\
+0 & 0 & 1 & 0 & 0 & mask ? !result : fallback \\
+0 & 1 & 0 & 0 & 0 & mask ? result : !fallback \\
+0 & 1 & 1 & 0 & 0 & mask ? !result : !fallback \\
+1 & 0 & 0 & 0 & 0 & !mask ? result : fallback \\
+1 & 0 & 1 & 0 & 0 & !mask ? !result : fallback \\
+1 & 1 & 0 & 0 & 0 & !mask ? result : !fallback \\
+1 & 1 & 1 & 0 & 0 & !mask ? !result : !fallback \\
+\hline
+0 & 0 & 0 & 0 & 1 & mask \& result \& fallback \\
+0 & 0 & 1 & 0 & 1 & mask \& !result \& fallback \\
+0 & 1 & 0 & 0 & 1 & mask \& result \& !fallback \\
+0 & 1 & 1 & 0 & 1 & mask \& !result \& !fallback \\
+1 & 0 & 0 & 0 & 1 & !mask \& result \& fallback \\
+1 & 0 & 1 & 0 & 1 & !mask \& !result \& fallback \\
+1 & 1 & 0 & 0 & 1 & !mask \& result \& !fallback \\
+1 & 1 & 1 & 0 & 1 & !mask \& !result \& !fallback \\
+\hline
+0 & 0 & 0 & 1 & 0 & mask \& (result $|$ fallback) \\
+0 & 0 & 1 & 1 & 0 & mask \& (!result $|$ fallback) \\
+0 & 1 & 0 & 1 & 0 & mask \& (result $|$ !fallback) \\
+0 & 1 & 1 & 1 & 0 & mask \& (!result $|$ !fallback) \\
+1 & 0 & 0 & 1 & 0 & !mask \& (result $|$ fallback) \\
+1 & 0 & 1 & 1 & 0 & !mask \& (!result $|$ fallback) \\
+1 & 1 & 0 & 1 & 0 & !mask \& (result $|$ !fallback) \\
+1 & 1 & 1 & 1 & 0 & !mask \& (!result $|$ !fallback) \\
+\hline
+0 & 0 & 0 & 1 & 1 & mask \& (result \^{} fallback) \\
+0 & 0 & 1 & 1 & 1 & mask \& (!result \^{} fallback) \\
+0 & 1 & 0 & 1 & 1 & mask \& (result \^{} !fallback) \\
+0 & 1 & 1 & 1 & 1 & mask \& (!result \^{} !fallback) \\
+1 & 0 & 0 & 1 & 1 & !mask \& (result \^{} fallback) \\
+1 & 0 & 1 & 1 & 1 & !mask \& (!result \^{} fallback) \\
+1 & 1 & 0 & 1 & 1 & !mask \& (result \^{} !fallback) \\
+1 & 1 & 1 & 1 & 1 & !mask \& (!result \^{} !fallback) \\
+\hline
+\end{longtable}
+\vspace{2mm}
+
+\subsubsection{test\_bits\_and}
+\label{table:testBitsAndInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 40 & all integer types \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Test if all indicated bits are 1.
+The boolean result is placed in the least significant bit of the output. The remaining bits of the output are taken from a mask or from the numeric control register if there is no mask.
+\vspace{2mm}
+
+result = ((src1 \& src2) == src2)
+
+\vspace{2mm}
+The two operands are swapped in formats with a memory operand so that src1 is the memory operand and src2 is a register. The length of a vector output is determined by the length of the register source operand.
+
+\vspace{2mm}
+Masking and fallback is possible. Alternative use of the mask register and the fallback register (RU) as extra boolean operands is supported with formats 2.4.x and 2.8.x. These options are controlled by the bits of IM3 in the same way as for test\_bit, as indicated in table \ref{table:AlternativeMaskUseForTestBit}.
+
+\subsubsection{test\_bits\_or}
+\label{table:testBitsOrInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 41 & all integer types \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Test if at least one of the indicated bits is 1.
+The boolean result is placed in the least significant bit of the output. The remaining bits of the output are taken from a mask or from the numeric control register if there is no mask.
+\vspace{2mm}
+
+result = ((src1 \& src2) != 0)
+
+\vspace{2mm}
+Masking and fallback is possible. Alternative use of the mask register and the fallback register (RU) as extra boolean operands is supported with formats 2.4.x and 2.8.x. These options are controlled by the bits of IM3 in the same way as for test\_bit, as indicated in table \ref{table:AlternativeMaskUseForTestBit}.
+
+\subsubsection{toggle\_bit}
+\label{table:toggleBitInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 37 & all types \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Change the value of bit number src2 in src1 to its opposite.
+\vspace{2mm}
+
+result = src1 \^{} (1 $<<$ src2)
+
+\vspace{2mm}
+The two operands are swapped in formats with a memory operand so that src1 is the memory operand and src2 is a register. The length of a vector output is determined by the length of the register source operand.
+
+\subsubsection{truth\_tab2}
+\label{table:truthTab2Instruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.3 B & 25 & integer vectors \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+This instruction can make an arbitrary boolean function of two boolean vector input variables, expressed by a 4-bit truth table in an immediate constant IM1. The result in bit 0 of each vector element is the arbitrary boolean function of bit 0 of the corresponding elements of each of the input operands. Bit 0 of the result is a bit from the truth table selected by the combined input bits. The remaining bits of the output vector are copied from the first input operand. 
+\vspace{2mm}
+
+This instruction can be used as a universal instruction for manipulating and combining boolean vectors and masks.
+\vspace{2mm}
+
+dest = ((IM1 $>>$ ((src1 \& 1) $|$ (src2 \& 1) $<<$ 1)) \& 1) $|$ (src1 \& \~{}1)
+
+\subsubsection{truth\_tab3}
+\label{table:truthTab3Instruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.4.6 & 3.1 & integer vectors. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+This instruction can make an arbitrary boolean function of three boolean vector input variables, expressed by a 8-bit truth table in an immediate constant IM2. The result in bit 0 of each vector element is the arbitrary boolean function of bit 0 of the corresponding elements of each of the input operands. Bit 0 of the result is a bit from the truth table selected by the combined input bits. The remaining bits of the output vector are copied from the mask, or from the first input operand if there is no mask.
+\vspace{2mm}
+
+This instruction can be used as a universal instruction for manipulating and combining boolean vectors and masks.
+\vspace{2mm}
+
+dest = ((IM2 $>>$ ((src1 \& 1) $|$ (src2 \& 1) $<<$ 1 $|$ (src3 \& 1) $<<$ 2)) \& 1) $|$ (src1 \& \~{}1)
+\vspace{2mm}
+
+A mask will use the first input operand as fallback.
+
+\subsubsection{xor}
+\label{table:xorInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 31 & all types \\ \hline
+tiny  & 13 & two g.p. registers \\ \hline
+1.1 C & 20 & g.p. register and 8-bit signed constant shifted left by another constant \\ \hline
+2.9   &  7 & g.p. register and 32-bit constant shifted left by 32 (xor\_hi) \\ \hline
+1.3 C & 36 & vector of 16-bit integers, and broadcast 16-bit constant. Optional \\ \hline
+1.3 C & 46 & vector of 32-bit integers, and broadcast sign-extended 8-bit constant shifted left by another constant. Optional \\ \hline
+1.3 C & 47 & vector of 64-bit integers, and broadcast sign-extended 8-bit constant shifted left by another constant. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Bitwise boolean exclusive or.
+\vspace{2mm}
+
+dest = src1 \^{} src2
+\vspace{2mm}
+
+Floating point operands are treated as integers.
+
+\subsection{Control transfer instructions}
+
+\subsubsection{call}
+\label{table:callInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.5 D &  8 & 24 bit offset \\ \hline
+1.5 C & 59 & 16 bit offset \\ \hline
+2.7.2 & 59 & 32 bit offset \\ \hline
+3.0.1 & 59 & 64 bit absolute address \\ \hline
+1.4 B & 59 & memory operand with 8 bit offset \\ \hline
+2.7.0 & 59 & memory operand with 32 bit offset \\ \hline
+1.5 C & 61 & target address in register \\ \hline
+1.4 A & 61 & table of relative addresses  \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Function call.
+\vspace{2mm}
+
+See page \pageref{table:jumpInstructionFormats} for details.
+\vspace{2mm}
+
+The return address is stored on the call stack. The calling conventions are described on page \pageref{functionCallingConventions}.
+
+\subsubsection{jump}
+\label{table:jumpInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.5 D &  0 & 24 bit offset \\ \hline
+1.5 C & 58 & 16 bit offset \\ \hline
+2.7.2 & 58 & 32 bit offset \\ \hline
+3.0.1 & 58 & 64 bit absolute address \\ \hline
+1.4 B & 58 & memory operand with 8 bit offset \\ \hline
+2.7.0 & 58 & memory operand with 32 bit offset \\ \hline
+1.5 C & 60 & target address in register \\ \hline
+1.4 A & 60 & table of relative addresses  \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Unconditional jump.
+\vspace{2mm}
+
+See page \pageref{table:jumpInstructionFormats} for details.
+
+\subsubsection{return}
+\label{table:jumpInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.4 B & 62 & \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Return from function. The return address is taken from the call stack.
+
+\subsubsection{combined ALU and conditional jump instructions}
+See table \ref{table:jumpInstructionFormats} page \pageref{table:jumpInstructionFormats}.
+\vspace{4mm}
+
+\subsection{Miscellaneous instructions}
+
+\subsubsection{address}
+\label{table:addressInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.9 & 32 & g.p. registers \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Calculate an address relative to a pointer by adding a 32-bit sign-extended constant to a special pointer register. The pointer register can be THREADP (28), DATAP (29), IP (30) or SP(31).
+
+\subsubsection{compare\_swap}
+\label{table:compareSwapInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.7 A & 54 & vector registers and memory operand with 32 bit offset. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Atomic compare and swap instruction, used for thread synchronization and for lock-free data sharing between threads. src1 and src2 are register operands, src3 is a memory operand, which must be aligned to a natural address. All operands are treated as integers, regardless of the specified operand type. The operation is:
+
+\begin{lstlisting}[frame=none]
+   temp = src3;
+   if (temp == src1) src3 = src2;
+   return temp;
+\end{lstlisting}
+
+Further atomic instructions can be implemented if needed, preferably with the same format and consecutive values of OP1.
+
+\subsubsection{filler}
+\label{table:fillerInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.5 C & 63 & \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+This instruction is used for filling unused code memory. It will generate a trap (interrupt) if executed.
+\vspace{2mm}
+
+All fields are filled with ones. The complete instruction code word is 0x6FFFFFFF.
+
+\subsubsection{nop}
+\label{table:nopInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi &  0 & \\ \hline
+tiny  &  0 & \\ \hline
+3.0   &  0 & \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+No operation. Used as a filler to replace removed code or to align code entries.
+\vspace{2mm}
+
+The processor is allowed to skip NOPs as fast as it can at an early stage in the pipeline. A pair of tiny instructions where the second instruction is a NOP can be treated as a single instruction.
+\vspace{2mm}
+
+These NOPs cannot be used as timing delays, only as fillers.
+
+\subsubsection{undef}
+\label{table:undefInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 63 & \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Undefined code. Guaranteed to generate trap (interrupt) in all future implementations
+
+\subsubsection{userdef}
+\label{table:userdefInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 55-62 & any types \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Reserved for user-defined instructions.
+\vspace{2mm}
+
+\subsection{System instructions}
+
+\subsubsection{input}
+
+\label{table:inputInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 62 & vector registers \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Read from input port. Privileged instruction.
+\vspace{2mm}
+
+RD = destination (vector register),
+RT = port address, RS = vector length in bytes.
+
+\subsubsection{output}
+\label{table:outputInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.2 A & 63 & vector registers \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Write to output port. Privileged instruction.
+\vspace{2mm}
+
+RD = source (vector register),
+RT = port address, RS = vector length in bytes.
+
+\subsubsection{read\_capabilities}
+\label{table:readCapabilitiesInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.8 B & 34 & g.p. register, capabilities register \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Read processor capabilities register. These registers are used for indicating capabilities of the processor, such as support for optional instructions and limitations to vector lengths. The size is 64 bits. These registers are initialized with their default values at program start.
 \vspace{2mm}
 
 The immediate constant in IM1 determines details of the operation:
 
 \begin{longtable} {|p{20mm}|p{90mm}|}
-\caption{Meaning of immediate constant in read\_cpb and write\_cpb instructions} 
-\label{table:readWriteCpbModes} \\
+\caption{Meaning of immediate constant in read\_capabilities and write\_capabilities instructions} 
+\label{table:readWriteCapabilitiesModes} \\
 \endfirsthead
 \endhead
 \hline
@@ -364,276 +2502,80 @@ Changing the values of the maximum vector length has the following effects. If t
 
 Capabilities registers 8-9 can be modified for test purposes or to tell the software not to use a specific instruction. The same value will be returned when reading the register. Attempts to execute an instruction that is not supported will cause a trap, regardless of the value of the capabilities register.
 
-\subsubsection{read\_sys, write\_sys}
-These instructions are for accessing various registers that are only accessible in system mode.
+\subsubsection{read\_memory\_map}
+\label{table:readMemoryMapInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.7 A & 62 & memory map, vector memory operand \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Read memory map and save it to a memory location. Privileged instruction.
+\vspace{2mm}
+
+RD = map entry, RT = memory pointer, RS = vector length and
+negative index to both source and destination.
 
 \subsubsection{read\_perf}
-Read the internal clock count, number of instructions executed, or other performance-related counts.
+\label{table:readPerfInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.8 B & 36 & g.p. register, performance counter register \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Read performance counter register. A number of internal registers are used for counting performance related events. The details are not defined yet.
 
 \subsubsection{read\_perfs}
-Same as read\_perf. This instruction is serializing, which means that it cannot execute out of order.
-
-\subsubsection{popcount}
-The popcount instruction counts the number of 1-bits in an integer. It can also be used for parity generation.
-
-\subsubsection{bitscan\_f}
-Bit scan forward. 
+\label{table:readPerfInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.8 B & 37 & g.p. register, performance counter register \\ \hline
+\end{tabular}
 \vspace{2mm}
 
-Find index to lowest set bit, i. e. highest X for which 
+This is the same as the read\_perf instruction, but serializing. This means that no instruction can execute out of order with read\_perfs.
 
-(((1 \textless\textless{} X) - 1) \& src1)) == 0.
-
-The result is -1 when src1 is zero.
-
-\subsubsection{bitscan\_r}
-Bit scan reverse. 
-
-Find index to highest set bit, i. e. highest X for which (1 \textless\textless{} X) $\leq$ src1.
-
-The result is -1 when src1 is zero.
-
-\subsubsection{round\_d2}
-Round down to nearest power of 2, i. e. 1 \textless\textless{} bit\_scan\_reverse(src1).
-
-The result is zero when src1 is zero.
-
-\subsubsection{round\_u2}
-Round up to nearest power of 2, i. e. 
-
-(S \& (S-1)) == 0 ? S : 1 \textless\textless{}  (bit\_scan\_reverse(S) + 1),
-
-where S = src1.
-
-The result is zero when src1 is zero.
-
-\subsubsection{shift\_add}
-Shift and add. dest = src1 + (src2 \textless\textless{}  src3).
+\subsubsection{read\_spe}
+\label{table:readSpeInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.8 B & 32 & g.p. register, special register \\ \hline
+\end{tabular}
 \vspace{2mm}
 
-src1 uses the same register as dest. src3 is an 8-bit signed immediate constant.
-\vspace{2mm}
-
-Will shift right with zero extension if src3 is negative.
-
-\subsubsection{address}
-Calculate an address relative to a pointer by adding a 32-bit sign-extended constant to a  special register. The pointer register can be THREADP (28), DATAP (29), IP (30) or SP(31).
-
-\subsubsection{cmp\_swap}
-Atomic compare and swap instruction, used for thread synchronization and for lock-free data sharing between threads. src1 and src2 are register operands, src3 is a memory operand, which must be aligned to a natural address. All operands are treated as integers, regardless of the specified operand type. The operation is:
-
-\begin{lstlisting}[frame=none]
-   temp = src3;
-   if (temp == src1) src3 = src2;
-   return temp;
-\end{lstlisting}
-
-Further atomic instructions can be implemented if needed, preferably with the same format and consecutive values of OP1.
-
-\subsection{Single-format instructions with g. p. register input and vector output, or vice versa}
-
-\subsubsection{gp2vec}
-The value of a general purpose register is copied to a scalar in a vector register. The length will be the operand size. No type conversion is made.
-
-\subsubsection{vec2gp}
-The first element of a vector register is copied to a general purpose register. If an integer type less than 64 bits is specified then the value is sign-extended to 64 bits. If a single-precision float type is specified then the value is zero-extended to 64 bits. No other type conversion is made.
-
-\subsubsection{set\_len}
-Sets the length of a vector register to the number of bytes specified by a general purpose register. If the specified length is more than the maximum length for the specified operand type then the maximum length will be used.
-\vspace{2mm}
-
-If the output vector is longer than the input vector then the extra elements will be zero. If the output vector is shorter than the input vector then the extra elements will be discarded. 
-
-\subsubsection{get\_len}
-Gets the length of a vector register in bytes. The result is stored in a general purpose register.
-
-\subsubsection{set\_num}
-Same as set\_len, the length is multiplied by the operand size.
-
-\subsubsection{get\_num}
-Same as get\_len, the length is divided by the operand size.
-
-\subsubsection{mask\_length}
-Make a boolean vector to mask the first n elements of a vector, where \\
-n = RS / (operand size). The output vector RD will have the same length as the input vector RD. RS indicates the length of the part that is enabled by the mask. IM1 contains the following option bits: \\
-bit 0 = 0: bit 0 will be 1 in the first n elements in the output and 0 in the rest. \\
-bit 0 = 1: bit 0 will be 0 in the first n elements in the output and 1 in the rest. \\
-bit 6 = 1: copy remaining bits from input vector RD. \\
-bit 7 = 1: copy remaining bits from the numeric control register. \\
-Output bits that are not set by any of these options will be zero.
-
-\subsubsection{make\_sequence}
-Makes a vector of length RS bytes. The number of elements is RS/(operand size).
-The first element is equal to IM1, the next element is IM1+1, etc.
-Support for floating point is optional.
-\vspace{2mm}
-
-\subsection{Other single-format instructions that may change the length of a vector}
-
-\subsubsection{bits2bool}
-Expand contiguous bits in a vector register to a boolean vector with each bit going into bit 0 of each element. The remaining bits are copied from the mask or numeric control register.
-
-\subsubsection{bool2bits}
-Convert a boolean vector of n elements to n contiguous bits taken from bit 0 of each element. The length of the destination vector will be a power of 2 sufficient to hold n bits.
-
-\subsubsection{shift\_expand}
-The length of a vector is expanded by the specified number of bytes by adding zero-bytes at the low end and shifting all bytes up. If the resulting length is more than the maximum vector length for the specified operand type then the upper bytes are lost.
-
-\subsubsection{shift\_reduce}
-The length of a vector is reduced by the specified number of bytes by removing bytes at the low end and shifting all bytes down. If the resulting length is less than zero then the result will be a zero-length vector. The specified operand type is ignored.
-
-\subsubsection{compress}
-The elements of a vector are converted to half the element size. The length of the output vector will be half the length of the input vector. The OT field specifies the operand type of the input vector. Double precision floating point numbers are converted to single precision. Integer elements are converted to half the size by discarding the upper bits. Support for the following conversions are optional: single precision float to half precision, quadruple precision to double precision, 8-bit integer to 4-bit.
-\vspace{2mm}
-
-If the length of the input vector differs from the length specified by RS, then the length is converted to RS before compression.
-
-\subsubsection{compress\_ss}
-Same as compress. Integers are treated as signed and compressed with saturation. Floating point operands cannot be used. This instruction is optional.
-
-\subsubsection{compress\_us}
-Same as compress. Integers are treated as unsigned and compressed with saturation. Floating point operands cannot be used. This instruction is optional.
-
-\subsubsection{expand}
-This is the opposite of compress. The output vector has the specified length and the input vector has half this length. The OT field specifies the operand type of the output vector. Single precision floating point numbers are converted to double precision. Integers are converted to the double size by sign-extension. Support for the following conversions are optional: half precision float to single precision, double precision to quadruple precision, 4-bit integer to 8-bit.
-\vspace{2mm}
-
-If the length of the input vector differs from RS/2 then the length is converted before expansion. If the resulting length exceeds the maximum vector length for the specified operand type then the extra elements are lost.
-
-\subsubsection{expand\_us}
-Same as expand. Integers are expanded by zero-extension. Floating point operands cannot be used. 
-
-\vspace{2mm}
-\subsection{Single-format instructions that can move data horizontally within vector}
-The latency of these instructions may depend on the distance of moving (specified by RS) for very long vectors.
-
-\subsubsection{extract}
-Extract one element of a vector into a scalar in a vector register. An index out of range will produce zero. An operand size of 16 bytes can be used, even if this size is not otherwise supported.
-
-\subsubsection{insert}
-Replace one element of a vector by inserting a scalar into the position indicated by the index. An index out of range will leave the vector unchanged. An operand size of 16 bytes can be used, even if this size is not otherwise supported.
-
-\subsubsection{interleave}
-Interleave the inputs from two vectors so that the even-numbered elements come from the first input vector and the odd-numbered elements come from the second input vector. Optional.
-
-\subsubsection{shift\_up}
-Shift elements of a vector up by the number of elements indicated by RS. The lower RS elements of the output will be zero, the upper RS elements of the input are lost.
-\vspace{2mm}
-
-This instruction differs from shift\_expand by indicating the shift count as a number of elements rather than a number of bytes, and by not changing the length of the vector.
-
-\subsubsection{shift\_down}
-Shift elements of a vector down by the number of elements indicated by RS. The upper RS elements of the output will be zero, the lower RS elements of the input are lost.
-\vspace{2mm}
-
-This instruction differs from shift\_reduce by indicating the shift count as a number of elements rather than a number of bytes, and by not changing the length of the vector.
-
-\subsubsection{permute}
-This instruction permutes the elements of a vector. The vector is divided into blocks of size RS bytes each. The block size must be a power of 2 and a multiple of the operand size. Elements can be moved arbitrarily between positions within each block, but not between blocks. Each element of the output vector is a copy of an element in the input vector, selected by the corresponding index in an index vector. The indexes are relative to the start of the block they belong to, so that an index of zero will select the first element in the block of the input vector and insert it in the corresponding position of the output vector. The same element in the input vector can be copied to multiple elements in the output vector. An index out of range will produce a zero. The indexes are interpreted as  integers regardless of the operand type.
-\vspace{2mm}
-
-The permute instruction has two versions. The first version specifies the indexes in a vector with the same length and element size as the input vector.
-\vspace{2mm}
-
-The second version specifies the indexes as a 32-bit immediate constant with 4 bits per element. This constant is split into a maximum of 8 elements with 4 bits in each. If the blocks have more than 8 elements each then the sequence of 8 elements is repeated to fill a block. The same pattern of indexes will be applied to all blocks in this version of the permute instruction.
-\vspace{2mm}
-
-The maximum block size for the permute instruction is implementation-dependent and given by a special register. The reason for this limitation of block size is that the complexity of the hardware grows quadratically with the block size. A full permutation is possible if the vector length does not exceed the maximum block size. A trap is generated if RS is bigger than the maximum block size.
-\vspace{2mm}
-
-There are two ways to combine the outputs of multiple permute instructions. One method is to use indexes out of range to produce zeroes for unused outputs and then OR'ing the outputs. Another method is to use masks to combine the outputs.
-\vspace{2mm}
-
-Permute instructions are essential for a vector processor because it is often necessary to rearrange data to facilitate the vector processing. These instructions are useful for reordering data, for transposing a matrix, etc. 
-\vspace{2mm}
-
-Permute instructions can also be used for parallel table lookup when the block size is big enough to contain the entire table.
-\vspace{2mm}
-
-Finally, permute instructions can be used for gathering and scattering data within an area not bigger than the vector length or the block size.
-
-\subsubsection{broadcast}
-Copies the first element of the input vector to all elements of the output vector. An element size of 16 bytes (128 bits) is supported if the maximum vector length is more than 16 bytes, even if this size is not otherwise supported.
-
-\subsubsection{repeat\_block}
-This does the same as broadcast, but with larger blocks of data. The block size, which must be a multiple of 4, is given by a general purpose register. There may be a maximum limit to the block size. The hardware implementation may read the block size register in the address-calculation stage in the pipeline. 
-This instruction is useful in matrix multiplication. Optional.
-
-\subsubsection{repeat\_within\_blocks}
-This divides a vector into blocks and broadcasts the first element of each block to the rest of the block. For example, if the input vector contains (0,1,2,3,4,5,6,7,8) and the block size is 3 times the operand size, then the result will be (0,0,0,3,3,3,6,6,6).
-The operand size must be at least 4 bytes, and the block size must be a multiple of the operand size. The block size is given by a general purpose register. There may be a maximum limit to the block size. The hardware implementation may read the block size register in the address-calculation stage in the pipeline. This instruction is useful in matrix multiplication. Optional.
-
-\vspace{2mm}
-\subsection{Other single-format vector instructions}
-
-\subsubsection{Saturated arithmetic} \label{saturatedArithmeticInstructions}
-add\_ss, add\_us, sub\_ss, sub\_us, mul\_ss, mul\_us, shl\_ss, shl\_us.
-\vspace{2mm}
-
-These instructions are used for signed and unsigned integer arithmetics with saturation. An overflow will result in the maximum value for the given operand size. An underflow will result in the minimum value.
-\vspace{2mm}
-
-Support for these instructions is optional.
-
-\subsubsection{Add with carry and subtract with borrow} \label{addWithCarryInstruction}
-add\_c, sub\_b
-\vspace{2mm}
-
-dest and src1 are vectors of two integers. src2 is a vector of integers, where only the first element is used.
-\vspace{2mm}
-
-add\_c: 
-\begin{lstlisting}[frame=none]
-   sum = src1[0] + src2[0] + (src1[1] & 1)
-   dest[0] = bit 0-63 of sum 
-   dest[1] = bit 64 of sum
-\end{lstlisting}
-
-sub\_b:
-\begin{lstlisting}[frame=none]
-   sum = src1[0] - src2[0] - (src1[1] & 1)
-   dest[0] = bit 0-63 of sum 
-   dest[1] = bit 64 of sum
-\end{lstlisting}
-
-Support for these instructions is optional. Longer vectors are not supported. See page 
-\pageref{highPrecisionArithmetic} for an alternative for longer vectors.
-
-\subsubsection{Arithmetic instructions with overflow check} \label{instructionsWithOverflowCheck}
-add\_oc, sub\_oc, subr\_oc, mul\_oc, div\_oc.
-\vspace{2mm}
-
-These instructions use the even-numbered vector elements for arithmetic instructions. Each following odd-numbered vector element is used for overflow detection. If the first source operand is a scalar then the result operand will be a vector with two elements.
-\vspace{2mm}
-
-Overflow conditions are indicated with the following bits:
-\vspace{2mm}
-
-bit 0. Unsigned integer overflow (carry).
-
-bit 1. Signed integer overflow.
-
-bit 2. Floating point overflow.
-
-bit 3. Floating point invalid operation.
-\vspace{2mm}
-
-The values are propagated so that the overflow result of the operation is OR'ed with the corresponding values of both input operands.
-\vspace{2mm}
-
-These instructions are optional.
-
-\subsubsection{Extended division} \label{extendedDivisionInstruction}
-div\_ex\_s, div\_ex\_u
-\vspace{2mm}
-
-These instructions are optional. They may be supported for both scalars and vectors, for scalars only, or not at all.
-
-\subsubsection{byte\_reverse}
-This instruction reverses the order of bytes in an integer. It can be used when reading and writing binary data files with big endian data organization.
+Read a special system register. The following special registers are currently defined. The size is 64 bits. These registers are initialized with their default values at program start.
+
+\begin{longtable} {|p{15mm}|p{100mm}|}
+\caption{List of special registers} 
+\label{table:specialRegisters} \\
+\endfirsthead
+\endhead
+\hline
+\bfseries Special register number & \bfseries Meaning  \\
+\hline
+0 & Numeric control register (NUMCONTR)  \\
+1 & Microprocessor brand ID  \\
+2 & Microprocessor version number   \\
+28 & Thread environment block pointer (THREADP)   \\
+29 & Data section pointer (DATAP)  \\
+\hline
+\end{longtable}
 
 \subsubsection{read\_spev}
-The value of the RT field indicates a special register to read. The output is a vector register with length specified by RS.
+\label{table:readSpevInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.3 B & 2 & vector register, special register \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Read special register RT into vector register RD with length RS bytes. The value is broadcast if the vector register is longer than the special register. 
 \vspace{2mm}
 
 The following special registers are currently defined:
@@ -646,85 +2588,152 @@ The following special registers are currently defined:
 \hline
 \bfseries Special register number & \bfseries Meaning  \\
 \hline
-0 & Numeric control register (NUMCONTR). The value is broadcast into all elements of the destinationregister with the indicated operand size and length.  \\
+0 & Numeric control register (NUMCONTR). The value is broadcast into all elements of the destination register with the indicated operand size and length.  \\
 \hline
 1 & Name of processor. The output is a zero-terminated UTF-8 string containing the brandname and model name of the microprocessor. \\
 \hline
 \end{longtable}
 
-\subsubsection{replace}
-All elements of src1 are replaced by the integer or floating point constant src2.
-\vspace{2mm}
 
-When used without a mask, the constant is simply broadcast to make a vector of the same length as src1. When used with a mask, the elements of src1 are selectively replaced. Elements that are not selected by the mask will be zero or taken from a fallback register.
-
-\subsubsection{replace\_even, replace\_odd}
-Same as replace. Only even- or odd-numbered vector elements are replaced.
-
-\subsubsection{make\_mask}
-Make a mask from the bits of the 32-bit integer constant src2. Each bit of src2 goes into bit 0 of one element of the output. The remaining bits of each element are taken from src1. The length of the output is the same as the length of src1. If there are more than 32 elements in the vector then the bit pattern of src2 is repeated.
-
-
-\subsubsection{fp\_category}
-The input is a floating point vector. The output is a boolean vector where bit 0 of each element indicates if the input RS belongs to any of the categories indicated by the bits in the immediate operand. The remaining bits are taken from the input RD. Any floating point value will belong to one, and only one, of these categories. 
-
-\begin{longtable} {|p{20mm}|p{90mm}|}
-\caption{Meaning of bits in fp\_category} 
-\label{table:fpCategoryInstructionBits} \\
-\endfirsthead
-\endhead
+\subsubsection{read\_sys}
+\label{table:readSysInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
-\bfseries Bit number & \bfseries Meaning  \\
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.8 B & 38 & g.p. register, system register \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Read system register. Details are not defined yet. This instruction is privileged.
+
+\subsubsection{sys\_call}
+\label{table:sysCallInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
-0 & $\pm$ NAN \\
-1 & $\pm$ Zero \\
-2 & $-$ Subnormal \\
-3 & $+$ Subnormal \\
-4 & $-$ Normal \\
-5 & $+$ Normal \\
-6 & $-$ Infinite  \\
-7 & $+$ Infinite  \\
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.4 A & 63 & ID in register RT \\ \hline
+2.7.1 & 63 & ID in constants \\ \hline
+2.7.4 & 63 & ID in constants \\ \hline
+3.0.1 & 63 & ID in constants \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+System call instruction.
+
+See page \pageref{systemCallInstruction} for details.
+\vspace{2mm}
+
+\subsubsection{sys\_return}
+\label{table:sysCallInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
-\end{longtable}
-  
-
-\subsubsection{Truth table functions} \label{truthTableFunctions}
-truth\_tab2, truth\_tab3
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.5 C & 62 & \\ \hline
+\end{tabular}
 \vspace{2mm}
 
-These instructions can make an arbitrary boolean function of two or three boolean vector input variables, expressed by a truth table. The result in bit 0 of each vector element is the arbitrary boolean function of bit 0 of the corresponding elements of each of the input operands. Bit 0 of the result is a bit from the truth table selected by the combined input bits. The remaining bits of the output vector are copied from the mask register if there is one, or from the first input operand otherwise. 
+Return from system call.
+
+\subsubsection{trap}
+\label{table:trapInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.5 C & 63 & interrupt number in constant \\ \hline
+2.7.3 & 63 & conditional trap \\ \hline
+\end{tabular}
 \vspace{2mm}
 
-truth\_tab2 has two input vectors and a 4-bit truth table in an immediate operand.
+A trap is a software interrupt or exception. See page \pageref{traps} for details.
+
+\subsubsection{write\_capabilities}
+\label{table:writeCapabilitiesInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.8 B & 35 & g.p. register, capabilities register \\ \hline
+\end{tabular}
 \vspace{2mm}
 
-truth\_tab3 has three input vectors and an 8-bit truth table in an immediate operand.
+Write processor capabilities register. See the read\_capabilities instruction, page \pageref{table:readCapabilitiesInstruction}, for details.
+
+\subsubsection{write\_memory\_map}
+\label{table:writeMemoryMapInstruction}\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+2.7 A & 63 & memory map, vector memory operand \\ \hline
+\end{tabular}
 \vspace{2mm}
 
-A mask on truth\_tab3 will use the first input operand as fallback. truth\_tab2 cannot have a mask.
+Write memory map from a memory location. Privileged instruction.
 \vspace{2mm}
 
-These instructions can be used as universal instructions for manipulating and combining boolean vectors and masks.
+RD = map entry, RT = memory pointer, RS = vector length and
+negative index to both source and destination.
+
+\subsubsection{write\_spe}
+\label{table:writeSpeInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.8 B & 33 & g.p. register, special register \\ \hline
+\end{tabular}
 \vspace{2mm}
 
-The hardware implementation can use the existing barrel shifters, shifting the truth table right by the count defined by the combined bits of the input operands.
+Write special register. See read\_spe instruction page \pageref{table:readSpeInstruction} for details.
 
+\subsubsection{write\_sys}
+\label{table:writeSysInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.8 B & 39 & g.p. register, system register \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Write system register. Details are not defined yet. This instruction is privileged.
+\vspace{2mm}
 
 
 \section{Common operations that have no dedicated instruction}
 This section discusses some common operations that are not implemented as single instructions, and how to code these operations in software.
 
 \subsubsection{Change sign}
-For integer operands, do a reverse subtract from zero. For floating point operands, use the toggle\_b instruction on the sign bit.
-
-\subsubsection{Floating point abs}
-To get the absolute value of a floating point number, use the clear\_b instruction to clear the sign bit.
+For integer operands, do a reverse subtract from zero. For floating point operands, use the toggle\_bit instruction on the sign bit.
 
 \subsubsection{Not}
 To invert all bits in an integer, do an XOR with -1. To invert a Boolean, do an XOR with 1.
 
 \subsubsection{Rotate through carry}
 Rotates through carry are rarely used, and common implementations can be very inefficient. A left rotate through carry can be replaced by an add\_c with the same register in both source operands.
+
+\subsubsection{Push and pop registers}
+\label{pushPop}
+There are no push and pop instructions. A general purpose register R can be pushed on the stack with the following pair of tiny instructions:
+
+\begin{lstlisting}[frame=none]
+   sp = add.64(sp,-8)
+   [sp] = store.64(R)
+\end{lstlisting}
+
+A general purpose register R can be popped from the stack with the following pair of tiny instructions:
+
+\begin{lstlisting}[frame=none]
+   R = move.64([sp])
+   sp = sub.64(sp,-8)
+\end{lstlisting}
+
+Note that the constant -8 can be contained in the 4-bit signed field RS, but the constant 8 cannot. This is the reason why we are adding and subtracting -8 rather than doing the opposite with +8.
+\vspace{2mm}
+
+Vector registers can be saved with the sub\_cps and save\_cp instructions and restored with the restore\_cp and add\_cps instructions. See page \pageref{table:saveCpInstruction} for details.
+\vspace{2mm}
+
+The assembler may support macros named push and pop for these sequences.
+
+
+\subsubsection{Save and restore all registers}
+The registers need to be saved and restored at task switches. There are no instructions to save all registers because we do not want complex instructions. The saving and restoring of registers is described under push and pop on page \pageref{pushPop}.
 
 \subsubsection{Horizontal vector add} \label{horizontalVectorAdd}
 An instruction for adding all elements of a vector would be useful, but such an instruction is not supported because this would be a complex instruction with variable latency depending on the vector length.

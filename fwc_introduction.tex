@@ -20,19 +20,28 @@ This manual and all associated code is maintained at
  
 \section{Highlights}
 \begin{itemize}
-\item The ForwardCom instruction set is a compromise between the RISC and CISC principles, combining the fast and streamlined decoding and pipeline design of RISC systems with the compactness and more work-done-per-instruction of CISC systems.
+\item The ForwardCom instruction set is neither RISC nor CISC, but a new paradigm with the advantages of both. ForwardCom has few instructions, but many variants of each instruction. A consistent template system with few instruction sizes combines the fast and streamlined decoding and pipeline design of RISC systems with the compactness and more work-done-per-instruction of CISC systems. 
+
 \item The ForwardCom design is scalable to support small embedded systems as well as large supercomputers and vector processors without losing binary compatibility.
+
 \item Vector registers of variable length are provided for efficient handling of large data sets.
+
 \item Array loops are implemented  in a new flexible way that automatically uses the maximum vector length supported by the microprocessor in all but the last iteration of a loop. The last iteration automatically uses a vector length that fits the remaining number of elements. No extra code is needed to deal with remaining data and special cases. There is no need to compile the code separately for different microprocessors with different vector lengths.
+
 \item No recompilation or update of software is needed when a new microprocessor with a different vector register length becomes available. The software is guaranteed to be forward compatible and take advantage of the longer vectors
 of new microprocessor models.
+
 \item Strong security features are a fundamental part of the hardware and software design.
+
 \item Memory management is simpler and more efficient than in traditional systems. 
 Various techniques are used for avoiding memory 
 fragmentation. There is no memory paging and no translation lookaside buffer (TLB). Instead, there is a memory map with a limited number of sections with variable size.
+
 \item There are no dynamic link libraries (DLLs) or shared objects. Instead, there is only one type of function libraries 
 that can be used for both static and dynamic linking. Only the part of the library that is actually used is loaded and linked. The library code is kept contiguous with the main program code in almost all cases. It is possible to automatically choose between different versions of a function or library at load time, based on the hardware configuration, operating system, or user interface framework.
+
 \item A mechanism for calculating the required stack size is provided. This can prevent stack overflow in most cases without making the stack bigger than necessary.
+
 \item A mechanism for optimal register allocation across program modules and function libraries is provided. This makes it possible to keep most variables in registers without spilling to memory. Vector registers can be saved in an efficient way that stores only the part of the register that is actually used.
 \end{itemize}
 
@@ -64,7 +73,7 @@ The ForwardCom instruction set architecture is based on the following priorities
 \item Vector support and other features that have proven essential for high performance should be a fundamental part of the design, not a clumsy appendix.
 \item Security should be a fundamental part of the design, not patches added ad hoc.
 \item The instruction set should be designed through an open process with the participation of the international hardware and software community, similar to the standardization work in other technical areas.
-\item The entire vertical design should be non-proprietary and allow anybody to make compatible software, hardware and equipment for test, debugging and emulation.
+\item The entire vertical design should be non-proprietary and allow anybody to make compatible software, hardware, and equipment for test, debugging and emulation.
 \item Decisions about instructions and extensions should not be determined by the short term marketing considerations of an oligopolistic microprocessor industry but by the long term needs of the entire hardware and software community and organizations.
 \item The design should allow the construction of forward compatible software that will run optimally without recompilation on future processors with larger vector registers.
 \item The design should allow application-specific extensions.

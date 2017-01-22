@@ -125,7 +125,7 @@ An extra instruction must be provided for extracting the overflow bits from a ve
 \item Generate a trap in case of integer overflow. Use a mask register or the numeric control register to control this behavior. Bit 6 enables a trap for unsigned integer overflow and bit 7 enables a trap for signed integer overflow. This method requires little extra code, but it is subject to the problem that the behavior of vector code depends on the vector length in case of traps, as explained in the previous chapter for floating point errors.
 \end{enumerate}
 
-Method 2 is tentatively supported here with the optional instructions add\_oc, etc., described on page \pageref{instructionsWithOverflowCheck}. 
+Method 2 is tentatively supported here with the optional instructions add\_oc, etc., described on page \pageref{table:addOcInstruction}. 
 \vspace{2mm}
 
 Support for method 4 may be considered, since it would be more efficient and useful. The cost of implementing method 4 is that we will need 3\% more bits in the vector registers; the save\_cp and restore\_cp instructions will be more complicated; and the compiler has to check for overflow before saving vectors to memory in the normal way. 

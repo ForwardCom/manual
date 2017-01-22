@@ -833,6 +833,7 @@ The sys\_call instruction can indicate a block of memory to be shared with the s
 Parameters for system functions are transferred in registers, following the same calling conventions as normal functions. The registers used for function parameters are usually different from the registers in the RD, RS and RT fields. Function parameters that do not fit into registers must reside in the shared memory block.
 \vspace{2mm}
 
+\label{traps}
 Traps work like interrupts. The unconditional trap has an 8-bit interrupt number in IM1. This is an index into the interrupt vector table, which initially starts at absolute address zero. The unconditional trap instruction may use IM2 for additional information. The conditional trap is intended for checking array bounds. The interrupt number is fixed (the value has not been decided yet). The conditional trap may optionally support other condition codes in IM2, using the same codes as OPJ in table \ref{table:controlTransferInstructions}.
 \vspace{2mm}
 
@@ -842,7 +843,7 @@ A trap instruction with all 1's in all fields (opcode 0x6FFFFFFF) can be used as
 The opcodes and formats for new instructions can be assigned according to the following rules.
 
 \begin{itemize}
-\item Multi-format instructions. Often-used instructions that need to support many different operand types, addressing modes and formats use most or all of the following formats: 0.0-0.9, 2.0-2.4, 2.8-2.9, and optionally 3.1 and 3.3 if triple-size instructions are supported. The same value of OP1 is used in all these formats. OP2 must be 0. Instructions with few source operands should have the lowest values of OP1.
+\item Multi-format instructions. Often-used instructions that need to support many different operand types, addressing modes and formats use all or most of the following formats: 0.0-0.9, 2.0-2.4, 2.8-2.9, and optionally 3.1 and 3.3 if triple-size instructions are supported. The same value of OP1 is used in all these formats. OP2 must be 0. Instructions with few source operands should have the lowest values of OP1.
 
 \item Tiny instructions. Only some of the most common instructions are available in tiny versions, as there is only space for 32 tiny instructions. The instructions are ordered according to the number and type of operands, as shown in table \ref{table:tinyInstructionsGP} page \pageref{table:tinyInstructionsGP}.
 
@@ -874,5 +875,7 @@ with any value of OP1.
 
 All unused fields must be zero. The instructions with the fewest input operands should preferably have the lowest OP1 codes. 
 \vspace{2mm}
+
+Application-specific instructions should preferably use format 2.4.x and 2.8.x with OP2 $\neq$ 0. There are many vacant opcodes in these formats. General multi-purpose instructions may use some of the more crowded formats.
 
 \end{document}

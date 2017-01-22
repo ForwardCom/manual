@@ -8,10 +8,10 @@
 The definition of a new instruction set should include the definition of a standardized assembly language syntax. The syntax should be suitable for human processing, not only for machine processing. We must avoid a situation similar to the x86 environment where many different syntaxes are in use, with different instruction names and different orders of the operands. 
 \vspace{2mm}
 
-ForwardCom will use a function-style syntax in order to make it more intelligible to high-level language programmers and to avoid any confusion over what is source and destination. There is only one instruction on each line.
+ForwardCom will use a function-style syntax in order to make it more intelligible to high-level language programmers and to avoid any confusion over what is source and destination. 
 
 \vspace{2mm}
-A suffix is added to instruction names, separated by a dot, to indicate the operand type: 8, 16, 32, 64, 128 for integer operand size, and f, d, q for single, double and quadruple precision floating point operands. For example:
+There is only one instruction on each line. A suffix is added to instruction names, separated by a dot, to indicate the operand type: 8, 16, 32, 64, 128 for integer operand size, and f, d, q for single, double and quadruple precision floating point operands. For example:
 \begin{lstlisting}
    r0 = add.32 (r1, r2) // r0 = r1 + r2, add as 32-bit integers
 \end{lstlisting}
@@ -42,6 +42,6 @@ Operations with conditional jump are written with the jump after the arithmetic 
 This will subtract 1 from r1 as an integer with at least 32 bits, and jump to LABEL1 if the result, interpreted as a signed integer, is positive.
 
 \vspace{2mm}
-Traditional assemblers often have metaprogramming features such as macros, preprocessing conditionals and preprocessing loops. The syntaxes used for these features look like awkward ad hoc solutions without no overall logical structure. We would prefer a syntax that makes a clear distinction between metaprogramming and regular assembly code. The metaprogramming syntax should support integer and floating point variables, strings, macros, conditionals and loops in a way that resembles a structured programming language. 
+Traditional assemblers often have metaprogramming features such as macros, preprocessing conditionals and preprocessing loops. The syntaxes used for these features look like awkward ad hoc solutions with no overall logical structure. We would prefer a syntax that makes a clear distinction between metaprogramming and regular assembly code. The metaprogramming syntax should support integer and floating point variables, strings, macros, conditionals and loops in a way that resembles a structured programming language. 
 
 \end{document}

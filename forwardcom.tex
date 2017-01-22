@@ -9,6 +9,7 @@
 \usepackage{longtable}
 \usepackage{multirow}
 \usepackage{ragged2e} 
+\usepackage{cmap} % avoid fi ligatures in pdf file
 
 % modify style
 \renewcommand{\familydefault}{\sfdefault}
@@ -89,6 +90,12 @@
 % - Error message handling
 \subfile{fwc_system_programming.tex}
 
+% Support for multiple instruction sets
+% - Transitions between ForwardCom and x86-64
+% - Transitions between ForwardCom and ARM
+% - Transitions between ForwardCom and RISC-V
+\subfile{fwc_multiple_instruction_sets.tex}
+
 % Standardization of ABI and software ecosystem
 % - Compiler support
 % - Binary data representation
@@ -107,6 +114,9 @@
 
 % - Assembly language syntax
 \subfile{fwc_assembly_language_syntax.tex}
+
+% Software optimization guidelines
+\subfile{fwc_software_optimization.tex}
 
 % Conclusion
 \subfile{fwc_conclusion.tex}
