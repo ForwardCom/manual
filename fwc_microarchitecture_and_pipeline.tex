@@ -24,7 +24,7 @@ A high performance pipeline may be designed as superscalar with the following st
 
 \item  Put instructions into reservation station. Schedule for address calculator. 
 
-\item  Calculate address and length of memory operand. Check access rights.
+\item  Calculate address and length of memory operand. Check access rights. Do calculations that depend on immediate operand only.
 
 \item  Read memory operand. Schedule for execution units.  
 
@@ -39,7 +39,7 @@ It is not necessary to split instructions into micro-operations if the reading o
 Each stage in the pipeline should ideally require only one clock cycle. Instructions waiting for an operand should stay in the reservation station. Most instructions will use only one clock cycle in the execution unit. Multiplication and floating point addition need a pipelined execution unit with several stages. Division and square root may use a separate state machine. 
 \vspace{2mm}
 
-Jump, branch, call and return instructions also fit into this pipeline design. 
+Jump, branch, call, and return instructions also fit into this pipeline design. 
 \vspace{2mm}
 
 The reservation station has to consider all the input and output dependencies of each instruction. Each instruction can have up to four or five input dependencies and one output dependency. 

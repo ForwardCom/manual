@@ -52,6 +52,9 @@ The introduction of vector registers with variable length is an important improv
 \item The system takes into account the special needs of microprocessors with very long vectors where transport delays across a vector may depend on the vector length.
 
 \item Strong security features are built into the design.
+
+\item Software standards guarantee compatibility between different compilers, programming languages, user interface frameworks, and operating systems.
+
 \end{itemize}
 
 The memory model is flexible with relative addresses. Everything is position-independent. Memory management is simpler than in many current systems with less need for virtual address translation. There is no translation lookaside buffer (TLB) and no memory paging, but a simple on-chip memory map. Problems with stack overflow, memory fragmentation, etc. can be avoided completely in most cases. Task switches will be fast because of the small memory map and because of the efficient mechanism for saving vector registers. 
