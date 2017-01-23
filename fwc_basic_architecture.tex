@@ -143,7 +143,7 @@ The instruction will produce the normal result when bit 0 of the mask is one, an
 This mechanism can be vectorized. Instructions with vector registers use one of the vector registers v0--v6 as mask register. The calculation of each vector element is conditional on the corresponding element in the mask register.
 \vspace{2mm}
 
-Additional bits in the mask register are used for various options, overriding the values in the numeric control register.
+Additional bits in the mask register are used for various options, overriding the values in the numeric control register. See page \pageref{table:maskBits} for details.
 
 \section{Addressing modes}
 All memory addressing is relative to some base pointer. Memory operands can be addressed in one of the two general forms:

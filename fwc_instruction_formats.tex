@@ -575,7 +575,7 @@ The bits in the mask register are coded as follows.
  \hline
 0 & Predicate or mask. The operation is executed only if this bit is one, as explained above.\\
 \hline
-2-5 & Condition code for compare instruction (see page \pageref{compare}).\\
+2-5 & Instruction-specific option bits.\\
 \hline
 6 & Generate a trap if unsigned integer overflow. \\
 \hline
@@ -611,6 +611,10 @@ Vector instructions treat the mask register as a vector with the same element si
 The numeric control register (NUMCONTR) is used as mask when the mask field is 7 or absent. The NUMCONTR register is broadcast to all elements of a vector, using as many bits of NUMCONTR as indicated by the operand size, when an instruction has no mask register. 
 The same mask is applied to all vector elements in this case. 
 Bit 0 in NUMCONTR must be 1.
+\vspace{2mm}
+
+The instruction-specific option bits are used for various options in compare, add\_add, mul\_add, and possibly other instructions. The instruction-specific options are determined by IM3 in format 2.4.x and 2.8.x and by the mask register in other formats. The instruction-specific options are zero when there is no IM3 and no mask. Unlike other options, the instruction-specific options are not taken from the numeric control register. The reason for this is that frequent changes of the numeric control register would be inefficient (renaming of the numeric control register may not be supported).
+
 
 \section{Format for jump, call and branch instructions}
 Most branches in ordinary code are based on the result of an arithmetic or logic instruction (ALU). The ForwardCom design combines the ALU instruction and the conditional jump into a single instruction. For example, a loop control can be implemented with a single instruction that counts down and jumps until it reaches zero or counts up through negative values and jumps until it reaches zero.
