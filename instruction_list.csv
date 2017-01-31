@@ -1,4 +1,4 @@
-Instruction list for ForwardCom instruction set. Sort alphabetically. Synchronize with instruction map. Version 1.05,,,,,,,,,,,,
+Instruction list for ForwardCom instruction set. Sort alphabetically. Synchronize with instruction map. Version 1.06,,,,,,,,,,,,
 Name,Category,Formats,Template,Template variant,Source operands,OP1,OP2,Operand types general purpose registers,Operand types scalar,Operand types vectors,Immediate operand type,Description
 abs,1,0x130,0xB,,1,16,0,0,0xF00F,0xF00F,0,absolute value of integer and optionally floating point
 abs,1,0x180,0xB,,1,0,0,0x100F,0,0,18,absolute value of integer. use saturation if IM1 = 1
@@ -114,6 +114,8 @@ fp_category,1,0x130,0xB,,2,17,0,0,0x8060,0x8060,18,check if floating point numbe
 get_len,1,0x120,0xA,R0,1,1,0,0,0x906F,0x906F,0,get length of vector as number of bytes
 get_num,1,0x120,0xA,R0,1,3,0,0,0x906F,0x906F,0,get length of vector as number of elements
 gp2vec,1,0x130,0xB,R1,1,0,0,0x006F,0x006F,0,0,copy value from general purpose register to vector register
+increment__jump_sabove,4,0x073,0,,3,54,0,0x906F,0,0,0,dest = source1 + 1. jump if dest > source2 (signed)
+increment_jump_sbeloweq,4,0x073,0,,3,55,0,0x906F,0,0,0,dest = source1 + 1. jump if dest <= source2 (signed)
 input,1,0x120,0xA,,2,62,0,0,0x100F,0x100F,0,"read from input port. RD = vector register, RT = port address, RS = vector length (privileged instruction)."
 insert,1,0x120,0xA,R1,2,12,0,0,0x00FF,0x00FF,0,insert one element into vector. other elements are unchanged
 insert_hi,1,0x250,0xA,,2,1,0,0,0x906F,0x906F,4,"make vector of two elements. first element comes from source, second element is constant"
