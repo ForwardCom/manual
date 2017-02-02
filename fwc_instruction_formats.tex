@@ -674,9 +674,9 @@ The lower 6 bits of the OPJ field contains the following codes.
 \hline
 OPJ & bit 0 \newline of OPJ & Function & Comment \\
 \hline
-0-7 & part of offset & Unconditional jump with 24-bit offset (jump) & Format 1.5 D \\
+0-7 & part of offset & Unconditional jump with 24-bit offset (jump) & Format 1.5 D. \newline Bit 0-2 of OPJ are part of offset \\
 \hline
-8-15 & part of offset & Unconditional call with 24-bit offset (call) & Format 1.5 D \\
+8-15 & part of offset & Unconditional call with 24-bit offset (call) & Format 1.5 D. \newline Bit 0-2 of OPJ are part of offset \\
 \hline
 0-1 & invert & Subtract, jump if not zero (sub, jump\_nzero) & Format 1.4 and 2.7.0. No floating point. \\
 \hline
@@ -690,10 +690,8 @@ OPJ & bit 0 \newline of OPJ & Function & Comment \\
 \hline
 8-9 & invert & Subtract unsigned, jump if borrow (sub, jump\_borrow) & Format 1.4 and 2.7.0. No floating point. \\
 \hline
-10-11 & invert & Subtract unsigned, jump if not zero or borrow (sub, jump\_nzb) & Format 1.4 and 2.7.0. No floating point. \\
-\hline
 
-12-15 & & Reserved for future use & Format 1.4 and 2.7.0. \\
+10-15 & & Reserved for future use & Format 1.4 and 2.7.0. \\
 \hline
 
 16-17 & invert & Add, jump if not zero (add, jump\_nzero) & No floating point \\
@@ -706,11 +704,10 @@ OPJ & bit 0 \newline of OPJ & Function & Comment \\
 \hline
 24-25 & invert & Add unsigned, jump if carry (add, jump\_carry) & No floating point. \\
 \hline
-24-25 & invert & Jump if either operand is NAN (compare, jump\_unordered) & Floating point operands \\
+
+24-25 & invert & Jump if either operand is $\pm$ infinite or NAN (compare, jump\_nfinite) & Floating point operands \\
 \hline
-26-27 & invert & Add unsigned, jump if not zero or carry (add, jump\_nzc) & No floating point. \\
-\hline
-26-27 & invert & Jump if either operand is $\pm$ infinite or NAN (compare, jump\_infnan) & Floating point operands \\
+26-27 & invert & Test single bit, jump if not zero (testbit, jump\_nzero) & dest = src1. Jump if (src1 $>>$ src2) \& 1 == 1 \\
 \hline
 
 28-29 & invert & Shift left by n, jump if not zero (shift, jump\_nzero) & Shift right unsigned if n negative \\
@@ -731,26 +728,25 @@ OPJ & bit 0 \newline of OPJ & Function & Comment \\
 \hline
 40-41 & invert & Compare absolute values, jump if above (compare, jump\_absabove) & Floating point operands \\
 \hline
-42-43 & invert & Bitwise test, jump if not zero (test, jump\_nzero) &  \\
+42-43 & invert & Bitwise test, jump if not zero (test, jump\_nzero) & dest = src1. Jump if (src1 \& src2) != 0 \\
 \hline
-44-45 & invert & Bitwise and, jump if not zero (and, jump\_nzero) & \\
+44-45 & invert & Bitwise and, jump if not zero (and, jump\_nzero) & dest = src1 \& src2. Jump if dest != 0 \\
 \hline
-46-47 & invert & Bitwise or, jump if not zero (or, jump\_nzero) &  \\
+46-47 & invert & Bitwise or, jump if not zero (or, jump\_nzero) & dest = src1 $|$ src2. Jump if dest != 0 \\
 \hline
-48-49 & invert & Bitwise xor, jump if not zero (xor, jump\_nzero) & \\
+48-49 & invert & Bitwise xor, jump if all selected bits are turned to zero (xor, jump\_test\_and) & dest = src1 \^{} src2. jump if (src1 \& src2) == src2 \\
 \hline
-50-51 & invert & Test single bit, jump if not zero (testbit, jump\_nzero) & \\
+
+50-53 & invert & Reserved for future use. & \\
 \hline
-52-53 & invert & Test single bit on vector register, jump if not zero \newline
- (testbit, jump\_nzero) &  \\
+
+54-55 & invert & Increment, jump if above. (increment, jump\_sabove) & dest = src1 + 1. Jump if src1 $\geq$ src2 \newline No floating point \\
 \hline
-54-55 & invert & Increment, jump if above. (increment, jump\_sabove) & \\
+56 & 0 & Subtract, jump unconditionally (sub, jump) & dest = src1 + src2. Jump always. \newline No floating point \\
 \hline
-56 & 0 & Subtract, jump unconditionally (sub, jump) & \\
+57 & 1 & Add, jump unconditionally (add, jump) & dest = src1 - src2. Jump always. \newline No floating point \\
 \hline
-57 & 1 & Add, jump unconditionally (add, jump) & \\
-\hline
-58-59 & 0 jump \newline 1 call & Indirect jump or call with pointer address in register RS,
+58-59 & 0 jump \newline 1 call & Indirect jump or call with pointer in register RS,
 pointer offset in IM1 or IM2 (jump/call). & Format 1.4 and 2.7.0. \\
 \hline
 58-59 & 0 jump \newline 1 call & Unconditional direct jump or call with 16 bit or

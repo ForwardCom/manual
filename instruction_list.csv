@@ -19,19 +19,17 @@ add_add,3,0xFFFFCC0F,0,O5,3,49,0,0x0F00,0xFF00,0xFF00,0,"three operand add, opti
 add_c,1,0x120,0xA,,2,28,0,0,0x1F00,0x1F00,0,"add with carry. data in even vector elements, carry in odd elements"
 add_cps,2,11,1,,2,28,0,0x0008,0x00FF,0x00FF,0,"get size of compressed image for vector register RD and add it to g. p. register RS (r0-r14, r31)"
 add_hi,1,0x290,0xA,,2,4,0,0x0008,0,0,4,shift 32-bit constant left by 32 and add to register
-add_jump,4,0x073,0,,3,57,0,0x906F,0,0,0,"add, jump unconditionally"
-add_jump_carry,4,0x2F3,0,,3,24,0,0x100F,0,0,0,"add unsigned, jump if carry"
-add_jump_ncarry,4,0x2F3,0,,3,25,0,0x100F,0,0,0,"add unsigned, jump if not carry"
-add_jump_neg,4,0x2F3,0,,3,18,0,0xF00F,0,0,0,"add signed, jump if negative"
-add_jump_nneg,4,0x2F3,0,,3,19,0,0xF00F,0,0,0,"add signed, jump if zero or positive"
-add_jump_noverfl,4,0x2F3,0,,3,23,0,0xF00F,0,0,0,"add signed, jump if not overflow"
-add_jump_npos,4,0x2F3,0,,3,21,0,0xF00F,0,0,0,"add signed, jump if zero or negative"
-add_jump_nzc,4,0x2F3,0,,3,26,0,0x100F,0,0,0,"add unsigned, jump if not zero or carry"
-add_jump_nzero,4,0x2F3,0,,3,16,0,0xF00F,0,0,0,"add, jump if not zero"
-add_jump_overfl,4,0x2F3,0,,3,22,0,0xF00F,0,0,0,"add signed, jump if overflow"
-add_jump_pos,4,0x2F3,0,,3,20,0,0xF00F,0,0,0,"add signed, jump if positive"
-add_jump_zc,4,0x2F3,0,,3,27,0,0x100F,0,0,0,"add unsigned, jump if zero or carry"
-add_jump_zero,4,0x2F3,0,,3,17,0,0xF00F,0,0,0,"add, jump if zero"
+add_jump,4,0x073,0,,3,57,0,0x000F,0x1000,0,0,"add, jump unconditionally"
+add_jump_carry,4,0x2F3,0,,3,24,0,0x000F,0x1000,0,0,"add unsigned, jump if carry"
+add_jump_ncarry,4,0x2F3,0,,3,25,0,0x000F,0x1000,0,0,"add unsigned, jump if not carry"
+add_jump_neg,4,0x2F3,0,,3,18,0,0x000F,0x1000,0,0,"add signed, jump if negative"
+add_jump_nneg,4,0x2F3,0,,3,19,0,0x000F,0x1000,0,0,"add signed, jump if zero or positive"
+add_jump_noverfl,4,0x2F3,0,,3,23,0,0x000F,0x1000,0,0,"add signed, jump if not overflow"
+add_jump_npos,4,0x2F3,0,,3,21,0,0x000F,0x1000,0,0,"add signed, jump if zero or negative"
+add_jump_nzero,4,0x2F3,0,,3,16,0,0x000F,0x1000,0,0,"add, jump if not zero"
+add_jump_overfl,4,0x2F3,0,,3,22,0,0x000F,0x1000,0,0,"add signed, jump if overflow"
+add_jump_pos,4,0x2F3,0,,3,20,0,0x000F,0x1000,0,0,"add signed, jump if positive"
+add_jump_zero,4,0x2F3,0,,3,17,0,0x000F,0x1000,0,0,"add, jump if zero"
 add_oc,1,0x120,0xA,,2,38,0,0,0xFF00,0xFF00,0,"add with overflow check. data in even elements, overflow bits in odd elements"
 add_ss,1,0x120,0xA,,2,30,0,0,0x1F00,0x1F00,0,"add integers, signed with saturation"
 add_u,1,0x290,0xA,,2,2,0,0x0008,0,0,20,Add zero-extended 32-bit constant to general purpose register
@@ -45,8 +43,8 @@ and,2,2,1,,2,11,0,0x0008,0,0,0,bitwise and
 and,3,0xFFFFFFFF,0,,2,28,0,0x000F,0x906F,0x906F,0,bitwise and
 and_bit,3,0x03FCFD7FF,0,I2M1,2,38,0,0x000F,0x906F,0x906F,0,clear all bits except one
 and_hi,1,0x290,0xA,,2,5,0,0x0008,0,0,4,shift 32-bit constant left by 32 and do a bitwise AND with register
-and_jump_nzero,4,0x2F3,0,,3,44,0,0x906F,0,0,0,"bitwise and, jump if not zero"
-and_jump_zero,4,0x2F3,0,,3,45,0,0x906F,0,0,0,"bitwise and, jump if zero"
+and_jump_nzero,4,0x2F3,0,,3,44,0,0x000F,0x9060,0,0,"bitwise and, jump if not zero"
+and_jump_zero,4,0x2F3,0,,3,45,0,0x000F,0x9060,0,0,"bitwise and, jump if zero"
 and_not,3,0xFFFFFFFF,0,,2,29,0,0x000F,0x906F,0x906F,0,bitwise src1 and not src2
 bit_reverse,1,0x130,0xB,,1,21,0,0,0x1F00,0x1F00,0,reverse the order of bits in each element of vector
 bits2bool,1,0x120,0xA,,1,14,0,0,0x906F,0x906F,0,unpack bits to boolean vector
@@ -69,24 +67,22 @@ call,4,0x400,0xC,,1,59,0,0x0800,0,0,0,direct call to absolute address
 clear,2,8,1,,0,16,0,0,0x0008,0x0008,0,clear vector register
 clear_bit,3,0x03FCFD7FF,0,I2M1,2,36,0,0x000F,0x906F,0x906F,0,clear single bit
 compare,3,0xFFFFFFFF,0,O6,2,7,0,0x000F,0x906F,0x906F,0,"compare two operands, return condition code"
-compare_jump_absabove,4,0x031,0,,3,40,0,0x8060,0,0,0,"compare float absolute values, jump if above"
-compare_jump_absaboveeq,4,0x031,0,,3,39,0,0x8060,0,0,0,"compare float absolute values, jump if above or equal"
-compare_jump_absbelow,4,0x031,0,,3,38,0,0x8060,0,0,0,"compare float absolute values, jump if below"
-compare_jump_absbeloweq,4,0x031,0,,3,41,0,0x8060,0,0,0,"compare float absolute values, jump if below or equal"
-compare_jump_eq,4,0x2F3,0,,3,33,0,0x906F,0,0,0,"compare, jump if not equal"
-compare_jump_infnan,4,0x031,0,,3,26,0,0x8060,0,0,0,jump if either operand is infinite or nan
-compare_jump_neq,4,0x2F3,0,,3,32,0,0x906F,0,0,0,"compare, jump if equal"
-compare_jump_ninfnan,4,0x031,0,,3,27,0,0x8060,0,0,0,jump if no operand is infinite or nan
-compare_jump_ordered,4,0x031,0,,3,25,0,0x8060,0,0,0,jump if no operand is nan
-compare_jump_sabove,4,0x2F3,0,,3,36,0,0x906F,0,0,0,"compare signed, jump if above"
-compare_jump_saboveeq,4,0x2F3,0,,3,35,0,0x906F,0,0,0,"compare signed, jump if above or equal"
-compare_jump_sbelow,4,0x2F3,0,,3,34,0,0x906F,0,0,0,"compare signed, jump if below"
-compare_jump_sbeloweq,4,0x2F3,0,,3,37,0,0x906F,0,0,0,"compare signed, jump if below or equal"
-compare_jump_uabove,4,0x2F3,0,,3,40,0,0x100F,0,0,0,"compare unsigned, jump if above"
-compare_jump_uaboveeq,4,0x2F3,0,,3,39,0,0x100F,0,0,0,"compare unsigned, jump if above or equal"
-compare_jump_ubelow,4,0x2F3,0,,3,38,0,0x100F,0,0,0,"compare unsigned, jump if below"
-compare_jump_ubeloweq,4,0x2F3,0,,3,41,0,0x100F,0,0,0,"compare unsigned, jump if below or equal"
-compare_jump_unordered,4,0x031,0,,3,24,0,0x8060,0,0,0,jump if either operand is nan
+compare_jump_absabove,4,0x031,0,,3,40,0,0,0x8060,0,0,"compare float absolute values, jump if above"
+compare_jump_absaboveeq,4,0x031,0,,3,39,0,0,0x8060,0,0,"compare float absolute values, jump if above or equal"
+compare_jump_absbelow,4,0x031,0,,3,38,0,0,0x8060,0,0,"compare float absolute values, jump if below"
+compare_jump_absbeloweq,4,0x031,0,,3,41,0,0,0x8060,0,0,"compare float absolute values, jump if below or equal"
+compare_jump_eq,4,0x2F3,0,,3,33,0,0x000F,0x9060,0,0,"compare, jump if not equal"
+compare_jump_finite,4,0x031,0,,3,25,0,0,0x8060,0,0,jump if no operand is infinite or nan
+compare_jump_neq,4,0x2F3,0,,3,32,0,0x000F,0x9060,0,0,"compare, jump if equal"
+compare_jump_nfinite,4,0x031,0,,3,24,0,0,0x8060,0,0,jump if either operand is infinite or nan
+compare_jump_sabove,4,0x2F3,0,,3,36,0,0x000F,0x9060,0,0,"compare signed, jump if above"
+compare_jump_saboveeq,4,0x2F3,0,,3,35,0,0x000F,0x9060,0,0,"compare signed, jump if above or equal"
+compare_jump_sbelow,4,0x2F3,0,,3,34,0,0x000F,0x9060,0,0,"compare signed, jump if below"
+compare_jump_sbeloweq,4,0x2F3,0,,3,37,0,0x000F,0x9060,0,0,"compare signed, jump if below or equal"
+compare_jump_uabove,4,0x2F3,0,,3,40,0,0x000F,0x1000,0,0,"compare unsigned, jump if above"
+compare_jump_uaboveeq,4,0x2F3,0,,3,39,0,0x000F,0x1000,0,0,"compare unsigned, jump if above or equal"
+compare_jump_ubelow,4,0x2F3,0,,3,38,0,0x000F,0x1000,0,0,"compare unsigned, jump if below"
+compare_jump_ubeloweq,4,0x2F3,0,,3,41,0,0x000F,0x1000,0,0,"compare unsigned, jump if below or equal"
 compare_swap,1,0x270,0xA,,2,54,0,0,0xFF00,0xFF00,0,atomic compare and exchange
 compare_trap_uabove,4,0x080,0xC,,2,63,0,0x0008,0,0,20,conditional trap if unsigned above
 compress,1,0x120,0xA,,1,4,0,0,0,0xB04E,0,compress vector of specified length to half the length and half the element size
@@ -114,8 +110,8 @@ fp_category,1,0x130,0xB,,2,17,0,0,0x8060,0x8060,18,check if floating point numbe
 get_len,1,0x120,0xA,R0,1,1,0,0,0x906F,0x906F,0,get length of vector as number of bytes
 get_num,1,0x120,0xA,R0,1,3,0,0,0x906F,0x906F,0,get length of vector as number of elements
 gp2vec,1,0x130,0xB,R1,1,0,0,0x006F,0x006F,0,0,copy value from general purpose register to vector register
-increment__jump_sabove,4,0x073,0,,3,54,0,0x906F,0,0,0,dest = source1 + 1. jump if dest > source2 (signed)
-increment_jump_sbeloweq,4,0x073,0,,3,55,0,0x906F,0,0,0,dest = source1 + 1. jump if dest <= source2 (signed)
+increment_jump_sabove,4,0x073,0,,3,54,0,0x000F,0x1000,0,0,dest = source1 + 1. jump if dest > source2 (signed)
+increment_jump_sbeloweq,4,0x073,0,,3,55,0,0x000F,0x1000,0,0,dest = source1 + 1. jump if dest <= source2 (signed)
 input,1,0x120,0xA,,2,62,0,0,0x100F,0x100F,0,"read from input port. RD = vector register, RT = port address, RS = vector length (privileged instruction)."
 insert,1,0x120,0xA,R1,2,12,0,0,0x00FF,0x00FF,0,insert one element into vector. other elements are unchanged
 insert_hi,1,0x250,0xA,,2,1,0,0,0x906F,0x906F,4,"make vector of two elements. first element comes from source, second element is constant"
@@ -180,8 +176,8 @@ or,1,0x130,0xC,,2,45,0,0,0x0800,0x0800,6,"shift 8-bit signed constant left by an
 or,2,2,1,,2,12,0,0x0008,0,0,0,bitwise or
 or,3,0xFFFFFFFF,0,,2,30,0,0x000F,0x906F,0x906F,0,bitwise and
 or_hi,1,0x290,0xA,,2,6,0,0x0008,0,0,4,shift 32-bit constant left by 32 and do a bitwise OR with register
-or_jump_nzero,4,0x2F3,0,,3,46,0,0x906F,0,0,0,"bitwise or, jump if not zero"
-or_jump_zero,4,0x2F3,0,,3,47,0,0x906F,0,0,0,"bitwise or, jump if zero"
+or_jump_nzero,4,0x2F3,0,,3,46,0,0x000F,0x9060,0,0,"bitwise or, jump if not zero"
+or_jump_zero,4,0x2F3,0,,3,47,0,0x000F,0x9060,0,0,"bitwise or, jump if zero"
 output,1,0x120,0xA,,2,63,0,0,0x100F,0x100F,0,"write to output port. RD = vector register source operand, RT = port address, RS = vector length (privileged instruction)."
 permute,1,0x246,0xE,,3,1,1,0,0x906F,0x906F,0,"permute vector elements within blocks, using index vector"
 permute,1,0x250,0xA,,3,8,0,0,0x906F,0x906F,20,"permute vector elements within blocks, using constant indices"
@@ -220,10 +216,10 @@ shift,3,0x03FCFD7FF,0,I2M1,2,32,0,0x000F,0x906F,0x906F,0,shift integer bits left
 shift_add,1,0x180,0xB,,2,1,0,0x100F,0,0,2,"shift integer left/right unsigned by constant, then add to integer"
 shift_down,1,0x120,0xA,R1,2,21,0,0,0x906F,0x906F,0,shift vector elements down. lower elements are lost
 shift_expand,1,0x120,0xA,R1,2,18,0,0,0x00FF,0x00FF,0,shift vector bytes up. destination vector will be longer with lower half zero
-shift_jump_carry,4,0x073,0,,3,30,0,0x906F,0,0,0,"shift left, jump if carry"
-shift_jump_ncarry,4,0x073,0,,3,31,0,0x906F,0,0,0,"shift left, jump if not carry"
-shift_jump_nzero,4,0x073,0,,3,28,0,0x906F,0,0,0,"shift left, jump if not zero"
-shift_jump_zero,4,0x073,0,,3,29,0,0x906F,0,0,0,"shift left, jump if zero"
+shift_jump_carry,4,0x2F3,0,,3,30,0,0x000F,0x9060,0,0,"shift left, jump if carry"
+shift_jump_ncarry,4,0x2F3,0,,3,31,0,0x000F,0x9060,0,0,"shift left, jump if not carry"
+shift_jump_nzero,4,0x2F3,0,,3,28,0,0x000F,0x9060,0,0,"shift left, jump if not zero"
+shift_jump_zero,4,0x2F3,0,,3,29,0,0x000F,0x9060,0,0,"shift left, jump if zero"
 shift_reduce,1,0x120,0xA,R1,2,19,0,0,0x00FF,0x00FF,0,shift vector bytes down. destination vector will be shorter with lower part lost
 shift_rightu,2,2,1,,2,5,0,0x0008,0,0,17,shift right unsigned
 shift_ss,1,0x120,0xA,,2,36,0,0,0x1F00,0x1F00,0,"shift left integers, signed with saturation"
@@ -243,19 +239,17 @@ sub,2,10,1,,2,23,0,0,0x0040,0x0040,0,subtraction
 sub,3,0xFFFFFFFF,0,,2,9,0,0x000F,0x906F,0x906F,0,subtraction
 sub_b,1,0x120,0xA,,2,29,0,0,0x1F00,0x1F00,0,"subtract with borrow. data in even vector elements, borrow bit in odd elements"
 sub_cps,2,11,1,,2,29,0,0x0008,0x00FF,0x00FF,0,"get size of compressed image for vector register RD and subtract it from g. p. register RS (r0-r14, r31)"
-sub_jump,4,0x073,0,,3,56,0,0x906F,0,0,0,"subtract, jump unconditionally"
-sub_jump_borrow,4,0x011,0xB,,3,8,0,0x100F,0,0,0,"subtract unsigned , jump if borrow"
-sub_jump_nborrow,4,0x011,0xB,,3,9,0,0x100F,0,0,0,"subtract unsigned , jump if not borrow"
-sub_jump_neg,4,0x011,0xB,,3,2,0,0x100F,0,0,0,"subtract signed, jump if negative"
-sub_jump_nneg,4,0x011,0xB,,3,3,0,0x100F,0,0,0,"subtract signed, jump if zero or positive"
-sub_jump_noverfl,4,0x011,0xB,,3,7,0,0x100F,0,0,0,"subtract signed, jump if not overflow"
-sub_jump_npos,4,0x011,0xB,,3,5,0,0x100F,0,0,0,"subtract signed, jump if zero or negative"
-sub_jump_nzb,4,0x011,0xB,,3,10,0,0x100F,0,0,0,"subtract unsigned, jump if not zero or borrow"
-sub_jump_nzero,4,0x011,0xB,,3,0,0,0x100F,0,0,0,"subtract, jump if not zero"
-sub_jump_overfl,4,0x011,0xB,,3,6,0,0x100F,0,0,0,"subtract signed, jump if overflow"
-sub_jump_pos,4,0x011,0xB,,3,4,0,0x100F,0,0,0,"subtract signed, jump if positive"
-sub_jump_zb,4,0x011,0xB,,3,11,0,0x100F,0,0,0,"subtract unsigned, jump if zero or borrow"
-sub_jump_zero,4,0x011,0xB,,3,1,0,0x100F,0,0,0,"subtract, jump if zero"
+sub_jump,4,0x073,0,,3,56,0,0x000F,0x1000,0,0,"subtract, jump unconditionally"
+sub_jump_borrow,4,0x011,0xB,,3,8,0,0x000F,0x1000,0,0,"subtract unsigned , jump if borrow"
+sub_jump_nborrow,4,0x011,0xB,,3,9,0,0x000F,0x1000,0,0,"subtract unsigned , jump if not borrow"
+sub_jump_neg,4,0x011,0xB,,3,2,0,0x000F,0x1000,0,0,"subtract signed, jump if negative"
+sub_jump_nneg,4,0x011,0xB,,3,3,0,0x000F,0x1000,0,0,"subtract signed, jump if zero or positive"
+sub_jump_noverfl,4,0x011,0xB,,3,7,0,0x000F,0x1000,0,0,"subtract signed, jump if not overflow"
+sub_jump_npos,4,0x011,0xB,,3,5,0,0x000F,0x1000,0,0,"subtract signed, jump if zero or negative"
+sub_jump_nzero,4,0x011,0xB,,3,0,0,0x000F,0x1000,0,0,"subtract, jump if not zero"
+sub_jump_overfl,4,0x011,0xB,,3,6,0,0x000F,0x1000,0,0,"subtract signed, jump if overflow"
+sub_jump_pos,4,0x011,0xB,,3,4,0,0x000F,0x1000,0,0,"subtract signed, jump if positive"
+sub_jump_zero,4,0x011,0xB,,3,1,0,0x000F,0x1000,0,0,"subtract, jump if zero"
 sub_oc,1,0x120,0xA,,2,39,0,0,0xFF00,0xFF00,0,"subtract with overflow check. data in even elements, overflow bits in odd elements"
 sub_rev,1,0x110,0xC,,2,3,0,0x0008,0,0,3,subtract register from 16-bit sign extended constant
 sub_rev,3,0xFFFFFFFF,0,,2,10,0,0x000F,0x906F,0x906F,0,subtraction. Operands swapped
@@ -268,12 +262,10 @@ sys_return,4,0x002,0xC,,0,62,0,0x0008,0,0,0,return from system function or inter
 test_bit,3,0x03FCFD7FF,0,I2M1O5,2,39,0,0x000F,0x906F,0x906F,0,test one bit
 test_bits_and,3,0x03FCFD7FF,0,M1O5,2,40,0,0x000F,0x906F,0x906F,0,test if all indicated bits are one
 test_bits_or,3,0x03FCFD7FF,0,O5,2,41,0,0x000F,0x906F,0x906F,0,test if any of the indicated bits is one
-test_jump_nzero,4,0x2F3,0,,3,42,0,0x906F,0,0,0,"bitwise and, destination register unchanged, jump if not zero"
-test_jump_zero,4,0x2F3,0,,3,43,0,0x906F,0,0,0,"bitwise and, destination register unchanged, jump if zero"
-testbit_jump_nzero,4,0x073,0,,3,50,0,0x906F,0,0,0,"test single bit in source1 indexed by source2, jump if not zero"
-testbit_jump_nzero,4,0x073,0,,3,52,0,0x906F,0,0,0,"test single bit in source1 indexed by source2, jump if not zero, use vector registers"
-testbit_jump_zero,4,0x073,0,,3,51,0,0x906F,0,0,0,"test single bit in source1 indexed by source2, jump if zero"
-testbit_jump_zero,4,0x073,0,,3,53,0,0x906F,0,0,0,"test single bit in source1 indexed by source2, jump if zero, use vector registers"
+test_jump_nzero,4,0x2F3,0,,3,42,0,0x000F,0x9060,0,0,"bitwise and, destination unchanged, jump if not zero"
+test_jump_zero,4,0x2F3,0,,3,43,0,0x000F,0x9060,0,0,"bitwise and, destination unchanged, jump if zero"
+testbit_jump_nzero,4,0x2F3,0,,3,26,0,0x000F,0x9060,0,0,"test single bit in source1 indexed by source2, jump if not zero"
+testbit_jump_zero,4,0x2F3,0,,3,27,0,0x000F,0x9060,0,0,"test single bit in source1 indexed by source2, jump if zero"
 toggle_bit,3,0x03FCFD7FF,0,I2M1,2,37,0,0x000F,0x906F,0x906F,0,toggle single bit
 trap,4,0x002,0xC,,0,63,0,0x0008,0,0,0,unconditional trap (interrupt)
 truth_tab2,1,0x130,0xB,,3,25,0,0,0x100F,0x100F,18,"boolean function of two inputs, given by truth table"
@@ -299,5 +291,5 @@ xor,1,0x130,0xC,,2,47,0,0,0x0800,0x0800,6,"shift 8-bit signed constant left by a
 xor,2,2,1,,2,13,0,0x0008,0,0,0,bitwise exclusive or
 xor,3,0xFFFFFFFF,0,,2,31,0,0x000F,0x906F,0x906F,0,bitwise exclusive or
 xor_hi,1,0x290,0xA,,2,7,0,0x0008,0,0,4,shift 32-bit constant left by 32 and do a bitwise exclusive OR with register
-xor_jump_nzero,4,0x2F3,0,,3,48,0,0x906F,0,0,0,"bitwise exclusive or, jump if not zero"
-xor_jump_zero,4,0x2F3,0,,3,49,0,0x906F,0,0,0,"bitwise exclusive or, jump if zero"
+xor_jump_ntest_and,4,0x2F3,0,,3,49,0,0x000F,0x9060,0,0,"bitwise exclusive or, jump if not all selected bits turned from 1 to 0"
+xor_jump_test_and,4,0x2F3,0,,3,48,0,0x000F,0x9060,0,0,"bitwise exclusive or, jump if all selected bits turned from 1 to 0"
