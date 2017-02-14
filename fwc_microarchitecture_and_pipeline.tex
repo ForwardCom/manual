@@ -73,4 +73,55 @@ vector element in another vector (i. e. same lane) is faster than the horizontal
 The data path to the data cache and memory should be quite wide, possibly matching the maximum vector length, because cache access and memory access are typical bottlenecks.
 
 
+\section{Proposal for reducing branch misprediction delay}
+Modern superscalar processors often have quite long pipelines. This gives a long branch misprediction delay. The branch misprediction delay is normally equal to the number of pipeline stages from a branch instruction is fetched till it is executed.
+\vspace{2mm}
+
+It may be possible to reduce this delay by executing branch instructions as early as possible in the pipeline. Any preceding instructions that a branch instruction depends on may also be executed early. It is proposed to execute all control transfer instructions (branch, jump, call, and return) in the front end of the pipeline, before the register renaming and scheduler. Any preceding instruction that a branch depends on, could likewise be moved to the front end. This idea is somewhat similar to the principle described in the article:
+
+Sheikh, Rami, James Tuck, and Eric Rotenberg. “Control-Flow Decoupling.” In Proceedings of the 2012 45th Annual IEEE/ACM International Symposium on Microarchitecture, 329–340. IEEE Computer Society, 2012.
+\url{http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.952.6936&rep=rep1&type=pdf}
+\vspace{2mm}
+
+A problem with the previously proposed methods for decoupling control flow from execution is that it is complicated for the CPU to determine which instructions belong to the control flow. Here, we will propose to tell the CPU in advance which registers are used for the control flow. This may be one or more general purpose registers which are used for loop counters, etc.
+\vspace{2mm}
+
+The vision is this: There are two sets of ALU's, one in the front end used for control flow, and one in the back end used for ordinary calculations. The front end does not use register renaming, but relies on the permanent register file.
+\vspace{2mm}
+
+The compiler is indicating which registers it intends to use for control flow. For example, it may use register r1 for loop counter, r2 for a branch condition, and r3 for index into a jump table. The compiler issues an instruction to indicate that r1, r2, and r3 are marked for executing in the front end. 
+All instructions that modify r1, r2, and r3, as well as all control transfer instructions, will then execute in the front end if possible. The remaining instructions are sent to the the back end. Instructions that have any of these registers as input operand will have the register operand replaced by its value before it is sent to the back end. Other register operands that are available in the permanent register file can likewise be replaced by their values. Instructions that execute in the front end may write their result not only to the permanent register file but also to any pending instruction that needs it.
+\vspace{2mm}
+
+The result of this mechanism is that a loop that is controlled only by the marked registers
+will be unrolled in the front end. The instructions in the loop body will be passed on to the back end with the loop counter replaced by its value. The back end has register renaming so that it can execute the body of the second iteration before it has finished the body of the first iteration, etc.
+\vspace{2mm}
+
+All other control flow, such as branches, jumps, calls, returns, etc., will be unrolled in the front end as well so that control flow is effectively resolved before execution as far as it does not depend on delayed data.
+\vspace{2mm}
+
+The front end supports a minimum of out-of-order execution in the sense that an instruction that is waiting for an operand should not delay any independent subsequent instructions. But the front end does not need a complicated structure with a long queue and scheduler.
+\vspace{2mm}
+
+In case the front end ALU is idle because there are no instructions that write to marked registers, it may execute any other instructions if their operands are ready.
+\vspace{2mm}
+
+The front end should have access to the permanent register file, while the back end uses temporary registers with register renaming. The renamed registers will be written to the permanent register file when they retire. We have to keep track of whether the permanent registers are up to date. When the decoder sees an instruction that writes to a register, it will mark this register as invalid in the permanent register file and remember which instruction it belongs to. When this instruction is executed (whether in the front end or the back end), the register entry is marked as valid, unless another instruction writing to the same register has been seen in the meantime.
+\vspace{2mm}
+
+The front end may fetch and decode speculatively, but not execute speculatively. It may even fetch both sides of a branch that it expects to have poor prediction. Fetching both sides of a branch becomes cheaper here than with a traditional superscalar design because it only needs to duplicate two pipeline stages (fetch and decode) in order to minimize branch misprediction bubbles.
+\vspace{2mm}
+
+The fetch and decode stages should have higher throughput than the rest of the pipeline so that it can catch up and fill the pipeline after a branch bubble. The fetch stage should be able to fetch a large block of code in one clock cycle, possibly crossing a cache line boundary. The decoder should be able to decode the first one or two instructions in a fecthed code block in the first clock cycle, and determine the starting points of the remaining instructions. This will allow it to decode maybe four or more instructions in the second clock cycle after fetching a block of code. The aim of this is to keep the branch misprediction delay as low as possible. This delay will be 3 clock cycles if there are three stages in the front end path: fetch, decode, and execute. This requires that the two decode stages are joined into one.
+\vspace{2mm}
+
+The front end may have access to a memory read port because some control transfer instructions have memory operands. Jump tables are particularly critical here. Jump tables are normally placed in the read-only memory block (see page \pageref{memoryModel}). The speed of access to jump tables may be increased by having a separate cache for read-only memory.
+\vspace{2mm}
+
+A special register is used for holding the information about which registers are marked for calculation in the front end. This special register has callee-save status. It may have a default value to specify certain registers that are normally used for loop counters, etc.
+\vspace{2mm}
+
+The demand for advanced branch prediction is somewhat relaxed if we can drastically reduce the branch misprediction delay with the measures described here. The branch prediction machinery in modern processors is very complicated and requires a lot of silicon space for branch target buffers and pattern/history tables. We can cut down on this and use a simpler branch prediction scheme if branches are resolved in the front end.
+\vspace{2mm}
+
 \end{document}
