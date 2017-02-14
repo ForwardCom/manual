@@ -2255,56 +2255,588 @@ dest = src1 \^{} src2
 \vspace{2mm}
 
 Floating point operands are treated as integers.
+\vspace{2mm}
 
-\subsection{Control transfer instructions}
 
-\subsubsection{call}
-\label{table:callInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\subsection{Combined ALU and branch instructions}
+\label{descriptionOfControlTransferInstructions}
+These instructions are doing an arithmetic or logic operation and a conditional jump
+depending on the result. Each instruction can be coded in a number of different formats
+described on page \pageref{table:jumpInstructionFormats}.
+\vspace{2mm}
+
+The instructions are listed below in pairs, where the second instruction has the branch condition inversed.
+\vspace{2mm}
+
+These instructions cannot have a mask, and they do not depend on the numeric control register. Numeric overflow cannot generate a trap in these instructions.
+\vspace{2mm}
+
+Addition and subtraction instructions here do not support floating point operands because the longer latency will not fit into the pipeline structure.
+
+
+\subsubsection{add\_jump\_nzero}
+\label{table:addJumpNzeroInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{40mm}|p{60mm}|}
 \hline
-\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-1.5 D &  8 & 24 bit offset \\ \hline
-1.5 C & 59 & 16 bit offset \\ \hline
-2.7.2 & 59 & 32 bit offset \\ \hline
-3.0.1 & 59 & 64 bit absolute address \\ \hline
-1.4 B & 59 & memory operand with 8 bit offset \\ \hline
-2.7.0 & 59 & memory operand with 32 bit offset \\ \hline
-1.5 C & 61 & target address in register \\ \hline
-1.4 A & 61 & table of relative addresses  \\ \hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 16 & add\_jump\_nzero & integer \\ \hline
+all & 17 & add\_jump\_zero & integer\\ \hline
 \end{tabular}
 \vspace{2mm}
 
-Function call.
+Add two integer operands and jump if the result is non-zero.
+
+
+\subsubsection{add\_jump\_neg}
+\label{table:addJumpNegInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{40mm}|p{60mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 18 & add\_jump\_neg & integer \\ \hline
+all & 19 & add\_jump\_nneg & integer\\ \hline
+\end{tabular}
 \vspace{2mm}
 
-See page \pageref{table:jumpInstructionFormats} for details.
+Add two integer operands and jump if the signed result is negative.
+
+The result will wrap around in the case of overflow and jump if the result has the sign bit set.
+
+
+\subsubsection{add\_jump\_pos}
+\label{table:addJumpPosInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{40mm}|p{60mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 20 & add\_jump\_pos & integer \\ \hline
+all & 21 & add\_jump\_npos & integer\\ \hline
+\end{tabular}
 \vspace{2mm}
 
-The return address is stored on the call stack. The calling conventions are described on page \pageref{functionCallingConventions}.
+Add two integer operands and jump if the signed result is positive.
+
+The result will wrap around in the case of overflow and jump if the result is not zero and does not have the sign bit set.
+
+
+\subsubsection{add\_jump\_overfl}
+\label{table:addJumpOverflInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{40mm}|p{60mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 22 & add\_jump\_overfl & integer \\ \hline
+all & 23 & add\_jump\_noverfl & integer\\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Add two signed integer operands and jump if the result overflows.
+
+\subsubsection{add\_jump\_carry}
+\label{table:addJumpCarryInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{40mm}|p{60mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 24 & add\_jump\_carry & integer \\ \hline
+all & 25 & add\_jump\_ncarry & integer\\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Add two unsigned integer operands and jump if the operation produces a carry.
+
+\subsubsection{add\_jump}
+\label{table:addJumpInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{40mm}|p{60mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 57 & add\_jump & integer \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Add two integer operands and jump unconditionally.
+
+\subsubsection{increment\_jump\_above}
+\label{table:addJumpInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{40mm}|p{60mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 54 & increment\_jump\_above & integer \\ \hline
+all & 55 & increment\_jump\_beloweq & integer \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Add 1 to the first source operand and jump if the signed result is bigger than the second source operand. The result is saved in the destination operand. This is useful for implementing a simple ``for'' loop.
+\vspace{2mm}
+
+The result will wrap around from INT\_MAX to INT\_MIN in case of overflow, and jump only if the second source operand is also INT\_MAX.
+\vspace{2mm}
+
+The hardware implementation can use the following algorithm to avoid problems with overflow and to minimize the latency:
+
+dest = src1 + 1
+
+jump if src1 $\geq$ src2
+\vspace{2mm}
+
+Note that a ``for'' loop using this instruction will stop at n, where n = src2. If it is desired to stop at n-1 then subtract 1 from n first. (An implementation that stops at n-1 would be more difficult to implement with a short latency).
+
+
+\subsubsection{sub\_jump\_nzero}
+\label{table:subJumpNzeroInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{40mm}|p{60mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+1.4, 2.7.0 &  0 & sub\_jump\_nzero & integer \\ \hline
+1.4, 2.7.0 &  1 & sub\_jump\_zero  & integer\\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Subtract two integer operands and jump if the result is non-zero.
+\vspace{2mm}
+
+Immedate constants are not allowed, and the corresponding format is used for other purposes.
+If a constant operand is needed then change the sign of the operand and use add\_jump\_nzero. 
+
+\subsubsection{sub\_jump\_neg}
+\label{table:subJumpNegInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{40mm}|p{60mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+1.4, 2.7.0 &  2 & sub\_jump\_neg & integer \\ \hline
+1.4, 2.7.0 &  3 & sub\_jump\_nneg & integer\\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Subtract two integer operands and jump if the signed result is negative.
+
+The result will wrap around in the case of overflow and jump if the result has the sign bit set.
+\vspace{2mm}
+
+Immedate constants are not allowed, and the corresponding format is used for other purposes.
+If a constant operand is needed then change the sign of the operand and use add\_jump\_neg. 
+
+\subsubsection{sub\_jump\_pos}
+\label{table:subJumpPosInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{40mm}|p{60mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+1.4, 2.7.0 &  4 & sub\_jump\_pos & integer \\ \hline
+1.4, 2.7.0 &  5 & sub\_jump\_npos & integer\\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Subtract two integer operands and jump if the signed result is positive.
+
+The result will wrap around in the case of overflow and jump if the result is not zero and does not have the sign bit set.
+\vspace{2mm}
+
+Immedate constants are not allowed, and the corresponding format is used for other purposes.
+If a constant operand is needed then change the sign of the operand and use add\_jump\_pos. 
+
+\subsubsection{sub\_jump\_overfl}
+\label{table:subJumpOverflInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{40mm}|p{60mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+1.4, 2.7.0 &  6 & sub\_jump\_overfl & integer \\ \hline
+1.4, 2.7.0 &  7 & sub\_jump\_noverfl & integer\\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Subtract two signed integer operands and jump if the result overflows.
+\vspace{2mm}
+
+Immedate constants are not allowed, and the corresponding format is used for other purposes.
+If a constant operand is needed then change the sign of the operand and use add\_jump\_overfl. 
+
+\subsubsection{sub\_jump\_borrow}
+\label{table:subJumpBorrowInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{40mm}|p{60mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+1.4, 2.7.0 &  8 & sub\_jump\_borrow & integer \\ \hline
+1.4, 2.7.0 &  9 & sub\_jump\_nborrow & integer\\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Subtract two unsigned integer operands and jump if the operation produces a borrow.
+\vspace{2mm}
+
+Immedate constants are not allowed, and the corresponding format is used for other purposes.
+If a constant operand is needed then change the sign of the operand and use add\_jump\_borrow. 
+
+\subsubsection{sub\_jump}
+\label{table:subJumpInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{40mm}|p{60mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 56 & sub\_jump & integer \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Subtract two integer operands and jump unconditionally.
+
+\subsubsection{compare\_jump\_nequal}
+\label{table:compareJumpNequalInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{40mm}|p{60mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 32 & compare\_jump\_nequal & integer and floating point \\ \hline
+all & 33 & compare\_jump\_equal  & integer and floating point \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Compare two integer or floating point operands and jump if they are not equal.
+
+The destination operand will be equal to the first source operand.
+\vspace{2mm}
+
+Two floating point NAN operands will be treated as not equal, even if they are identical.
+
+0.0 and -0.0 are treated as equal.
+
+\subsubsection{compare\_jump\_sbelow}
+\label{table:compareJumpSbelowInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{40mm}|p{60mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 34 & compare\_jump\_sbelow & integer and floating point \\ \hline
+all & 35 & compare\_jump\_saboveeq  & integer and floating point \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Compare two signed integer or floating point operands and jump if the first source operand is less than the second source operand.
+\vspace{2mm}
+
+The destination operand will be equal to the first source operand.
+\vspace{2mm}
+
+Overflow cannot occur.
+\vspace{2mm}
+
+0.0 and -0.0 are treated as equal.
+\vspace{2mm}
+
+compare\_jump\_sbelow will jump and compare\_jump\_saboveeq will not jump if one or both operands are NAN.
+
+\subsubsection{compare\_jump\_sabove}
+\label{table:compareJumpSaboveInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{40mm}|p{60mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 36 & compare\_jump\_sabove & integer and floating point \\ \hline
+all & 37 & compare\_jump\_sbeloweq  & integer and floating point \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Compare two signed integer or floating point operands and jump if the first source operand is bigger than the second source operand.
+\vspace{2mm}
+
+The destination operand will be equal to the first source operand.
+\vspace{2mm}
+
+Overflow cannot occur.
+\vspace{2mm}
+
+0.0 and -0.0 are treated as equal.
+\vspace{2mm}
+
+compare\_jump\_sabove will jump and compare\_jump\_sbeloweq will not jump if one or both operands are NAN.
+
+\subsubsection{compare\_jump\_ubelow}
+\label{table:compareJumpUbelowInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{40mm}|p{60mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 38 & compare\_jump\_ubelow & integer \\ \hline
+all & 39 & compare\_jump\_uaboveeq  & integer \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Compare two unsigned integer operands and jump if the first source operand is less than the second source operand.
+\vspace{2mm}
+
+The destination operand will be equal to the first source operand.
+\vspace{2mm}
+
+Overflow cannot occur.
+\vspace{2mm}
+
+\subsubsection{compare\_jump\_uabove}
+\label{table:compareJumpUaboveInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{40mm}|p{60mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 40 & compare\_jump\_uabove & integer \\ \hline
+all & 41 & compare\_jump\_ubeloweq  & integer \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Compare two unsigned integer operands and jump if the first source operand is bigger than the second source operand.
+\vspace{2mm}
+
+The destination operand will be equal to the first source operand.
+\vspace{2mm}
+
+Overflow cannot occur.
+\vspace{2mm}
+
+\subsubsection{compare\_jump\_absbelow}
+\label{table:compareJumpAbsbelowInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{42mm}|p{58mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 38 & compare\_jump\_absbelow & floating point \\ \hline
+all & 39 & compare\_jump\_absaboveeq & floating point \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Compare two floating point operands and jump if the absolute value of the first source operand is less than the the absolute value of the second source operand.
+\vspace{2mm}
+
+The destination operand will be equal to the unchanged first source operand.
+\vspace{2mm}
+
+compare\_jump\_absbelow will jump and compare\_jump\_absaboveeq will not jump if one or both operands are NAN.
+
+\subsubsection{compare\_jump\_absabove}
+\label{table:compareJumpAbsaboveInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{42mm}|p{58mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 38 & compare\_jump\_absabove & floating point \\ \hline
+all & 39 & compare\_jump\_absbeloweq & floating point \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Compare two floating point operands and jump if the absolute value of the first source operand is bigger than the the absolute value of the second source operand.
+\vspace{2mm}
+
+The destination operand will be equal to the unchanged first source operand.
+\vspace{2mm}
+
+compare\_jump\_absbelow will jump and compare\_jump\_absaboveeq will not jump if one or both operands are NAN.
+
+\subsubsection{compare\_jump\_nfinite}
+\label{table:compareJumpNfiniteInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{42mm}|p{58mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 24 & compare\_jump\_nfinite & floating point \\ \hline
+all & 25 & compare\_jump\_finite & floating point \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Jump if not finite, i.e. if at least one of the source operands is $\pm$ infinity or NAN.
+\vspace{2mm}
+
+The destination operand will be equal to the first source operand.
+\vspace{2mm}
+
+\subsubsection{shift\_jump\_nzero}
+\label{table:shiftJumpNzeroInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{42mm}|p{58mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 28 & shift\_jump\_nzero & all \\ \hline
+all & 29 & shift\_jump\_zero & all \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Shift the first source operand by the count of the second source operand, left if positive or right if negative. Jump if the result is not zero.
+\vspace{2mm}
+
+The first source operand is treated as an unsigned integer. The second source operand is treated as a signed integer.
+\vspace{2mm}
+
+dest = src1 $<<$ src2 if src2 $\geq$ 0
+
+dest = src1 $>>$ -src2 if src2 $<$ 0
+
+Jump if dest $\neq$ 0
+\vspace{2mm}
+
+Floating point operands are treated as scalar integer operands in vector registers. 
+
+\subsubsection{shift\_jump\_carry}
+\label{table:shiftJumpCarryInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{42mm}|p{58mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 30 & shift\_jump\_carry & all \\ \hline
+all & 31 & shift\_jump\_ncarry & all \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Shift the first source operand by the count of the second source operand, left if positive or right if negative. Jump if the last bit shifted out is 1.
+\vspace{2mm}
+
+The first source operand is treated as an unsigned integer. The second source operand is treated as a signed integer.
+\vspace{2mm}
+
+dest = src1 $<<$ src2 if src2 $\geq$ 0
+
+dest = src1 $>>$ -src2 if src2 $<$ 0
+
+Jump if carry
+\vspace{2mm}
+
+Floating point operands are treated as scalar integer operands in vector registers. 
+
+\subsubsection{test\_bit\_jump\_nzero}
+\label{table:testBitJumpNzeroInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{42mm}|p{58mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 26 & test\_bit\_jump\_nzero & all \\ \hline
+all & 27 & test\_bit\_jump\_zero & all \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Test a single bit in the first source operand as indicated by the second source operand and jump if this bit is 1. The destination is unchanged.
+\vspace{2mm}
+
+All operands are treated as unsigned integers. 
+
+Floating point operands are treated as unsigned integer scalars in vector registers.
+\vspace{2mm}
+
+dest = src1
+
+jump if (src1 $>>$ src2) \& 1 == 1
+
+\subsubsection{test\_jump\_nzero}
+\label{table:testJumpNzeroInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{42mm}|p{58mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 42 & test\_jump\_nzero & all \\ \hline
+all & 43 & test\_jump\_zero & all \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Bitwise test. Jump if at least one of the indicated bits is 1.
+\vspace{2mm}
+
+dest = src1
+
+jump if (src1 \& src2) $\neq$ 0
+\vspace{2mm}
+
+All operands are treated as integers. 
+Floating point operands are treated as unsigned integer scalars in vector registers.
+\vspace{2mm}
+
+\subsubsection{and\_jump\_nzero}
+\label{table:andJumpNzeroInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{42mm}|p{58mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 44 & and\_jump\_nzero & all \\ \hline
+all & 45 & and\_jump\_zero & all \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Bitwise and. Jump if not zero.
+\vspace{2mm}
+
+dest = src1 \& src2
+
+jump if dest $\neq$ 0
+\vspace{2mm}
+
+All operands are treated as integers. 
+Floating point operands are treated as unsigned integer scalars in vector registers.
+\vspace{2mm}
+
+\subsubsection{or\_jump\_nzero}
+\label{table:orJumpNzeroInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{42mm}|p{58mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 46 & or\_jump\_nzero & all \\ \hline
+all & 47 & or\_jump\_zero & all \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Bitwise or. Jump if not zero.
+\vspace{2mm}
+
+dest = src1 $|$ src2
+
+jump if dest $\neq$ 0
+\vspace{2mm}
+
+All operands are treated as integers. 
+Floating point operands are treated as unsigned integer scalars in vector registers.
+\vspace{2mm}
+
+\subsubsection{xor\_jump\_test\_and}
+\label{table:xorJumpTestAndInstruction}
+\begin{tabular}{|p{16mm}|p{12mm}|p{42mm}|p{58mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
+all & 48 & xor\_jump\_test\_and & all \\ \hline
+all & 49 & xor\_jump\_ntest\_and & all \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Toggle bits. Jump if all indicated bits are changed from 1 to 0.
+\vspace{2mm}
+
+dest = src1 \^{ } src2
+
+jump if (src1 \& src2) == src2
+\vspace{2mm}
+
+All operands are treated as integers. 
+Floating point operands are treated as unsigned integer scalars in vector registers.
+\vspace{2mm}
+
+
+\subsection{Other control transfer instructions}
+Control transfer instructions are available in a number of different formats, described on 
+page \pageref{table:jumpInstructionFormats}.
+
 
 \subsubsection{jump}
 \label{table:jumpInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-1.5 D &  0 & 24 bit offset \\ \hline
-1.5 C & 58 & 16 bit offset \\ \hline
-2.7.2 & 58 & 32 bit offset \\ \hline
-3.0.1 & 58 & 64 bit absolute address \\ \hline
-1.4 B & 58 & memory operand with 8 bit offset \\ \hline
-2.7.0 & 58 & memory operand with 32 bit offset \\ \hline
-1.5 C & 60 & target address in register \\ \hline
-1.4 A & 60 & table of relative addresses  \\ \hline
+1.5 C & 58 & relative addres with 16 bit offset \\ \hline
+1.5 D &  0 & relative addres with 24 bit offset \\ \hline
+2.7.2 C & 58 & relative addres with 32 bit offset \\ \hline
+3.0.1 B & 58 & 64 bit absolute address in constant \\ \hline
+1.4 B & 58 & 64 bit absolute address in memory operand with 8 bit offset \\ \hline
+2.7.0 B & 58 & 64 bit absolute address in memory operand with 32 bit offset \\ \hline
+1.5 C & 60 & 64 bit absolute address in register \\ \hline
 \end{tabular}
 \vspace{2mm}
 
 Unconditional jump.
 \vspace{2mm}
 
-See page \pageref{table:jumpInstructionFormats} for details.
+\subsubsection{call}
+\label{table:callInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.5 C & 59 & relative addres with 16 bit offset \\ \hline
+1.5 D &  8 & relative addres with 24 bit offset \\ \hline
+2.7.2 C & 59 & relative addres with 32 bit offset \\ \hline
+3.0.1 B & 59 & 64 bit absolute address in constant \\ \hline
+1.4 B & 59 & 64 bit absolute address in memory operand with 8 bit offset \\ \hline
+2.7.0 B & 59 & 64 bit absolute address in memory operand with 32 bit offset \\ \hline
+1.5 C & 61 & 64 bit absolute address in register \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+Function call.
+\vspace{2mm}
+
+The return address is stored on the call stack. The calling conventions are described on page \pageref{functionCallingConventions}.
+
 
 \subsubsection{return}
-\label{table:jumpInstruction}
+\label{table:returnInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
@@ -2312,11 +2844,41 @@ See page \pageref{table:jumpInstructionFormats} for details.
 \end{tabular}
 \vspace{2mm}
 
-Return from function. The return address is taken from the call stack.
+Return from function call. The return address is taken from the call stack.
+\vspace{2mm}
 
-\subsubsection{combined ALU and conditional jump instructions}
-See table \ref{table:jumpInstructionFormats} page \pageref{table:jumpInstructionFormats}.
-\vspace{4mm}
+Return instructions do not need a stack offset when the calling conventions specified on page \pageref{functionCallingConventions} are used.
+\vspace{2mm}
+
+
+\subsubsection{Multi-way jump and call}
+\label{table:multiwayJumpCallInstructions}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.4 A & 60 & Jump with table of relative addresses  \\ \hline
+1.4 A & 61 & Call with table of relative addresses  \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+\label{jumpTableInstruction}
+The table-based indirect jump and call instructions are intended to facilitate multiway branches \\
+(switch/case statements), function tables in code interpreters, and virtual function tables in object oriented languages with polymorphism. 
+\vspace{2mm}
+
+The table of jump or call addresses is stored in memory as signed offsets relative to an arbitrary reference point, which may be the table address, the code base, or any other reference point. The operand type specifies the size of the table entries. 16-bit and 32-bit table entries must be supported. Other sizes are optional. The use of relative addresses makes the table more compact than if 64-bit absolute addresses were used. Support for a mask is optional.
+\vspace{2mm}
+
+This instruction works as follows. Calculate the address of a table entry as the base pointer (RT) plus the index (RS) multiplied by the operand size. Read a signed value from this address, sign-extend to 64 bits, and scale by 4. Then add the reference point (RD). Jump or call to the calculated address. The array index (RS) is scaled by the operand size, while the table entries are scaled by the instruction word size (4). The reference point must be aligned by 4.
+\vspace{2mm}
+
+The table used by the table-based jump and call instructions may be placed in the constant data section (CONST). This makes it possible to use the table base as reference point and it improves security by giving read-only access to the table.
+\vspace{2mm}
+
+\subsubsection{System call, system return, and traps}
+See page \pageref{table:sysCallInstruction}.
+\vspace{2mm}
+
 
 \subsection{Miscellaneous instructions}
 
@@ -2607,20 +3169,36 @@ The following special registers are currently defined:
 Read system register. Details are not defined yet. This instruction is privileged.
 
 \subsubsection{sys\_call}
+\label{systemCallInstruction}
+System calls use ID numbers rather than addresses to identify system functions. 
+The ID is the combination of a module ID identifying a particular system module or device driver and a function ID identifying a particular function within this module. The module ID and the function ID are both 16 or 32 bits, so that the combined system call ID is up to 64 bits.
+The sys\_call instruction has the following variants:
+
+\begin{longtable}
+{|p{30mm}|p{30mm}|p{30mm}|p{30mm}|}
+\caption{Variants of system call instruction}
 \label{table:sysCallInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\endfirsthead
+\endhead
 \hline
-\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-1.4 A & 63 & ID in register RT \\ \hline
-2.7.1 & 63 & ID in constants \\ \hline
-2.7.4 & 63 & ID in constants \\ \hline
-3.0.1 & 63 & ID in constants \\ \hline
-\end{tabular}
+Format & Operand type & Function ID & Module ID \\
+\hline
+1.4 A & 32 bit & RT bit 0-15 & RT bit 16-31  \\
+\hline
+1.4 A & 64 bit & RT bit 0-31 & RT bit 32-63  \\
+\hline
+2.7.1 B & 32 bit & IM2 bit 0-15 & IM2 bit 16-31 \\
+\hline
+2.7.4 C & 64 bit & IM1,IM2 bit 0-15 & IM3 bit 0-31 \\
+\hline
+3.0.1 B & 64 bit & IM2 bit 0-31 & IM3 bit 0-31 \\
+\hline
+\end{longtable}
+
+The sys\_call instruction can indicate a block of memory to be shared with the system function. The address of the memory block is pointed to by the register specified in RD and the length is in register RS. This memory block, which the caller must have access rights to, is shared with the system function. The system function will get the same access rights to this block as the calling thread has, i. e. read access and/or write access. This is useful for fast transfer of data between the caller and the system function. No other memory is accessible to both the caller and the called function. If the RD and RS fields are both zero (i.e. indicating register r0) then no memory block is shared. The sys\_call instruction in format 2.7.4 cannot have a shared memory block. System calls cannot have a mask.
 \vspace{2mm}
 
-System call instruction.
-
-See page \pageref{systemCallInstruction} for details.
+Parameters for system functions are transferred in registers, following the same calling conventions as normal functions. The registers used for function parameters are usually different from the registers in the RD, RS and RT fields. Function parameters that do not fit into registers must reside in the shared memory block.
 \vspace{2mm}
 
 \subsubsection{sys\_return}
@@ -2635,16 +3213,39 @@ See page \pageref{systemCallInstruction} for details.
 Return from system call.
 
 \subsubsection{trap}
+\label{traps}
 \label{table:trapInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{12mm}|p{30mm}|p{80mm}|}
 \hline
-\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-1.5 C & 63 & interrupt number in constant \\ \hline
-2.7.3 & 63 & conditional trap \\ \hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries immediate operand \\ \hline
+1.5 C & 63 & trap & 0-62 \\ \hline
+1.5 C & 63 & filler & 63 \\ \hline
 \end{tabular}
 \vspace{2mm}
 
-A trap is a software interrupt or exception. See page \pageref{traps} for details.
+Traps work like interrupts. The unconditional trap has an 8-bit interrupt number in IM1. This is an index into the interrupt vector table, which initially starts at absolute address zero. The unconditional trap instruction may use IM2 for additional information.  
+\vspace{2mm}
+
+A trap instruction with all 1's in all fields (opcode 0x6FFFFFFF) can be used as filler in unused parts of code memory.
+
+\subsubsection{conditional trap}
+\label{table:conditionalTrapInstructions}
+\begin{tabular}{|p{12mm}|p{12mm}|p{30mm}|p{80mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries instruction & \bfseries immediate operand \\ \hline
+2.7.3 C & 63 & compare, trap\_uabove & 40 \\ \hline
+2.7.3 C & 63 & conditional trap & IM1 = interrupt number, IM2 = OPJ \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+The conditional trap generates a trap if the specified condition is true.\\
+IM1 contains the interrupt number. \\
+IM2 contains the condition code OPJ, specified in table  \ref{table:controlTransferInstructions}.
+\vspace{2mm}
+
+Currently, only the condition code 40 is supported, corresponding to compare unsigned and jump if above. This will generate a trap if RD $>$ IM3. This is useful for checking if an array index exceeds the upper bound. The lower bound does not have to be checked because we use unsigned compare. 
+\vspace{2mm}
+
 
 \subsubsection{write\_capabilities}
 \label{table:writeCapabilitiesInstruction}

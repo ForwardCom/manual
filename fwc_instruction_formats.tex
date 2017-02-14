@@ -617,7 +617,7 @@ The instruction-specific option bits are used for various options in compare, ad
 
 
 \section{Format for jump, call and branch instructions}
-Most branches in ordinary code are based on the result of an arithmetic or logic instruction (ALU). The ForwardCom design combines the ALU instruction and the conditional jump into a single instruction. For example, a loop control can be implemented with a single instruction that counts down and jumps until it reaches zero or counts up through negative values and jumps until it reaches zero.
+Most branches in ordinary code are based on the result of an arithmetic or logic instruction (ALU). The ForwardCom design combines the ALU instruction and the conditional jump into a single instruction. For example, a loop control can be implemented with a single instruction that counts down and jumps until it reaches zero or counts up until it reaches a certain limit.
 \vspace{2mm}
 
 The jumps, calls, branches and multiway branches will use the following formats.
@@ -656,7 +656,7 @@ Format & IL & Mode & OP1 & Tem-plate & Description \\
 The jump, call and branch instructions have signed offsets of 8, 16, 24 or 32 bits relative to the instruction pointer. Or, more precisely, relative to the end of the instruction. This offset is multiplied by the instruction word size (= 4) to cover an address range of $\pm$ a half kilobyte for short conditional jumps with 8 bits offset, $\pm$ 128 kbytes for jumps and calls with 16 bits offset, $\pm$ 32 megabytes for 24 bits offset, and $\pm$ 8 gigabytes for 32 bits offsets. The optional triple-size format includes unconditional jump and call with a 64 bits absolute address.
 \vspace{2mm}
 
-The versions with template C and C2 have no OT field. The operand type is 64-bit integer when there is no OT field. It is not possible to use formats with template C or C2 with floating point types. The instructions will use vector registers (first element only) when there is an OT field and M = 1. In other words, the ALU-jump instructions will use vector registers only when a floating point type is specified (or 128-bit integer type, if supported). General purpose registers are used in all other cases. It is possible to use bitwise logical instructions with vector registers by specifying a floating point type. 
+The versions with template C and C2 have no OT field. The operand type is 64-bit integer when there is no OT field. It is not possible to use formats with template C or C2 with floating point types. The instructions will use vector registers (first element only) when there is an OT field and M = 1. In other words, the combined ALU-and-branch instructions will use vector registers only when a floating point type is specified (or 128-bit integer type, if supported). General purpose registers are used in all other cases. The logical instructions will interpret the value in a vector register as an integer, when a floating point type is specified. Only the compare instructions interpret the operands as floating point when a floating point type is indicated.
 \vspace{2mm}
 
 The OPJ field defines the operation and jump condition. This field has 6 bits in the single size version and 8 bits in the longer versions. The two extra bits in the longer versions are used as follows. Bit 6 is reserved for future extensions, and must be zero. Bit 7 may be used for indicating loop behavior as a hint for choosing the optimal branch prediction algorithm.
@@ -665,179 +665,112 @@ The OPJ field defines the operation and jump condition. This field has 6 bits in
 The lower 6 bits of the OPJ field contains the following codes.
 
 \begin{longtable}
-{|p{10mm}|p{11mm}|p{50mm}|p{35mm}|}
+{|p{10mm}|p{14mm}|p{50mm}|p{50mm}|}
 %\nopagebreak
-\caption{List of control transfer instructions: jump, call, return}
+\caption{Condition codes for control transfer instructions}
 \label{table:controlTransferInstructions}
 \endfirsthead
 \endhead
 \hline
-OPJ & bit 0 \newline of OPJ & Function & Comment \\
+OPJ & bit 0 \newline of OPJ & Instruction & Comment \\
 \hline
-0-7 & part of offset & Unconditional jump with 24-bit offset (jump) & Format 1.5 D. \newline Bit 0-2 of OPJ are part of offset \\
+0-7 & part of offset & Unconditional jump with 24-bit offset (jump) & Format 1.5 D. Bit 0-2 of OPJ are part of offset \\
 \hline
-8-15 & part of offset & Unconditional call with 24-bit offset (call) & Format 1.5 D. \newline Bit 0-2 of OPJ are part of offset \\
+8-15 & part of offset & Unconditional call with 24-bit offset (call) & Format 1.5 D.  Bit 0-2 of OPJ are part of offset \\
 \hline
-0-1 & invert & Subtract, jump if not zero (sub, jump\_nzero) & Format 1.4 and 2.7.0. No floating point. \\
+0-1 & invert & sub\_jump\_nzero, \newline sub\_jump\_zero & Format 1.4 and 2.7.0. \newline No floating point. \\
 \hline
-2-3 & invert & Subtract signed, jump if negative (sub, jump\_neg) & Format 1.4 and 
-    2.7.0. No floating point. \\
+2-3 & invert & sub\_jump\_neg, \newline sub\_jump\_nneg & Format 1.4 and 2.7.0. \newline No floating point. \\
 \hline
-4-5 & invert & Subtract signed, jump if positive (sub, jump\_pos) & Format 1.4 and 2.7.0.
+4-5 & invert & sub\_jump\_pos, \newline sub\_jump\_npos & Format 1.4 and 2.7.0. \newline 
     No floating point. \\
 \hline
-6-7 & invert & Subtract signed, jump if overflow (sub, jump\_overfl) & Format 1.4 and 2.7.0. No floating point. \\
+6-7 & invert & sub\_jump\_overfl, \newline sub\_jump\_noverfl & Format 1.4 and 2.7.0. \newline No floating point. \\
 \hline
-8-9 & invert & Subtract unsigned, jump if borrow (sub, jump\_borrow) & Format 1.4 and 2.7.0. No floating point. \\
+8-9 & invert & sub\_jump\_borrow, \newline sub\_jump\_nborrow & Format 1.4 and 2.7.0. \newline No floating point. \\
 \hline
-
 10-15 & & Reserved for future use & Format 1.4 and 2.7.0. \\
 \hline
-
-16-17 & invert & Add, jump if not zero (add, jump\_nzero) & No floating point \\
+16-17 & invert & add\_jump\_nzero, \newline add\_jump\_zero & No floating point \\
 \hline
-18-19 & invert & Add signed, jump if negative (add, jump\_neg) & No floating point. \\
+18-19 & invert & add\_jump\_neg, \newline add\_jump\_nneg & No floating point \\
 \hline
-20-21 & invert & Add signed, jump if positive (add, jump\_pos) & No floating point. \\
+20-21 & invert & add\_jump\_pos, \newline add\_jump\_npos & No floating point \\
 \hline
-22-23 & invert & Add signed, jump if overflow (add, jump\_overfl) & No floating point  \\
+22-23 & invert & add\_jump\_overfl, \newline add\_jump\_noverfl & No floating point  \\
 \hline
-24-25 & invert & Add unsigned, jump if carry (add, jump\_carry) & No floating point. \\
+24-25 & invert & add\_jump\_carry, \newline add\_jump\_ncarry & No floating point \\
 \hline
-
-24-25 & invert & Jump if either operand is $\pm$ infinite or NAN (compare, jump\_nfinite) & Floating point operands \\
+24-25 & invert & compare\_jump\_nfinite, \newline compare\_jump\_finite & Floating point  \\
 \hline
-26-27 & invert & Test single bit, jump if not zero (testbit, jump\_nzero) & dest = src1. Jump if (src1 $>>$ src2) \& 1 == 1 \\
+26-27 & invert & testbit\_jump\_nzero, \newline testbit\_jump\_zero &  \\
 \hline
-
-28-29 & invert & Shift left by n, jump if not zero (shift, jump\_nzero) & Shift right unsigned if n negative \\
+28-29 & invert & shift\_jump\_nzero, \newline shift\_jump\_zero &  \\
 \hline
-30-31 & invert & Shift left by n, jump if carry (shift, jump\_carry) & Shift right unsigned if n negative  \\
+30-31 & invert & shift\_jump\_carry, \newline shift\_jump\_ncarry &  \\
 \hline
-32-33 & invert & Compare, jump if not equal (compare, jump\_nequal) & \\
+32-33 & invert & compare\_jump\_nequal, \newline compare\_jump\_equal & \\
 \hline
-34-35 & invert & Compare signed, jump if below (compare, jump\_sbelow) &  \\
+34-35 & invert & compare\_jump\_sbelow, \newline compare\_jump\_saboveeq &  \\
 \hline
-36-37 & invert & Compare signed, jump if above (compare, jump\_sabove) &  \\
+36-37 & invert & compare\_jump\_sabove, \newline compare\_jump\_sbeloweq &  \\
 \hline
-38-39 & invert & Compare unsigned, jump if below (compare, jump\_ubelow) & Integer operands \\
+38-39 & invert & compare\_jump\_ubelow, \newline compare\_jump\_uaboveeq & No floating point \\
 \hline
-38-39 & invert & Compare absolute values, jump if below (compare, jump\_absbelow) &  Floating point operands \\
+38-39 & invert & compare\_jump\_absbelow, \newline compare\_jump\_absaboveeq &  Floating point \\
 \hline
-40-41 & invert & Compare unsigned, jump if above (compare, jump\_uabove) & Integer operands  \\
+40-41 & invert & compare\_jump\_uabove, \newline compare\_jump\_ubeloweq & No floating point \\
 \hline
-40-41 & invert & Compare absolute values, jump if above (compare, jump\_absabove) & Floating point operands \\
+40-41 & invert & compare\_jump\_absabove, \newline compare\_jump\_absbeloweq & Floating point  \\
 \hline
-42-43 & invert & Bitwise test, jump if not zero (test, jump\_nzero) & dest = src1. Jump if (src1 \& src2) != 0 \\
+42-43 & invert & test\_jump\_nzero, \newline test\_jump\_zero &  \\
 \hline
-44-45 & invert & Bitwise and, jump if not zero (and, jump\_nzero) & dest = src1 \& src2. Jump if dest != 0 \\
+44-45 & invert & and\_jump\_nzero, \newline and\_jump\_zero &  \\
 \hline
-46-47 & invert & Bitwise or, jump if not zero (or, jump\_nzero) & dest = src1 $|$ src2. Jump if dest != 0 \\
+46-47 & invert & or\_jump\_nzero, \newline or\_jump\_zero &  \\
 \hline
-48-49 & invert & Bitwise xor, jump if all selected bits are turned to zero (xor, jump\_test\_and) & dest = src1 \^{} src2. jump if (src1 \& src2) == src2 \\
+48-49 & invert & xor\_jump\_test\_and, \newline xor\_jump\_ntest\_and &  \\
 \hline
-
 50-53 & invert & Reserved for future use. & \\
 \hline
-
-54-55 & invert & Increment, jump if above. (increment, jump\_sabove) & dest = src1 + 1. Jump if src1 $\geq$ src2 \newline No floating point \\
+54-55 & invert & increment\_jump\_sabove, \newline increment\_jump\_sbeloweq & No floating point \\
 \hline
-56 & 0 & Subtract, jump unconditionally (sub, jump) & dest = src1 + src2. Jump always. \newline No floating point \\
+56 & 0 & sub\_jump & No floating point \\
 \hline
-57 & 1 & Add, jump unconditionally (add, jump) & dest = src1 - src2. Jump always. \newline No floating point \\
+57 & 1 & add\_jump & No floating point \\
 \hline
-58-59 & 0 jump \newline 1 call & Indirect jump or call with pointer in register RS,
-pointer offset in IM1 or IM2 (jump/call). & Format 1.4 and 2.7.0. \\
+58-59 & 0 jump \newline 1 call & Indirect jump or call with memory operand. & Format 1.4 and 2.7.0. \\
 \hline
-58-59 & 0 jump \newline 1 call & Unconditional direct jump or call with 16 bit or
-32 bit offset or 64-bit absolute address (jump/call) & Format 1.5 C, 2.7.2, and
+58-59 & 0 jump \newline 1 call & Unconditional direct jump or call & Format 1.5 C, 2.7.2, and
 3.0.1. \\
 \hline
-60-61 & 0 jump \newline 1 call & Use table of addresses relative to RD. RT = table base, RS = index*OS (jump/call) & Format 1.4,\newline template A. \\
+60-61 & 0 jump \newline 1 call & Multiway jump or call with table of relative addresses & Format 1.4 A \\
 \hline
-60-61 & 0 jump \newline 1 call & Unconditional jump or call to value of register RS (jump/ call)  & Format 1.5. \\
+60-61 & 0 jump \newline 1 call & Indirect jump or call to value of register & Format 1.5 C \\
 \hline
-62 & 0 & Return from function (return) & Format 1.4.  \\
+62 & 0 & return  & Format 1.4 B  \\
 \hline
-62 & 0 & Return from system function (sys\_return) & Format 1.5.  \\
+62 & 0 & sys\_return & Format 1.5 C  \\
 \hline
-63 & 1 & System call. ID in register RT, shared memory block RD, length RS. No mask (sys\_call) & Format 1.4,\newline template A. \\
+63 & 1 & sys\_call. ID in register & Format 1.4 A \\
 \hline
-63 & 1 & System call. ID in constants, shared memory block RD, length RS (sys\_call) & Format 2.7.1, 2.7.4 and 3.0.1. \\
+63 & 1 & sys\_call. ID in constants & Format 2.7.1, 2.7.4 and 3.0.1. \\
 \hline
-63 & 1 & Unconditional trap. Interrupt number in IM1 (trap). & Format 1.5. \\
+63 & 1 & trap or filler & Format 1.5 C \\
 \hline
-63 & 1 & Filler for unused code memory. All fields are all 1's (filler). & Format 1.5. \\
-\hline
-63 & 1 & Trap if unsigned RD \textgreater{} IM3. IM2 = 40. Interrupt number is fixed  (compare, trap\_uabove). & Format 2.7.3. \\
+63 & 1 & Conditional traps & Format 2.7.3. \\
 \hline
 \end{longtable}
 
-Signed integer comparisons are corrected for overflow, but signed additions and subtractions are not. For example, if A is a large positive integer and B is a large negative integer then sub\_jump\_neg will jump if the calculation of A-B overflows to give a negative result, but compare\_jump\_sbelow will not jump because A is bigger than B.
-\vspace{2mm}
-
 The combined ALU and conditional jump instructions can be coded in the formats 1.4, 1.5 C, 2.7.0, 2.7.1, 2.7.2, 2.7.3, and 3.0.1, except subtraction which cannot be coded in format 1.5 C. Subtraction with an immediate constant can be replaced by addition with the negative constant. The code space that would have been used by subtraction in format 1.5 C is instead used for coding direct jump and call instructions with a 24-bit offset using format 1.5 D, where the lower three bits of OP1 are used as part of the 24-bit offset.
-\vspace{2mm}
-
-The add and subtract operations are usually not supported for floating point operands because the longer latencies of these floating point operations will complicate the pipeline design. Floating point compare is supported because it is possible to make a floating point compare operation in a single clock cycle, using unsigned integer compare on the combined exponent and significant with special handling of the sign bit and NAN values.
-\vspace{2mm}
-
-The test bit instruction (testbit\_jump\_nzero) will test bit number n in the first operand, where n is the value of the second operand (RS or IM2). This is useful for testing bit fields, sign bits, and the output of compare instructions. The second operand is interpreted as an 8-bit unsigned integer regardless of the operand type.
-\vspace{2mm}
-
-The shift left instructions will shift the first operand left when the second operand is positive and shift right with zero extension when the second operand is negative. The carry is the last bit shifted out. The operands are interpreted as integers regardless of the operand type, but vector registers are used if a floating point operand type is specified (M = 1).
 \vspace{2mm}
 
 Unconditional and indirect jumps and calls use the formats indicated above, where unused fields must be zero. Bit 0 of the OPJ field is zero for jump instructions and one for call instructions.
 \vspace{2mm}
 
-\label{jumpTableInstruction}
-The table-based indirect jump/call instructions are intended to facilitate multiway branches (switch/case statements), function tables in code interpreters, and virtual function tables in object oriented languages with polymorphism. The table of jump or call addresses is stored as signed offsets relative to an arbitrary reference point, which may be the table address, the code base, or any other reference point. The operand type specifies the size of the table entries. 16-bit and 32-bit table entries must be supported. Other sizes are optional. The use of relative addresses makes the table more compact than if 64-bit absolute addresses were used. This instruction works as follows. Calculate the address of a table entry as the base pointer (RT) plus the index (RS) multiplied by the operand size. Read a signed value from this address, and scale by 4. Sign-extend this value to 64 bits, and add the reference point (RD). Jump or call to the calculated address. The array index (RS) is scaled by the operand size, while the table entries are scaled by the instruction word size (4). Support for a mask is optional.
-\vspace{2mm}
+See page \pageref{descriptionOfControlTransferInstructions} for 
+detailed descriptions of control transfer instructions.
 
-The table used by the table-based jump/call instructions may be placed in the constant data section (CONST). This makes it possible to use the table base as reference point and it improves security by giving read-only access to the table.
-\vspace{2mm}
-
-Return instructions do not need a stack offset when the calling conventions specified on page \pageref{functionCallingConventions} are used.
-\vspace{2mm}
-
-\label{systemCallInstruction}
-System calls use ID numbers rather than addresses to identify system functions. 
-The ID is the combination of a module ID identifying a particular system module or device driver and a function ID identifying a particular function within this module. The module ID and the function ID are both 16 or 32 bits, so that the combined system call ID is up to 64 bits.
-The sys\_call instruction has the following variants:
-
-\begin{longtable}
-{|p{30mm}|p{30mm}|p{30mm}|p{30mm}|}
-\caption{Variants of system call instruction}
-\label{table:syscallInstructions}
-\endfirsthead
-\endhead
-\hline
-Format & Operand type & Function ID & Module ID \\
-\hline
-1.4 & 32 bit & RT bit 0-15 & RT bit 16-31  \\
-\hline
-1.4 & 64 bit & RT bit 0-31 & RT bit 32-63  \\
-\hline
-2.7.1 & 32 bit & IM2 bit 0-15 & IM2 bit 16-31 \\
-\hline
-2.7.4 & 64 bit & IM1,IM2 bit 0-15 & IM3 bit 0-31 \\
-\hline
-3.0.1 & 64 bit & IM2 bit 0-31 & IM3 bit 0-31 \\
-\hline
-\end{longtable}
-
-The sys\_call instruction can indicate a block of memory to be shared with the system function. The address of the memory block is pointed to by the register specified in RD and the length is in register RS. This memory block, which the caller must have access rights to, is shared with the system function. The system function will get the same access rights to this block as the calling thread has, i. e. read access and/or write access. This is useful for fast transfer of data between the caller and the system function. No other memory is accessible to both the caller and the called function. If the RD and RS fields are both zero (i. e. indicating register r0) then no memory block is shared. The sys\_call instruction in format 2.7.4 cannot have a shared memory block.
-\vspace{2mm}
-
-Parameters for system functions are transferred in registers, following the same calling conventions as normal functions. The registers used for function parameters are usually different from the registers in the RD, RS and RT fields. Function parameters that do not fit into registers must reside in the shared memory block.
-\vspace{2mm}
-
-\label{traps}
-Traps work like interrupts. The unconditional trap has an 8-bit interrupt number in IM1. This is an index into the interrupt vector table, which initially starts at absolute address zero. The unconditional trap instruction may use IM2 for additional information. The conditional trap is intended for checking array bounds. The interrupt number is fixed (the value has not been decided yet). The conditional trap may optionally support other condition codes in IM2, using the same codes as OPJ in table \ref{table:controlTransferInstructions}.
-\vspace{2mm}
-
-A trap instruction with all 1's in all fields (opcode 0x6FFFFFFF) can be used as filler in unused parts of code memory.
 
 \section{Assignment of opcodes}
 The opcodes and formats for new instructions can be assigned according to the following rules.
@@ -847,7 +780,7 @@ The opcodes and formats for new instructions can be assigned according to the fo
 
 \item Tiny instructions. Only some of the most common instructions are available in tiny versions, as there is only space for 32 tiny instructions. The instructions are ordered according to the number and type of operands, as shown in table \ref{table:tinyInstructionsGP} page \pageref{table:tinyInstructionsGP}.
 
-\item Control transfer instructions, i. e. jumps, branches, calls and returns, can be coded as short instructions with IL = 1, mode = 4-5, and OP1 = 0-63 or as double-size instructions with IL = 2, mode = 7, OP1 = 0-7, and optionally as triple-size instructions with IL = 3, mode = 0, OP1 = 0-7. See page \pageref{table:jumpInstructionFormats}.
+\item Control transfer instructions, i. e. jumps, branches, calls and returns, can be coded as short instructions with IL = 1, mode = 4-5, and OP1 = 0-63 or as double-size instructions with IL = 2, mode = 7, OP1 = 0-7, and optionally as triple-size instructions with IL = 3, mode = 0, OP1 = 1-7. See page \pageref{table:jumpInstructionFormats}.
 
 \item Short single-format instructions with general purpose registers. Use mode 1.0, 1.1, and 1.8, with  any value of OP1.
 

@@ -110,8 +110,8 @@ fp_category,1,0x130,0xB,,2,17,0,0,0x8060,0x8060,18,check if floating point numbe
 get_len,1,0x120,0xA,R0,1,1,0,0,0x906F,0x906F,0,get length of vector as number of bytes
 get_num,1,0x120,0xA,R0,1,3,0,0,0x906F,0x906F,0,get length of vector as number of elements
 gp2vec,1,0x130,0xB,R1,1,0,0,0x006F,0x006F,0,0,copy value from general purpose register to vector register
-increment_jump_sabove,4,0x073,0,,3,54,0,0x000F,0x1000,0,0,dest = source1 + 1. jump if dest > source2 (signed)
-increment_jump_sbeloweq,4,0x073,0,,3,55,0,0x000F,0x1000,0,0,dest = source1 + 1. jump if dest <= source2 (signed)
+increment_jump_above,4,0x073,0,,3,54,0,0x000F,0x1000,0,0,dest = source1 + 1. jump if dest > source2 (signed)
+increment_jump_beloweq,4,0x073,0,,3,55,0,0x000F,0x1000,0,0,dest = source1 + 1. jump if dest <= source2 (signed)
 input,1,0x120,0xA,,2,62,0,0,0x100F,0x100F,0,"read from input port. RD = vector register, RT = port address, RS = vector length (privileged instruction)."
 insert,1,0x120,0xA,R1,2,12,0,0,0x00FF,0x00FF,0,insert one element into vector. other elements are unchanged
 insert_hi,1,0x250,0xA,,2,1,0,0,0x906F,0x906F,4,"make vector of two elements. first element comes from source, second element is constant"
@@ -260,12 +260,12 @@ sys_call,4,0x001,0xA,,1,63,0,0x000C,0,0,0,system call to ID in register
 sys_call,4,0x220,0xB,,2,63,0,0x0804,0,0,0,system call to ID in constant fields
 sys_return,4,0x002,0xC,,0,62,0,0x0008,0,0,0,return from system function or interrupt
 test_bit,3,0x03FCFD7FF,0,I2M1O5,2,39,0,0x000F,0x906F,0x906F,0,test one bit
+test_bit_jump_nzero,4,0x2F3,0,,3,26,0,0x000F,0x9060,0,0,"test single bit in source1 indexed by source2, jump if not zero"
+test_bit_jump_zero,4,0x2F3,0,,3,27,0,0x000F,0x9060,0,0,"test single bit in source1 indexed by source2, jump if zero"
 test_bits_and,3,0x03FCFD7FF,0,M1O5,2,40,0,0x000F,0x906F,0x906F,0,test if all indicated bits are one
 test_bits_or,3,0x03FCFD7FF,0,O5,2,41,0,0x000F,0x906F,0x906F,0,test if any of the indicated bits is one
 test_jump_nzero,4,0x2F3,0,,3,42,0,0x000F,0x9060,0,0,"bitwise and, destination unchanged, jump if not zero"
 test_jump_zero,4,0x2F3,0,,3,43,0,0x000F,0x9060,0,0,"bitwise and, destination unchanged, jump if zero"
-testbit_jump_nzero,4,0x2F3,0,,3,26,0,0x000F,0x9060,0,0,"test single bit in source1 indexed by source2, jump if not zero"
-testbit_jump_zero,4,0x2F3,0,,3,27,0,0x000F,0x9060,0,0,"test single bit in source1 indexed by source2, jump if zero"
 toggle_bit,3,0x03FCFD7FF,0,I2M1,2,37,0,0x000F,0x906F,0x906F,0,toggle single bit
 trap,4,0x002,0xC,,0,63,0,0x0008,0,0,0,unconditional trap (interrupt)
 truth_tab2,1,0x130,0xB,,3,25,0,0,0x100F,0x100F,18,"boolean function of two inputs, given by truth table"
