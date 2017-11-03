@@ -38,13 +38,16 @@ Various techniques are used for avoiding memory
 fragmentation. There is no memory paging and no translation lookaside buffer (TLB). Instead, there is a memory map with a limited number of sections with variable size.
 
 \item There are no dynamic link libraries (DLLs) or shared objects. Instead, there is only one type of function libraries 
-that can be used for both static and dynamic linking. Only the part of the library that is actually used is loaded and linked. The library code is kept contiguous with the main program code in almost all cases. It is possible to automatically choose between different versions of a function or library at load time, based on the hardware configuration, operating system, or user interface framework.
+that can be used for both static and dynamic linking. Only the part of the library that is actually used is loaded and linked. The library code is kept contiguous with the main program code to improve caching and reduce memory fragmentation. 
+Executable files can be re-linked to replace or update library functions and plug-ins and to support multiple user interface frameworks.
 
 \item A mechanism for calculating the required stack size is provided. This can prevent stack overflow in most cases without making the stack bigger than necessary.
 
 \item A mechanism for optimal register allocation across program modules and function libraries is provided. This makes it possible to keep most variables in registers without spilling to memory. Vector registers can be saved in an efficient way that stores only the part of the register that is actually used.
 \end{itemize}
+\vspace{2mm}
 
+This can be useful as a sandbox for experiments aiming at improving many different aspects of computer design, as discussed at \href{http://www.forwardcom.info}{http://www.forwardcom.info}.
 
 \section{Background}
 An instruction set architecture is a standardized set of machine instructions that a computer can run. There are many instruction set architectures in use.
@@ -80,10 +83,10 @@ The ForwardCom instruction set architecture is based on the following priorities
 \item The basic aspects of the entire ecosystem of ABI standard, assembler, compilers, function libraries, system functions, user interface framework, etc. should also be standardized for maximum compatibility.
 \end{itemize}
 
-A new instruction set will not easily get success on a commercial market, even if it is better than legacy systems, because the market prefers backward compatibility with existing software and hardware. It is unlikely that the ForwardCom instruction set will make a successful commercial product within a short time frame, but the discussion about what an ideal instruction set and software ecosystem might look like is still useful. The ForwardCom project has already generated so many important new ideas that it is worth pursuing further, even if we don't know where this will end. The present work can be useful if the need for introducing a new instruction set architecture should arise for other reasons. It will be particularly useful for large vector processors, for applications where security is important, for real-time operating systems, as well as for projects where the patent and license restrictions of other architectures would be an obstacle.
+A new instruction set will not easily get success on a commercial market, even if it is better than legacy systems, because the market prefers backward compatibility with existing software and hardware. It is unlikely that the ForwardCom instruction set will make a successful commercial product within a short time frame, but the discussion about what an ideal instruction set, microprocessor design, and software ecosystem might look like is still useful. The ForwardCom project has already generated so many important new ideas that it is worth pursuing further, even if we don't know where this process will end. The present work can be useful if the need for introducing a new instruction set architecture should arise for other reasons. It will be particularly useful for large vector processors, for applications where security is important, for real-time operating systems, as well as for projects where the patent and license restrictions of other architectures would be an obstacle.
 \vspace{2mm}
 
-The proposals in this document may also be useful as a source of inspiration and for scientific experiments. Many of the ideas are independent of the design details and may be implemented in existing systems.
+The proposals in this document will also be useful as a source of inspiration and for scientific experiments. Many of the ideas are independent of the design details and may be implemented in existing systems.
 
 \section{Comparison with other open instruction sets}
 A few other open instruction sets have been proposed, most notably RISC-V and OpenRISC. Both are pure RISC designs with mostly fixed 32-bit instruction word sizes. These instruction sets are suitable for small systems where the use of silicon space is economized, but they are not designed for high performance superscalar processors and they do not focus on details that are critical for achieving maximum performance in bigger systems. The present proposal is thought as the next step towards making an open instruction set that is actually more efficient than the best commercial instruction sets today.

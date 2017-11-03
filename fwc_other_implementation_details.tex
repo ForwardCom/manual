@@ -73,7 +73,7 @@ Many current systems use the same stack for return addresses and local data. Thi
 
 \subsubsection{Conclusion for ForwardCom}
 A ForwardCom system may use a separate call stack or a unified stack, but not a link register. The hardware implementation of call and return instructions depends on whether there is one or two stacks. The dual stack system will be used for large processors where performance or security is important, while the unified stack system may be used in small processors where simplicity is preferred. A ForwardCom microprocessor does not have to support both systems, but the software does. 
-The calling conventions defined on page \pageref{functionCallingConventions} will make the software compatible with both single stack and dual stack processors.
+The calling conventions defined in chapter \ref{chap:functionCallingConventions} will make the software compatible with both single stack and dual stack processors.
 Tail calls can be implemented efficiently with a simple jump instruction regardless of the stack type.
 \vspace{2mm}
 
@@ -155,7 +155,7 @@ Security is included in the fundamental design of both hardware and software. Th
 \begin{itemize}
 \item A flexible and efficient memory protection mechanism.
 
-\item Optional separation of call stack and data stack so that return addresses cannot be compromised by buffer overflow.
+\item Separation of call stack and data stack so that return addresses cannot be compromised by buffer overflow.
 
 \item Each thread has its own protected memory space, except where compatibility with legacy 
 software requires a shared memory space for all threads in an application.
@@ -191,15 +191,15 @@ Function pointers and other pointers to code are vulnerable to control flow hija
 \begin{description}
 \item[Return addresses.] Return addresses on the stack are particularly vulnerable to buffer overflow attacks. Use a dual stack design to isolate the return stack from other data.
 
-\item[Jump tables.] Switch/case multiway branches are often implemented as tables of jump addresses. These should use the jump table instruction with the table placed in the CONST section with read-only access. See page \pageref{jumpTableInstruction}.
+\item[Jump tables.] Switch/case multiway branches are often implemented as tables of jump addresses. These should use the jump table instruction with the table placed in a read-only section. See page \pageref{jumpTableInstruction}.
 
-\item[Virtual function tables.] Programming languages with object polymorphism, such as C++, use tables of pointers to virtual functions. These should use the call table instruction with the table placed in the CONST section with read-only access. See page \pageref{jumpTableInstruction}.
+\item[Virtual function tables.] Programming languages with object polymorphism, such as C++, use tables of pointers to virtual functions. These should use the call table instruction with the table placed in the a read-only section. See page \pageref{jumpTableInstruction}.
 
 \item[Procedure linkage tables.] Procedure linkage tables, import tables and symbol interposition are not used in ForwardCom. See page \pageref{libraryLinkMethods}.
 
 \item[Callback function pointers.] If a function receives a pointer to a callback function as parameter, then keep this pointer in a register rather than saving it to memory.
 
-\item[State machines.] If a state machine or similar algorithm is implemented with function pointers then place these function pointers in a constant array, use a state variable as index into this array and check the index for overflow. The compiler should have support for defining an array of relative function pointers in the CONST section and access them with the call table instruction.
+\item[State machines.] If a state machine or similar algorithm is implemented with function pointers then place these function pointers in a constant array, use a state variable as index into this array and check the index for overflow. The compiler should have support for defining an array of relative function pointers in a read-only section and access them with the call table instruction.
 
 \item[Other function pointers.] Most uses of function pointers can be covered by the methods described above. Other uses of function pointers should be avoided in high security applications, or the pointers should be placed in protected memory areas or with unpredictable addresses. (See
 \href{http://dslab.epfl.ch/proj/cpi/}{Code-Pointer Integrity link}).
@@ -213,7 +213,7 @@ The executable file header of an application program should include information 
 Many operating systems are giving very extensive rights to device drivers. Rather than having a bureaucratic centralized system for approval of device drivers, we should have a more careful control of the access rights of each device driver. The system call instruction in ForwardCom gives a device driver access to only a limited area of application memory (see page \pageref{systemCallInstruction}). The executable file header of a device driver should have information about which ports and system registers the device driver has access to. The user should have a simple way of checking if these access rights are acceptable.
 
 \subsubsection{Standardized installation procedure} 
-Malware protection should be an integral part of the operating system, not a third-party add on. The operating system should provide a standardized way of installing and uninstalling applications. The system should refuse to run any program, script or driver that has not been installed through this procedure. This will make it possible for the user to review the access requirements of all installed programs and to remove any malware or other unwanted software through the normal uninstallation procedure.
+Malware protection should be an integral part of the operating system, not a third-party add on with possible compatibility problems. The operating system should provide a standardized way of installing and uninstalling applications. The system should refuse to run any program, script or driver that has not been installed through this procedure. This will make it possible for the user to review the access requirements of all installed programs and to remove any malware or other unwanted software through the normal uninstallation procedure.
 
 
 \end{document}

@@ -24,7 +24,7 @@ Transitions between these levels are managed by the system call and system retur
 There are various system registers for control purposes. In addition, there are two sets of registers used for temporary storage, one set for the device driver level and one for the system core level. The temporary registers for the device driver level are cleared for security reasons every time a device driver is called. These registers are used mainly for temporary saving of the general purpose registers.
 
 \section{Memory map}
-There are three kinds of memory access: read, write and execute access. These kinds of access are separate, but can be combined. For example, execute access does not imply read access. Write access and execute access should not normally be combined, because self-modifying code is discouraged.
+There are three kinds of memory access: read, write, and execute access. These kinds of access are separate, but can be combined. For example, execute access does not imply read access. Write access and execute access should not normally be combined, because self-modifying code is not allowed.
 \vspace{2mm}
 
 The memory map is stored in the CPU chip. Each entry has three fields: A virtual address (up to 64 bits), access rights (3 bits), and an addend for address translation (up to 64 bits). There is no memory paging. Instead, the memory blocks have variable sizes.
@@ -88,7 +88,7 @@ The loader will find the ID number and insert it in the code before running the 
 
 The calling convention for system functions is the same as for other functions, using registers for parameters and for return value. 
 The registers used for parameters are determined by the general calling convention. 
-The calling conventions are described on page \pageref{functionCallingConventions}.
+The calling conventions are described in chapter \ref{chap:functionCallingConventions}.
 The parameter registers should not be confused with the operands for the system call instruction. 
 \vspace{2mm}
 
@@ -105,7 +105,7 @@ It is not possible to use callback function pointers with a system call because 
 Device driver functions should preferably have separate stacks. The system call goes first to the system core which assigns a stack to the device driver function and makes a memory map for it before dispatching the call to the desired function. Preferably, no stack is used during this dispatching. The two registers identifying a shared memory block are copied to special registers which are accessible to the called system function. The system function runs in the same thread as the application that called it, but not with the same stack. 
 \vspace{2mm}
 
-The old values of instruction pointer, stack pointer, DATAP and memory map are saved in system registers, to be restored by the system return instruction. 
+The old values of instruction pointer, stack pointer, and DATAP are saved in system registers, to be restored when returning to the application code. 
 \vspace{2mm}
 
 System functions, device drivers and interrupt handlers are allowed to use all general purpose registers and vector registers if they are saved and restored according to the normal calling conventions. Interrupt handlers must save and restore all registers they use. 
@@ -117,7 +117,7 @@ A method is provided to get information about the register use of system functio
 Some important system functions must be standardized and must be available in all operating systems. This will make it possible, for example, to make a third-party function library that works in all operating systems, even if this library needs to call system functions. It will also make it easier to adapt a program for different operating systems. The list of system functions that might be standardized includes functions for thread creation, thread synchronization, setting thread priority, memory allocation, time measurement, system information, access to environment variables, etc. 
 \vspace{2mm}
 
-There should be a selection of system libraries providing the most common user interface forms, such as graphical user interface, console mode, and server mode. These user interface system libraries should be provided for each operating system that the architecture can run on, so that the same executable program can run in different operating systems simply by linking with the appropriate user interface library at load time. Such user interface libraries may be based on existing platform-independent GUI libraries such as, e. g., wxWidgets or QT. All user interface libraries must support the error\_message function mentioned below. 
+There should be a selection of system libraries providing the most common user interface forms, such as graphical user interface, console mode, and server mode. These user interface system libraries should be provided for each operating system that the architecture can run on, so that the same executable program can run in different operating systems simply by linking with the appropriate user interface library when the program is installed. Such user interface libraries may be based on existing platform-independent GUI libraries such as, e. g., wxWidgets or QT. All user interface libraries must support the error\_message function mentioned below. 
 
 \section{Inter-process calls} \label{interProcessCalls}
 Inter-process calls are mediated by a system function. This works in the following way. An application program can export a function with an entry in its executable file header. Another application can get access to this exported function by calling a system function that checks for permission and switches the memory map, the DATAP and THREADP registers and the stack pointer before calling the exported function, and switches back before returning to the caller. The call will appear as a separate thread to the called program. The general purpose registers and vector registers can be used for parameters and return value in the same was as for normal functions. This mechanism does not generate any shared memory between caller and callee. Therefore, the exported function must use only simple types that fit into registers for its parameters and return type. A block of memory can be shared between the two processes as described on page \pageref{sharedMemory}. 
@@ -138,7 +138,7 @@ message to the user in the way that is appropriate for the user interface (e. g.
 \end{enumerate}
 
 \label{errorReportFunction}
-It is proposed to define a standard library function named error\_message for this purpose. All user interface frameworks must define this function. It is possible to automatically choose between different versions of this function at run time depending on system settings, using the function dispatch feature described on page \pageref{libraryFunctionDispatchSystem}. The main program may override this function by defining its own function with the same name. 
+It is proposed to define a standard library function named error\_message for this purpose. All user interface frameworks must define this function. It is possible to choose between different versions of this function when the program is installed by linking with the appropriate library. The main program may override this function by defining its own function with the same name. 
 \vspace{2mm}
 
 The error\_message function must have the following parameters: a numerical error code, a string pointer giving an error message, and another string pointer giving the name of the function where the error occurred. These strings are coded as zero-terminated UTF-8 strings. 

@@ -5,6 +5,19 @@
 
 \chapter{Revision history}
 
+\subsubsection{Version 1.07, 2017-11-03.}
+\begin{itemize}
+\item The first version of binary tools is published, including a high-level assembler and disassembler. A manual is included in chapter \ref{chap:binTools}. The assembly language is modified.
+\item A feature for re-linking of executable files replaces the previous idea of load-time library dispatching.
+\item Triple size formats with template E added. Some formats renumbered.
+\item Some support for half precision floating point vectors.
+\item Function calling convention allows return using two registers.
+\item 4-bit constants in tiny format changed from signed to unsigned.
+\item Many small changes in instruction list.
+\item Object file format modified to indicate IP, DATAP, or THREADP addressing for sections and symbols
+\end{itemize}
+
+
 \subsubsection{Version 1.06, 2017-02-14.}
 \begin{itemize}
 \item Added chapter: Proposal for reducing branch misprediction delay

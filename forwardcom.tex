@@ -10,9 +10,16 @@
 \usepackage{multirow}
 \usepackage{ragged2e} 
 \usepackage{cmap} % avoid fi ligatures in pdf file
+\usepackage{amsthm} % example numbering
+\usepackage{color}
 
 % modify style
 \renewcommand{\familydefault}{\sfdefault}
+\newtheorem{example}{Example}[chapter]  % example numbering
+\lstset{language=C}                     % formatting for code listing
+\lstset{basicstyle=\ttfamily,breaklines=true}
+\definecolor{darkGreen}{rgb}{0,0.4,0}
+\lstset{commentstyle=\color{darkGreen}}
 
 \begin{document}
 \title{ForwardCom: An open-standard instruction set for high-performance microprocessors}
@@ -23,6 +30,8 @@
 
 \tableofcontents
 \setcounter{secnumdepth}{1}
+
+
 
 % Introduction
 % - Highlights
@@ -112,11 +121,11 @@
 % - Exception handling, stack unrolling and debug information
 \subfile{fwc_object_file_format.tex}
 
-% - Assembly language syntax
-\subfile{fwc_assembly_language_syntax.tex}
+% - Binary tools
+\subfile{fwc_bintools.tex}
 
-% Software optimization guidelines
-\subfile{fwc_software_optimization.tex}
+% Code examples
+\subfile{fwc_code_examples.tex}
 
 % Conclusion
 \subfile{fwc_conclusion.tex}
