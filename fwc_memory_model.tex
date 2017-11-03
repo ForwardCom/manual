@@ -7,7 +7,8 @@
 The address space is using unsigned 64-bit addresses and 64-bit pointers. Future extension to 128-bit addresses is possible, but this will probably not be relevant in a foreseeable future. 
 \vspace{2mm}
 
-Absolute addresses are rarely used. Most data objects, functions and jump targets are addressed with signed offsets of 32 bits or less relative to some reference point contained in a 64-bit pointer. This pointer can be the instruction pointer (IP), the data section pointer (DATAP), the stack pointer (SP), or a general purpose register.
+Absolute addresses are rarely used. Most data objects, functions and jump targets are addressed with signed offsets of 32 bits or less relative to some reference point contained in a 64-bit pointer. This pointer can be the instruction pointer (IP), the data section pointer (DATAP), the thread data
+pointer (THREADP), the stack pointer (SP), or a general purpose register.
 \vspace{2mm}
 
 An application can have access to the following sections of data:
@@ -16,7 +17,7 @@ An application can have access to the following sections of data:
 \begin{itemize}
 \item Program code (CODE). This memory block is executable with or without read access, but without write access. The CODE section can be shared between multiple processes running the same program. 
 
-\item Constant program data (CONST). This contains constants and tables used by the program without write access. It may be shared between multiple processes. 
+\item Read-only program data (CONST). This contains constants and tables used by the program without write access. It may be shared between multiple processes. 
 
 \item Static read/write program data sections, which can be initialized (DATA) and uninitialized (BSS). This is used for global data and for static data inside functions. Multiple instances are needed if multiple processes are running the same code. 
 
@@ -24,7 +25,7 @@ An application can have access to the following sections of data:
 
 \item Program heap (HEAP). Used for dynamic memory allocation by an application program. 
 
-\item Thread data (THREADD). Allocated when a thread is created and used for thread-local static data and thread environment block.
+\item Thread data (THREADD). Allocated when a thread is created and used for thread-local static data and thread environment block. This has one instance for each thread.
 \end{itemize}
 
 References within the CODE section use 8-bit, 16-bit, 24-bit and 32-bit signed references relative to the instruction pointer, scaled by the code word size which is 4 bytes. 
@@ -34,21 +35,22 @@ The CONST section is preferably placed immediately before the CODE section. Data
 memory to be addressed relative to the instruction pointer, or it may be placed in data memory and addressed relative to DATAP). 
 \vspace{2mm}
 
-The DATA and BSS sections are addressed relative to the data section pointer (DATAP) which is a special register that points to some reference point in these sections. The preferred reference point is where DATA ends and BSS begins. Multiple running instances of the same program will have different values of the data section pointer. The CODE and CONST sections contain no direct references to DATA or BSS, only references relative to the data section pointer. This makes it possible for multiple processes to share the same CODE and CONST sections, but have each their private DATA and BSS sections without the need for virtual address translation. The DATA and BSS sections can be placed anywhere in the address space independently of where CONST and CODE are placed.
+The DATA and BSS sections are addressed relative to the data section pointer (DATAP) which is a special register that points to some reference point in these sections. The preferred reference point is where DATA ends and BSS begins. Multiple running instances of the same program will have different values of the data section pointer. The CODE and CONST sections contain no absolute references to DATA or BSS, only references relative to the data section pointer. This makes it possible for multiple processes to share the same CODE and CONST sections, but have each their private DATA and BSS sections without the need for virtual address translation. The DATA and BSS sections can be placed anywhere in the address space independently of where CONST and CODE are placed.
 \vspace{2mm}
 
 STACK data are addressed relative to the stack pointer (SP). Heap data are addressed through pointers provided by the heap allocation function. 
 \vspace{2mm}
 
-Thread data are addressed relative to a register called thread environment block pointer (THREADP), which is separate for each thread in the process. The thread environment block may be allocated on the stack when a new thread is created. 
+Thread data are addressed relative to the thread data pointer (THREADP), which is separate for each thread in the process. The thread data section may be allocated on the stack when a new thread is created.
 \vspace{2mm}
 
-The STACK, DATA, BSS, HEAP and THREADD data sections are preferably kept together in one contiguous block in order to optimize caching and memory management. 
+The STACK, DATA, BSS, and HEAP data sections are preferably kept together in one contiguous block in order to optimize caching and memory management. 
 \vspace{2mm}
 
 This model allows the program to access up to 8 GB of CODE, 2 GB of CONST, 2 GB of DATA, 2 GB of BSS, 2 GB of THREADD, an almost unlimited size of STACK with 2 GB frames, and an almost unlimited amount of HEAP data. A pointer to the CONST section is provided in the thread environment block in order to access CONST data in the rare case that the distance between code and data exceeds 2 GB or in order to avoid address relocation. 
 \vspace{2mm}
 
+\label{extraSpaceAtEndOfData}
 The end of the combined data memory block must have an unused space of the same size as the maximum vector length. This will enable the restore\_cp instruction to read more than necessary when restoring a vector of unknown length. It will also allow a function that searches for the end of a zero-terminated string to read one vector-length piece of the string at a time without causing access violation by reading into unavailable memory space. 
 \vspace{2mm}
 
@@ -118,8 +120,7 @@ If runtime linking runs into memory problems and lack of memory map entries then
 An application that needs many independent memory blocks can make a separate thread to service each memory block. Each thread has its own memory map with an entry for its private memory block.
 \vspace{2mm}
 
-\label{sharedMemory}
-Shared memory can be used when there is a need to transfer large amounts of data between two processes. One process shares a part of its memory with another process. The receiving process needs an extra entry in its memory map to indicate read and/or write access rights to the shared memory block. The process that owns the shared memory block does not need any extra entry in its memory map. There is a limit to how many shared memory blocks an application can receive access to, because we want to keep the memory map small. If one program needs to communicate with a large number of other programs then we can use one of these solutions: (1) let the program that needs many connections own the shared memory and give each of its clients access to one part of it, (2) run multiple threads in (or multiple instances of) the program that needs many connections so that each thread has access to only one shared memory block, (3) let multiple communication channels use the same shared memory block or parts of it, (4) communicate through function calls, (5) communicate through network sockets, or (6) communicate through files. 
+\label{sharedMemory} Shared memory can be used when there is a need to transfer large amounts of data between two processes. One process shares a part of its memory with another process. The receiving process needs an extra entry in its memory map to indicate read and/or write access rights to the shared memory block. The process that owns the shared memory block does not need any extra entry in its memory map. There is a limit to how many shared memory blocks an application can receive access to, because we want to keep the memory map small. If one program needs to communicate with a large number of other programs then we can use one of these solutions: (1) let the program that needs many connections own the shared memory and give each of its clients access to one part of it, (2) run multiple threads in (or multiple instances of) the program that needs many connections so that each thread has access to only one shared memory block, (3) let multiple communication channels use the same shared memory block or parts of it, (4) communicate through function calls, (5) communicate through network sockets, or (6) communicate through files. 
 \vspace{2mm}
 
 Executable memory cannot be shared between different applications. The mechanism of interprocess calls must be used if one application needs to call a function in another application. This is described on page \pageref{interProcessCalls}. 
