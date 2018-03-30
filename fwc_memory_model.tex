@@ -51,7 +51,8 @@ This model allows the program to access up to 8 GB of CODE, 2 GB of CONST, 2 GB 
 \vspace{2mm}
 
 \label{extraSpaceAtEndOfData}
-The end of the combined data memory block must have an unused space of the same size as the maximum vector length. This will enable the restore\_cp instruction to read more than necessary when restoring a vector of unknown length. It will also allow a function that searches for the end of a zero-terminated string to read one vector-length piece of the string at a time without causing access violation by reading into unavailable memory space. 
+Any readable data section that is not followed by another readable section must have an unused space of at least 256 bytes at the end. The purpose of this is to make it possible for the restore\_cp instruction to read more than necessary when restoring a vector of unknown length, and to make 
+it possible to search for the end of a zero-terminated string without having to read only a single byte at a time. The unused space at the end of a writeable data section may be increased to the maximum vector length if this is more than 256 bytes. This does not apply to read-only data sections because a variable-size unused space between the constant section and the code section would make it necessary to recalculate relative addresses when a program is loaded and spoil the advantage of position-independent code.
 \vspace{2mm}
 
 Most microprocessor systems have the stack growing backward. The ForwardCom system has the same, but mainly for a different reason. When a vector register is saved on the stack, it is stored as the length followed by the amount of data indicated by the length. When the vector register is restored (using the restore\_cp instruction), it is necessary to read the length followed by the data. The stack pointer must point to the low end where the length is stored, otherwise it would be impossible to find where the length is stored. 
@@ -64,7 +65,7 @@ It is recommended to use this inter-thread memory protection in all cases except
 \vspace{2mm}
 
 \subsubsection{Isolated memory blocks} \label{isolatedMemoryBlocks}
-It is possible to make a system function that allocates an isolated memory block surrounded by inaccessible memory on both sides. Such a memory block, which will be accessible only to a specific thread, can be used for example for an input buffer in cases where security requirements are high. Each thread can have only a limited number of such protected memory blocks because of the limited size of the memory map.
+It is possible to make a system function that allocates an isolated memory block surrounded by inaccessible memory on both sides. Such a memory block, which will be accessible only to a specific thread, can be used for example for a data buffer in cases where security requirements are high. Each thread can have only a limited number of such protected memory blocks because of the limited size of the memory map.
 
 \section{Memory management} \label{memoryManagement}
 It is a design goal to minimize memory fragmentation and to minimize the need for virtual address translation. Current designs often have very complicated memory management systems with multilevel address translation, large translation-lookaside-buffers (TLB), and huge page tables. We want to replace the TLB, which has a large number of fixed-size memory blocks, by a memory map with a few memory blocks of variable size. In most cases, the main thread of an application will only need three blocks of memory: CONST (read only), CODE (execute only), and the combined STACK+DATA+BSS+HEAP (read-write). A child thread needs one more entry for its private stack. Similar blocks are defined for system code. 

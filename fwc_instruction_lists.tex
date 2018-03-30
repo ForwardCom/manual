@@ -36,6 +36,7 @@ Variant &
 D0:  No destination operand, no operand type.\newline
 D1:  No destination operand, but operand type specified.\newline
 D2:  Operand type ignored.\newline
+F1:  Can have fallback register without mask register.\newline
 I2:  Immediate source operand is integer regardless of specified operand type.\newline
 M0:  Memory operand is destination.\newline
 M1:  E formats with a memory operand use IM3 as an extra immediate operand.\newline
@@ -168,6 +169,7 @@ For example 0x223 means format 2.2.3.
   &  0x020 & Format 1.5.1 C: One register, 8-bit immediate, 8-bit address. \\
   &  0x040 & Format 1.5.2 C: 16-bit address. \\
   &  0x080 & Format 1.5.3 C: One register. \\
+  &  0x100 & Format 1.5.5 C: No parameters. \\
   
   &  0x01000 & Format 2.5.0: Two registers, 32-bit address. \\
   &  0x02000 & Format 2.5.0: Mem. w. base and 32-bit offset. \\
@@ -272,7 +274,7 @@ store        &  1 & 1 & Store value to memory. \\
 move         &  2 & 1 & Copy value. \\
 prefetch     &  3 & 1 & Prefetch from memory. \\
 sign\_extend &  4 & 1 & Sign-extend smaller integer to 64 bits. \\
-sign\_extend\_ add & 5 & 1 & Sign-extend smaller integer to 64 bits and add 64-bit register. \\
+sign\_extend\_ add & 5 & 2 & Sign-extend smaller integer to 64 bits and add 64-bit register. \\
 compare      &  7 & 2 & Compare. Uses condition codes, see p. \pageref{table:conditionCodesForCompareInstruction}. \\
 add          &  8 & 2 & src1 + src2. \\
 sub          &  9 & 2 & src1 - src2. \\
@@ -308,9 +310,13 @@ and\_bit     & 39 & 2 & Clear all bits except one. src1 \&{} (1 \textless\textle
 test\_bit    & 40 & 2 & Test bit. (src1 \textgreater\textgreater{} src2) \& 1. \\
 test\_bits   & 41 & 2 & Test if at least one indicated bit is 1. (src1 \& src2) != 0 \\
 test\_bits\_all1 & 42 & 2 & Test if all indicated bits are 1. (src1 \& src2) == src2 \\
-mul\_add     & 48 & 3 & $\pm$ src1 $\pm$ src2 $\cdot$ src3 (optional). \\
-mul\_add2    & 49 & 3 & $\pm$ src1 $\cdot$ src2 $\pm$ src3 (optional). \\
-add\_add     & 50 & 3 & $\pm$ src1 $\pm$ src2 $\pm$ src3 (optional). \\
+add          & 44 & 2 & src1 + scr2 (float16. optional). \\
+sub          & 45 & 2 & src1 - scr2 (float16. optional). \\
+mul          & 46 & 2 & src1 * scr2 (float16. optional). \\
+mul\_add     & 48 & 3 & $\pm$ src1 $\pm$ src2 $\cdot$ src3 (float16. optional). \\
+mul\_add     & 49 & 3 & $\pm$ src1 $\pm$ src2 $\cdot$ src3 (optional). \\
+mul\_add2    & 50 & 3 & $\pm$ src1 $\cdot$ src2 $\pm$ src3 (optional). \\
+add\_add     & 51 & 3 & $\pm$ src1 $\pm$ src2 $\pm$ src3 (optional). \\
 userdef55 - userdef62
              & 55-62 & 2 & Reserved for user-defined instructions. \\
 undef        & 63 & 2 & Undefined code. Guaranteed to generate trap in all future implementations. \\
@@ -404,7 +410,7 @@ add           & 1.1   & 17  & RD += IM2 \textless\textless{} IM1. Sign-extend IM
 and           & 1.1   & 18  & RD \&= IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits, shift left by the unsigned value IM1, AND with RD. \\
 or            & 1.1   & 19  & RD \textbar{}= IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits, shift left by the unsigned value IM1, OR with RD. \\
 xor           & 1.1   & 20  & RD \^{}= IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits, shift left by the unsigned value IM1, XOR with RD. \\
-abs           & 1.8   &  0  & Absolute value of integer. IM1 determines handling of overflow: 0: wrap around, 1: saturate, 2: zero. \\
+abs           & 1.8   &  0  & Absolute value of integer. IM1 determines handling of overflow: 0: wrap around, 1: saturate, 2: zero, 3: trap. \\
 shift\_add    & 1.8   &  1  & Shift and add. RD += RS \textless\textless{} IM1 \\
 read\_spec    & 1.8   & 32  & Read special register RS into g. p. register RD. \\
 write\_spec   & 1.8   & 33  & Write g. p. register RS to special register RD. \\
@@ -460,9 +466,10 @@ broad         & 1.2 & 13 & Broadcast first element of vector RT into all element
 bits2bool     & 1.2 & 14 & The lower n bits of RT are unpacked into a boolean vector RD with length RS, with one bit in each element, where n = RS / OS. \\
 bool2bits     & 1.2 & 15 & The boolean vector RT with length RS is packed into the lower n bits of RD, taking bit 0 of each element, where n = RS / OS. The
 length of RD is at least sufficient to contain n bits. \\
-bool\_reduce  & 1.2 & 16 & The boolean vector RT with length RS is reduced by combining bit 0 of all elements. The output is a scalar integer where bit 0 is the
+bool\_reduce  & 1.2 & 16 & The integer vector RT with length RS is reduced by combining bit 0 of all elements. The output is a scalar integer where bit 0 is the
 AND combination of all the bits, and bit 1 is the OR combination of
 all the bits. The remaining bits are reserved for future use. \\
+category\_ reduce & 1.2 & 16 & The floating point vector RT with length RS is reduced to a scalar integer where each bit indicates that the source vector contains at least one element in a certain category, such as NAN, zero, normal positive, etc. \\
 shift\_expand & 1.2 & 18 & Shift vector RT up by RS bytes and extend the vector length by RS. The lower RS bytes of RD will be zero. \\
 shift\_reduce & 1.2 & 19 & Shift vector RT down RS bytes and reduce the length by RS. The lower RS bytes of RT are lost. \\
 shift\_up     & 1.2 & 20 & Shift elements of vector RT up RS elements. The lower RS elements of RD will be zero, the upper RS elements of RT are lost. \\
@@ -484,18 +491,12 @@ sub\_ss       & 1.2 & 32 & Subtract integer vectors, signed with saturation (opt
 sub\_us       & 1.2 & 33 & Subtract integer vectors, unsigned with saturation (optional). \\
 mul\_ss       & 1.2 & 34 & Multiply integer vectors, signed with saturation (optional). \\
 mul\_us       & 1.2 & 35 & Multiply integer vectors, unsigned with saturation (optional). \\
-shift\_ss       & 1.2 & 36 & Shift left integer vectors, signed with saturation (optional). \\
-shift\_us       & 1.2 & 37 & Shift left integer vectors, unsigned with saturation (optional). \\
+%shift\_ss       & 1.2 & 36 & Shift left integer vectors, signed with saturation (optional). \\
+%shift\_us       & 1.2 & 37 & Shift left integer vectors, unsigned with saturation (optional). \\
 add\_oc       & 1.2 & 38 & add with overflow check (optional). \\
 sub\_oc       & 1.2 & 39 & subtract with overflow check (optional). \\
 mul\_oc       & 1.2 & 41 & multiply with overflow check (optional). \\
 div\_oc       & 1.2 & 42 & divide with overflow check (optional). \\
-
-add\_h        & 1.2 & 48 & add half precision floating point (optional). \\
-sub\_h        & 1.2 & 49 & subtract half precision floating point (optional). \\
-mul\_h        & 1.2 & 50 & multiply half precision floating point (optional). \\
-div\_h        & 1.2 & 51 & divide half precision floating point (optional). \\
-mul\_add\_h   & 1.2 & 52 & multiply and add half precision floating point (optional). \\
 
 read\_call\_ stack & 1.2 & 58 & read internal call stack. RD = vector register destination of length RS, RT-RS = internal address (privileged instruction). \\
 write\_call\_ stack & 1.2 & 59 & write internal call stack. RD = vector register source of length RS, RT-RS = internal address (privileged instruction). \\
@@ -565,22 +566,16 @@ mul           & 1.3 C & 61 & Multiply broadcast half precision floating point co
 
 concatenate   & 2.2.6 & 0.1 & A vector RU of length RS and a vector RT of length RS are
 concatenated into a vector RD of length 2$\cdot$RS. \\
-
 permute       & 2.2.6 & 1.1 & The vector elements of RU are permuted within each block of size RS bytes, using indices in RT. Each index is relative to the
 beginning of a block. An index out of range produces zero. The
 maximum block size is implementation dependent. \\
-
 interleave    & 2.2.6 & 2.1 & Interleave elements of vectors RU and RT of length RS/2 to produce vector RD of length RS. Even-numbered elements of the destination come from RU and odd-numbered elements from RT. (optional). \\
-
-repeat\_block  & 2.2.6 & 8.1 & Repeat a block of data to make a longer vector. RT is input vector containing data block to repeat. IM2 is length in bytes of the block to repeat (must be a multiple of 4). RS is the length of destination vector RD. (optional). \\
-
-repeat\_within \_blocks & 2.2.6 & 9.1 & Broadcast the first element of each block of data in a vector to the entire block. RT is input vector containing data blocks. IM2 is length in bytes of each block (must be a multiple of the operand size). RS is length of destination vector RD. The operand size must be at least 4 bytes. (optional). \\
+truth\_tab3   & 2.2.6 & 8.1 & Boolean function of three inputs, given by a truth table (optional). \\
 
 move\_bits    & 2.2.7 & 0.1 & Replace one or more contiguous bits at one position of RS with contiguous bits from another position of RT. Optional \\
-
 mask\_length  & 2.2.7 & 1.1 & Make mask with true in the first RS bytes. Option bits in IM2. \\
-
-truth\_tab3   & 2.2.7 & 2.1 & Boolean function of three inputs, given by a truth table (optional). \\
+repeat\_block  & 2.2.7 & 8.1 & Repeat a block of data to make a longer vector. RT is input vector containing data block to repeat. IM2 is length in bytes of the block to repeat (must be a multiple of 4). RS is the length of destination vector RD. (optional). \\
+repeat\_within \_blocks & 2.2.7 & 9.1 & Broadcast the first element of each block of data in a vector to the entire block. RT is input vector containing data blocks. IM2 is length in bytes of each block (must be a multiple of the operand size). RS is length of destination vector RD. The operand size must be at least 4 bytes. (optional). \\
 
 load\_hi      & 2.6 & 0 & Make vector of two elements. dest[0] = 0, dest[1] = IM2. \\
 insert\_hi    & 2.6 & 1 & Make vector of two elements. dest[0] = src1[0], dest[1] = IM2. \\
@@ -620,10 +615,165 @@ extract\_store& 2.5 A & 32 & Extract one element from vector RD, starting at off
 
 \hline
 \end{longtable}
+\vspace{4mm}
+
 
 
 \section{List of control transfer instructions}
-See page \pageref{table:controlTransferInstructions}
+
+\begin{longtable}
+{|p{10mm}|p{14mm}|p{55mm}|p{50mm}|}
+%\nopagebreak
+\caption{Condition codes for control transfer instructions with integer operands in general purpose registers }
+\label{table:controlTransferInstructions}
+\endfirsthead
+\endhead
+\hline
+OPJ & bit 0 \newline of OPJ & Instruction & Comment \\
+\hline
+0-7 & part of offset & Unconditional jump with 24-bit offset (jump) & Format 1.5 D. Bit 0-2 of OPJ are part of offset \\
+\hline
+8-15 & part of offset & Unconditional call with 24-bit offset (call) & Format 1.5 D.  Bit 0-2 of OPJ are part of offset \\
+\hline
+0-1 & invert & sub/jump\_zero, \newline sub/jump\_nzero & Format 1.4 and 2.5.0. \\
+\hline
+2-3 & invert & sub/jump\_neg, \newline sub/jump\_nneg & Format 1.4 and 2.5.0.  \\
+\hline
+4-5 & invert & sub/jump\_pos, \newline sub/jump\_npos & Format 1.4 and 2.5.0.  \\
+\hline
+6-7 & invert & sub/jump\_overfl, \newline sub/jump\_noverfl & Format 1.4 and 2.5.0.  \\
+\hline
+8-9 & invert & sub/jump\_borrow, \newline sub/jump\_nborrow & Format 1.4 and 2.5.0. \\
+\hline
+10-11 & invert & shift\_left/jump\_zero \newline shift\_left/jump\_nzero & Not format 1.5 \\
+\hline
+12-13 & invert & shift\_right\_u/jump\_zero \newline shift\_right\_u/jump\_nzero & Not format 1.5 \\
+\hline
+14-15 & invert & rotate/jump\_carry, \newline rotate/jump\_ncarry & Not format 1.5 \\
+\hline
+
+16-17 & invert & add/jump\_zero, \newline add/jump\_nzero &  \\
+\hline
+18-19 & invert & add/jump\_neg, \newline add/jump\_nneg &  \\
+\hline
+20-21 & invert & add/jump\_pos, \newline add/jump\_npos &  \\
+\hline
+22-23 & invert & add/jump\_overfl, \newline add/jump\_noverfl &  \\
+\hline
+24-25 & invert & add/jump\_carry, \newline add/jump\_ncarry &  \\
+\hline
+26-27 & invert & and/jump\_zero, \newline and/jump\_nzero &  \\
+\hline
+28-29 & invert & or/jump\_zero, \newline or/jump\_nzero &  \\
+\hline
+30-31 & invert & xor/jump\_zero, \newline xor/jump\_nzero &  \\
+\hline
+32-33 & invert & compare/jump\_equal, \newline compare/jump\_nequal & \\
+\hline
+34-35 & invert & compare/jump\_sbelow, \newline compare/jump\_saboveeq &  \\
+\hline
+36-37 & invert & compare/jump\_sabove, \newline compare/jump\_sbeloweq &  \\
+\hline
+38-39 & invert & compare/jump\_ubelow, \newline compare/jump\_uaboveeq &  \\
+\hline
+40-41 & invert & compare/jump\_uabove, \newline compare/jump\_ubeloweq & \\
+\hline
+42-43 & invert & test\_bit/jump\_zero, \newline test\_bit/jump\_nzero &  \\
+\hline
+44-45 & invert & test/jump\_all1, \newline test/jump\_nall1 &  \\
+\hline
+46-49 & invert & Reserved for future use. & \\
+\hline
+
+50-51 & invert & increment\_compare/jump\_above, \newline increment\_compare/jump\_beloweq & \\
+\hline
+52-53 & invert & sub\_maxlen/jump\_pos, \newline sub\_maxlen/jump\_npos &  \\
+\hline
+54 & 0 & sub/jump &  \\
+\hline
+55 & 1 & add/jump &  \\
+\hline
+56-57 &  & Reserved for future use. & \\
+\hline
+
+58-59 & 0 jump \newline 1 call & Indirect jump or call with memory operand. & Format 1.4 and 2.5.0. \\
+\hline
+58-59 & 0 jump \newline 1 call & Unconditional direct jump or call & Format 1.5 C, 2.5.2, and
+3.1.0. \\
+\hline
+60-61 & 0 jump \newline 1 call & Multiway jump or call with table of relative addresses & 
+Format 1.4 A and 2.5.0 \\
+\hline
+60-61 & 0 jump \newline 1 call & Indirect jump or call to value of register & Format 1.5 C \\
+\hline
+62 & 0 & return  & Format 1.4 B  \\
+\hline
+62 & 0 & sys\_return & Format 1.5 C  \\
+\hline
+63 & 1 & sys\_call. ID in register & Format 1.4 A \\
+\hline
+63 & 1 & sys\_call. ID in constants & Format 2.5.1, 2.5.4 and 3.1.0. \\
+\hline
+63 & 1 & trap or filler & Format 1.5 C \\
+\hline
+63 & 1 & Conditional traps & Format 2.5.3. \\
+\hline
+\end{longtable}
+
+
+
+\begin{longtable}
+{|p{10mm}|p{14mm}|p{55mm}|p{50mm}|}
+%\nopagebreak
+\caption{Condition codes for control transfer instructions with floating point operands in vector registers }
+\label{table:controlTransferInstructionsFloat}
+\endfirsthead
+\endhead
+\hline
+OPJ & bit 0 \newline of OPJ & Instruction & Comment \\
+\hline
+32-33 & invert & compare/jump\_equal, \newline compare/jump\_nequal & false if unordered \\
+\hline
+16-17 & invert & compare/jump\_equal\_uo, \newline compare/jump\_nequal\_uo & true if unordered \\
+\hline
+34-35 & invert & compare/jump\_below, \newline compare/jump\_aboveeq & false if unordered \\
+\hline
+18-19 & invert & compare/jump\_below\_uo, \newline compare/jump\_aboveeq\_uo & true if unordered \\
+\hline
+36-37 & invert & compare/jump\_above, \newline compare/jump\_beloweq & false if unordered \\
+\hline
+20-21 & invert & compare/jump\_above\_uo, \newline compare/jump\_beloweq\_uo & true if unordered \\
+\hline
+38-39 & invert & compare/jump\_infinite, \newline compare/jump\_finite & false if NAN \newline no exception if NAN \\
+\hline
+22-23 & invert & compare/jump\_infinite\_uo, \newline compare/jump\_finite\_uo & true if NAN \newline no exception if NAN \\
+\hline
+40    & invert & compare/jump\_ordered & no exception if NAN \\
+\hline
+41    & invert & compare/jump\_unordered & no exception if NAN \\
+\hline
+
+\multicolumn{4}{|c|}{} \\
+\multicolumn{4}{|c|}{ The following instructions treat floating point operands as integers in vector registers: } \\
+\multicolumn{4}{|c|}{} \\
+\hline
+
+26-27 & invert & and/jump\_zero, \newline and/jump\_nzero &  \\
+\hline
+28-29 & invert & or/jump\_zero, \newline or/jump\_nzero &  \\
+\hline
+30-31 & invert & xor/jump\_zero, \newline xor/jump\_nzero &  \\
+\hline
+42-43 & invert & test\_bit/jump\_zero, \newline test\_bit/jump\_nzero &  \\
+\hline
+44-45 & invert & test/jump\_all1, \newline test/jump\_nall1 &  \\
+\hline
+
+\end{longtable}
+
+
+See page \pageref{descriptionOfControlTransferInstructions} for 
+detailed descriptions of control transfer instructions.
 
 
 \end{document}

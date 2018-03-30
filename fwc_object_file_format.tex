@@ -4,24 +4,23 @@
 \RaggedRight
 
 \section{Binary format for object files and executable files} \label{objectFileFormat}
-The executable file format must be standardized. The most flexible and well-structured format in common use is probably ELF. It is proposed to use ELF format for object files, function libraries, and executable files. 
+The ELF file format is used for ForwardCom because it is the most flexible and well-structured format in common use.
 \vspace{2mm}
 
-The details of an ELF format for ForwardCom are specified in a file named elf\_forwardcom.h. This specification includes details for section types, symbol types, relocation types, etc. Additional information about register use (see page \pageref{registerUsageConvention}) and stack use (see page \pageref{predictingStackSize}) is added to the file format. 
+The details of the ELF format for ForwardCom are specified in a file named elf\_forwardcom.h. This specification includes details for section types, symbol types, relocation types, etc. Additional information about event handlers (see page \pageref{EventHandlers}), register use (see page \pageref{chap:registerUsageConvention}) and stack use (see page \pageref{predictingStackSize}) is included in the file format. 
 \vspace{2mm}
 
-File names must have extensions that indicate their type. It is proposed to use the following extensions. Assembly code: .as, object file: .ob, library file: .li, executable file: .ex. 
+File names must have extensions that indicate their type. The following extensions are preferred:  Assembly code: .as, object file: .ob, library file: .li, executable file: .ex. 
 \vspace{2mm}
 
 \section{Function libraries and link methods} \label{libraryLinkMethods}
-Dynamic link libraries (DLLs) and shared objects (SOs) are not used in the ForwardCom system. Instead, we will use only one type of function libraries that can be used in four different ways: 
+Dynamic link libraries (DLLs) and shared objects (SOs) are not used in the ForwardCom system. Instead, we will use only one type of function libraries that can be used in several different ways: 
 
 \begin{enumerate}
 \item Static linking. \label{staticLinking} The linker finds the required functions in the library and copies them into the executable file. Only the parts of the library that are actually needed by the specific main program are included. This is the normal way that static libraries are used in current systems (.lib files in Windows, .a files in Unix-like systems such as Linux, BSD, and Mac OS). 
 
-\item  Installation-time linking. \label{installationTimeLinking} The library is linked or re-linked into the executable during the installation process. There may be a selection of different libraries for different platforms. The library may be updated at any time if needed.
-
-\item  Load-time linking. \label{loadTimeLinking} The library may be distributed separately from the executable file. The required parts of the library are loaded into memory together with the executable file, and all links between the main executable and the library functions are resolved by the loader in the same way as for static linking. 
+\item  Re-linking. \label{InstallationReLinking} The library is linked or re-linked into the executable during the installation process. There may be a selection of different libraries for different platforms. Third party libraries may also be added in this way.
+The library may be updated at any time, if needed, without updating the main program.
 
 \item  Run-time linking. \label{runtimeLinking} The required function is extracted from the library and loaded into memory, preferably at a memory space reserved for this purpose by the main program. Any reference from the newly loaded function to other functions, whether already loaded or not, can be resolved in the same way as for static linking. 
 \end{enumerate}
@@ -38,7 +37,7 @@ A DLL or SO can share its code section (but not its data section) between multip
 These linking methods are efficient in the ForwardCom system because of the way relative addresses are used. The main program typically contains a CONST section immediately followed by a CODE section. The CONST section is addressed relative to the instruction pointer so that these two sections can be placed anywhere in memory as long as they have the same position relative to each other. Now, we can place the CONST section of the library function before the CONST section of the main program, and the CODE section of the library function after the CODE section of the main program. We don't have to change any cross-references in the main program. Only cross references between the main program and the library function and between the CODE and CONST sections of the library function have to be calculated by the linking or re-linking process and inserted in the code.
 \vspace{2mm}
 
-A library function does not necessarily have any DATA and BSS sections. In fact, a thread-safe function has little use of static data. However, if the library function has any DATA and BSS sections, then these sections can be placed anywhere within the ± 2GB range of the DATAP pointer. The references in the library function to its static data have to be calculated relative to the point that DATAP points to; but no references to data in the main program have to be modified when a library is added as long as DATAP still points to the border between the DATA and BSS sections of the main program. 
+A library function does not necessarily have any DATA and BSS sections. In fact, a thread-safe function has little use of static data. However, if the library function has any DATA and BSS sections, then these sections can be placed anywhere within the ± 2GB range of the DATAP pointer. The references in the library function to its static data have to be calculated relative to the point that DATAP points to; but no references to data in the main program have to be modified when a library is added as long as DATAP still points to some point in the DATA or BSS sections of the main program. 
 \vspace{2mm}
 
 The combined main program and library file can now be loaded into any vacant spaces in memory. It will need only three entries in the memory map: (1) the combined CONST sections of library and main program, (2) the combined CODE sections of main program and library functions, and (3) the combined STACK, DATA, BSS, and HEAP of the main program and the library functions. 
