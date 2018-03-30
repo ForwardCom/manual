@@ -4,6 +4,22 @@
 \RaggedRight
 
 \chapter{Revision history}
+\subsubsection{Version 1.08, 2018-03-30.}
+\begin{itemize}
+
+\item Binary tools now include assembler, disassembler, linker, library manager, emulator, and debugger
+\item Function libraries and code examples are provided
+\item ID numbers for system functions, events, and interrupts defined in the file system\_functions.h
+\item Format for library files defined in the file elf\_forwardcom.h
+\item Format for event handlers and other features defined in the file elf\_forwardcom.h
+\item File header modified to remove the limitation of 64000 sections
+\item Improved NAN propagation made mandatory. Addition of NANs gives the highest payload. 
+Min and max instructions propagate NANs according to the forthcoming revision of IEEE-754 standard.
+\item Floating point compare/jump instructions have ordered and unordered versions.
+\item Better support for half precision floating point vectors.
+\item Many small changes in instruction list. 
+\end{itemize}
+
 
 \subsubsection{Version 1.07, 2017-11-03.}
 \begin{itemize}

@@ -22,9 +22,11 @@ The tools can be run using the following command lines:
 \hline
 assemble & forw -ass assemblyfile objectfile \\ 
 disassemble & forw -dis objectfile assemblyfile \\ 
-link & forw -link exefile objectfiles \\ 
+link & forw -link exefile objectfiles libraryfiles \\ 
+relink & forw -relink inputfile outputfile objectfiles libraryfiles \\ 
 make library & forw -lib libraryfile objectfiles \\
-emulate & forw -emu exefile \\ 
+emulate & forw -emu exefile \\
+debug & forw -emu exefile  -list=debugout.txt \\
 dump & forw -dump objectfile \\ 
 help & forw -help \\ 
 \hline
@@ -47,7 +49,7 @@ The following options can be used with most or all of the commands listed above:
 \end{tabular}
 \vspace{2mm}
 
-The list of instructions is stored separately in a comma-separated file named \textbf{instruction\_list.csv}. This file must be present when running the assembler, disassembler, or emulator. The format for the instruction list is defined in table \ref{table:fieldsInInstructionListFile}.
+The list of instructions is stored separately in a comma-separated file named \textbf{instruction\_list.csv}. This file must be present when running the assembler, disassembler, or debugger. The format for the instruction list is defined in table \ref{table:fieldsInInstructionListFile}.
 \vspace{2mm}
 
 
@@ -85,7 +87,7 @@ code section execute        // define executable code section
 
 // factorial function calculates n!
 // input: r0, output: r0
-factorial function public
+_factorial function public
 if (uint64 r0 <= 20) {      // check for overflow, 64 bit unsigned
    uint64 r1 = 1            // start with 1
    while (uint64 r0 > 1) {  // loop through r0 values
@@ -97,7 +99,7 @@ if (uint64 r0 <= 20) {      // check for overflow, 64 bit unsigned
 }
 int64 r0 = -1               // overflow. return max unsigned value
 return                      // error return
-factorial end               // end of function
+_factorial end              // end of function
 
 code end                    // end of code section
 \end{lstlisting}
@@ -120,7 +122,7 @@ code section execute                // define code section
 
 // This function calculates a polynomial on all elements of an
 // array x and stores the results in an array y
-polyn function public
+_polyn function public
 int64 r1 = address([x+arraysize*4]) // end of array x
 int64 r2 = address([y+arraysize*4]) // end of array y
 int64 r0 = arraysize*4              // array size in bytes = 400
@@ -133,7 +135,7 @@ for (float v0 in [r1-r0]) {         // vector loop
    float [r2-r0, length=r0] = v0    // save y vector
 }
 return                              // return from function
-polyn end                           // end of function
+_polyn end                          // end of function
 
 code end                            // end of code section
 \end{lstlisting}
@@ -202,14 +204,17 @@ A name can consist of letters a-z, A-Z, numbers 0-9, the special characters \_ \
 and unicode letters. A name cannot begin with a number. There is no limit to the length of a name.
 \vspace{2mm}
 
+All names are prefixed with an underscore or mangled in some other way when compiling high-level language code. This is to prevent high-level language names from clashing with assembly keywords, register names, etc.
+\vspace{2mm}
+
 The names of keywords and instructions are not case sensitive.
 The following are reserved keywords:
 \begin{lstlisting}[frame=single]
 align 
 break broadcast
-capab0-capab31 case communal constant continue
-datap do double 
-else end execute extern 
+capab0-capab31 case comment_info communal constant continue
+datap debug_info do double 
+else end event_hand exception_hand execute extern 
 fallback float float16 float32 float64 float128 for function 
 if in int8 int16 int32 int64 int128 ip 
 length limit
@@ -236,7 +241,7 @@ name end
 
 The following options can be defined for a section. Multiple options are separated by space or comma.
 
-\begin{tabular}{|p{20mm}p{150mm}|}
+\begin{tabular}{|p{22mm}p{150mm}|}
 \hline
 read & Readable data section. \\
 write & Writeable data section. \\
@@ -244,8 +249,16 @@ execute & Executable code section. This does not imply read access. Write access
 ip & Addressed relative to the instruction pointer. This is the default for executable and read-only sections. \\
 datap & Addressed relative to the data pointer. This is the default for writeable data sections. \\
 threadp & Addressed relative to the thread data pointer. The section will have one instance for each thread. \\
-communal & Communal section. Identical sections in different modules can be merged together. Unreferenced sections can be removed. \\
-uninitialized & Data section containing only zeroes. The data of this section does not take up space in object files.\\
+\label{communal}
+communal & Communal section. Allows identical sections in different modules, where only one of the
+communal sections with the same name is included by the linker. 
+Unreferenced communal sections may be removed.
+Public symbols in communal sections must be weak. \\
+uninitialized & Data section containing only zeroes. The data of this section does not take up space in object files and executable files.\\
+exception\_hand & Exception handler and stack unroll information.\\
+event\_hand & Event handler information, including static constructors and destructors.\\
+debug\_info & Debug information.\\
+comment\_info & Comments, including copyright and required library names.\\
 align=n & Align the beginning of the section to an address divisible by n, which must be a power of 2.
 The default alignment for executable sections is 4. The default alignment for a data section is the size of the biggest data type in the section. A higher alignment can be specified with the align directive.\\
 \hline
@@ -376,7 +389,7 @@ int8 delta[25]
 align (8)
 int8 epsilon[] = {6, 7, 8, 9}
 zeta: int8 "Dear reader", 0
-int8 eta = "Nice to meet you"
+int8 eta = "Nice to meet you", 0
 mydata end
 \end{lstlisting}
 \vspace{2mm}
@@ -395,7 +408,8 @@ A function can be defined inside an executable section. It is defined like this:
 \end{tabular}
 \vspace{4mm}
 
-Attributes can be 'public' and 'weak'. The function will be local if no attributes are specified and 
+Attributes can be 'public', 'weak', and 'reguse=value,value'. 
+The function will be local if no attributes are specified and 
 the name does not appear in a public declaration.
 \vspace{2mm}
 
@@ -405,10 +419,10 @@ Example:
 \begin{lstlisting}[frame=single]
 mycode section execute
 // this function calculates the square of a double
-square function
+_square function public, reguse = 0, 1
 double v0 *= v0
 return
-square end
+_square end
 mycode end
 \end{lstlisting}
 \vspace{2mm}
@@ -713,18 +727,19 @@ Example:
 \vspace{2mm}
 
 \begin{lstlisting}[frame=single]
-  int64 r1 = address([my_array]) // address of my_array
-  int64 r2 = my_arraysize * 8    // size of my_array in bytes
-  int64 r1 += r2                 // point to end of my_array
-  for (float v1 in [r1 - r2]) {  // loop through my_array
-    float v1 = [r1 - r2]         // read vector of maximum length
-    float v1 *= 2                // multiply values by 2
-    float [r1 - r2] = v1         // store results in my_array
+  int64 r1 = address([my_array])      // address of my_array
+  int64 r2 = my_arraysize * 8         // size of my_array in bytes
+  int64 r1 += r2                      // point to end of my_array
+  for (float v1 in [r1 - r2]) {       // loop through my_array
+    float v1 = [r1 - r2, length = r2] // read vector
+    float v1 *= 2                     // multiply values by 2
+    float [r1 - r2, length = r2] = v1 // store results in my_array
   }
 \end{lstlisting}
 \vspace{2mm}
 
-This loop will subtract the maximum vector length from r2 for each iteration and continue as long as r2 (interpreted as a signed 64 bit integer) is positive. The maximum vector length may depend on the data type. The loop will use the maximum vector length for the data type specified in the for statement (float in this case). It is possible to use more vector registers and more end-of-array pointers than the ones specified in the 'for' statement.
+This loop will subtract the maximum vector length from r2 for each iteration and continue as long as r2 (interpreted as a signed 64 bit integer) is positive. It will use the maximum vector length as long as r2 is bigger than the maximum vector length.
+The maximum vector length may depend on the data type. The loop will use the maximum vector length for the data type specified in the for statement (float in this case). It is possible to use more vector registers and more end-of-array pointers than the ones specified in the 'for' statement.
 \vspace{2mm}
 
 It is recommended to use optimization level 1 or higher when assembling branches and loops.
@@ -760,12 +775,17 @@ write & the symbol is in a writeable data section\\
 execute & the symbol is executable code\\
 data type & the data type for the data symbol\\
 weak & weak linking: the symbol will be resolved only if it exists\\
+reguse & register use, indicating which registers are modified by the function\\
 \hline
 \end{tabular}
 \vspace{2mm}
 
 An external symbol must have one, and only one, of the following attributes: function, ip, datap, threadp, constant.
-The other attributes are optional. Multiple attributes are separated by space.
+The other attributes are optional. Multiple attributes are separated by space or comma.
+\vspace{2mm}
+
+The reguse option indicates which registers are modified by the function. 
+It it followed by two numbers indicating the use of general purpose registers and vector registers, respectively. Bit number n indicates that register number n is used. For example: reguse=0x1F,1 indicates that general purpose registers r0-r4 and vector register v0 are modified by the function.
 \vspace{2mm}
 
 A weak external symbol will only be linked if it exists. The linker will not search function libraries to find the weak symbol, but the symbol will be resolved if it exists in a module that is linked in for other reasons.
@@ -782,14 +802,14 @@ Symbols are exported as follows:
 \end{tabular}
 \vspace{2mm}
 
-The possible attributes are the same as for external symbols. It is not necessary to specify the attributes because the attributes of locally defined symbols are already known. 
+The possible attributes are the same as for external symbols. It may not be necessary to specify all the attributes because the attributes of locally defined symbols are already known. 
 \vspace{2mm}
 
 It is convenient to place extern and public declarations in the beginning of the assembly file. Forward references are allowed.
 \vspace{2mm}
 
 Weak public symbols work as follows. If more than one module contains a weak public symbol with the same name then the linker will not issue an error message but link the first symbol.
-It there is one occurrence of a non-weak symbol with this name then the non-weak symbol will be chosen. If there is more than one non-weak public symbol with the same name then the linker will issue an error message.
+It there is one occurrence of a non-weak symbol with this name then the non-weak symbol will be chosen. If there are more than one non-weak public symbol with the same name then the linker will issue an error message.
 
 
 \subsection{Other directives} \label{assemblyOtherDirectives}
@@ -806,6 +826,20 @@ The 'align' directive can align data or code:
 
 The number must be a power of 2. The next data or code will be aligned to an address divisible by the specified number. The beginning of the section will automatically be aligned to at least the same size.
 \vspace{2mm}
+
+
+\subsection{Combining vectors of different lengths} \label{vectorsDifferentLengths}
+
+The length of the destination register is the same as the length of the first vector register source operand when vectors of different lengths are combined. For example:
+\vspace{2mm}
+
+\begin{lstlisting}[frame=single]
+float v1 = v2 - v3             // v1 has length of v2
+float v1 = -v3 + v2            // Same, but v1 has length of v3
+float v1 = v2 - [r3,length=r4] // Has length of v2, even if memory
+                               // operand has a different length
+\end{lstlisting}
+\vspace{4mm}
 
 
 \section{Metaprogramming} \label{assemblyMetaprogramming}
@@ -827,7 +861,7 @@ Instead, the ForwardCom assembler will implement metaprogramming involving the f
 \end{itemize}
 
 Metaprogramming commands are indicated by a percent sign at the beginning of the line.
-At present, only variables are implemented.
+At present, only variables are implemented. The other metaprogramming features will be added later.
 \vspace{2mm}
 
 
@@ -852,6 +886,7 @@ floating point & evaluated as double precision\\
 string & ASCII or UTF-8 text string\\
 register & the variable can be an alias for any register\\
 memory operand & the variable can be an alias for any memory operand\\
+type name & the variable can be an alias for a type\\
 \hline
 \end{tabular}
 \vspace{2mm}
@@ -933,18 +968,152 @@ The linker joins object files and library files into an executable file.
 The command line for the linker has the following format:
 \vspace{2mm}
 
-\hspace{5mm} {\ttfamily forw -link executablefile objectfiles [options]}
+{\ttfamily 
+\hspace{5mm} forw -link   outputfile [options] objectfiles libraryfiles \\
+\hspace{5mm} forw -relink inputfile outputfile [options] objectfiles libraryfiles
+}
 \vspace{2mm}
 
-The preferred extension for file names in ForwardCom are .ob for object files and .ex for executable files.
+The preferred extensions for file names in ForwardCom are .ob for object files, li. for library files, and .ex for executable files.
 \vspace{2mm}
 
-The linker is not implemented yet.
+\subsection{Linking an executable file} \label{linking}
+The link command will create an executable file and overwrite any existing file with the same name.
+\vspace{2mm}
+
+The following options are supported:\\
+\begin{tabular}{|p{10mm}p{150mm}|}
+\hline
+-a & (Default) Add the following object files or library files to the executable.\\
+-r & The following object files or library files will be added as relinkable modules so that they can be replaced later. The executable file will be relinkable.\\
+-m & Add the module(s) with the following name(s) from the previously specified library, even when 
+these modules are not needed for resolving external references.\\
+-d & Delete the following relinkable modules or libraries from the executable file (when relinking).\\
+-u & Allow the executable file to have unresolved external symbols. These symbols can be added later when relinking the incomplete executable file. The executable file will be relinkable.\\ 
+-x & Extract relinkable module from executable file. -xall = all relinkable modules.\\
+\hline
+\end{tabular}
+\vspace{2mm}
+
+This example will create an executable file from the modules file1.ob and file2.ob, and any members of the library library3.li that may be needed:
+\begin{lstlisting}[frame=single]
+forw -link myprogram.ex file1.ob file2.ob library3.li
+\end{lstlisting}
+\vspace{4mm}
+
+The linker has no option for making a map file. Use the dump or disassemble commands instead.
+\vspace{2mm}
+
+
+\subsection{Making a relinkable executable file} \label{makingARelinkableExecutableFile}
+A relinkable executable file is a file where some or all of the object modules and libraries can be replaced later and new modules can be added. A relinkable executable file contains more information about symbol names and cross-references than a non-relinkable. This extra information is used only when relinking, it is not loaded into memory when the program is executed.
+\vspace{2mm}
+
+Any of the modules that are included in a relinkable executable file can be relinkable or non-relinkable. The relinkable modules can be removed or replaced later. The non-relinkable modules are permanent. 
+\vspace{2mm}
+
+This example produces a relinkable executable file where all of the modules are relinkable:
+\begin{lstlisting}[frame=single]
+forw -link myprogram.ex -r file1.ob file2.ob library3.li
+\end{lstlisting}
+\vspace{4mm}
+
+This example produces a relinkable executable file where file1.ob is permanent and the remaining modules are relinkable:
+\begin{lstlisting}[frame=single]
+forw -link myprogram.ex -a file1.ob -r file2.ob library3.li
+\end{lstlisting}
+\vspace{4mm}
+
+This example produces a relinkable executable file where all the modules are permanent, but new modules can be added later:
+\begin{lstlisting}[frame=single]
+forw -link myprogram.ex -a file1.ob file2.ob library3.li -r
+\end{lstlisting}
+\vspace{4mm}
+
+This example produces a relinkable executable file where file1.ob and file2.ob are permanent,  library3.li is relinkable, and module4.ob from library3.li is added explicitly. Note that module4.ob
+will be lost by subsequent relinking if there is no reference to it because it is stored as a relinkable library module:
+\begin{lstlisting}[frame=single]
+forw -link myprogram.ex -a file1.ob file2.ob -r library3.li -m module4.ob
+\end{lstlisting}
+\vspace{4mm}
+
+You can list the relinkable modules contained in an executable file with the dump command:
+\begin{lstlisting}[frame=single]
+forw -dump -m myprogram.ex
+\end{lstlisting}
+\vspace{4mm}
+
+
+\subsection{Relinking an executable file} \label{relinking}
+The relink command will modify an existing relinkable executable file and produce a new relinkable executable file with a different name. The options are the same as above. 
+\vspace{2mm}
+
+This example will relink an executable file, replacing file2.ob by file2b.ob and replacing library3.li by a newer version of this library with the same name:
+\begin{lstlisting}[frame=single]
+forw -relink myprogram.ex myprogram2.ex -d file2.ob -r file2b.ob library3.li
+\end{lstlisting}
+\vspace{4mm}
+
+\subsection{Adding a plugin to a relinkable executable file} \label{AddingAPlugin}
+You can use the relinking feature to add a plugin to a relinkable executable file.
+\vspace{2mm}
+
+There are two ways in which the program can access the plugin. The first method is to define a weak external function in the main program and make a public function with the same name in the plugin module. Calling this function will have no effect if the plugin module is not present.
+\vspace{2mm}
+
+The other way is to define an event handler in the plugin module. This event handler will be called if the event occurs, for example when a menu item is clicked.
+\vspace{2mm}
+
+This example will add a plugin module plugin4.li to a relinkable executable file. The member start.ob in plugin4.li is added explicitly. The remaining members of plugin4.li are added only if there is a reference to them.
+\begin{lstlisting}[frame=single]
+forw -relink myprogram.ex myprogram2.ex -r plugin4.li -m start.ob
+\end{lstlisting}
+\vspace{4mm}
+
+\subsection{Extracting a module from a relinkable executable file} \label{ExtractingFromRelinkable}
+You can extract modules from a relinkable executable file. This feature is used mainly for testing and debugging purposes. The extracted file is not guaranteed to be identical to the original object file.
+\vspace{2mm}
+
+\begin{lstlisting}[frame=single]
+forw -relink myprogram.ex myprogram2.ex -x file1.ob
+\end{lstlisting}
+\vspace{4mm}
+
+The output file will be written to the current directory and have a name with prefix ''x\_''.
+''-xall'' will extract all relinkable modules.
+The output executable file (myprogram2.ex in the above example) is specified but not used.
+\vspace{2mm}
+
+\subsection{Relinking and library functions} \label{relinkingAndLibraryFunctions}
+A library function is included in an executable file only if there is a reference to it. The library functions that are included in a relinkable executable file can be reused when relinking. 
+If a later addition or modification to the executable file needs a library function that was not included in the original executable then the library has to be added again during relinking.
+\vspace{2mm}
+
+A relinkable library function in an executable file will be replaced during relinking if a new module or library contains a function with the same name. A library function that was included as non-relinkable in a relinkable executable file cannot be replaced later.
+\vspace{2mm}
+
+
+\subsection{Relinking and communal sections} \label{relinkingAndCommunalSections}
+Communal sections are described on page \pageref{communal}. Communal sections have certain similarities with library functions.
+\vspace{2mm}
+
+A communal section will not be included in the executable file if there is no reference to it.
+You will get a linking error if a later addition or modification to the executable file attempts to reference a symbol in this discarded communal section. There are three ways to fix this problem:
+
+\begin{itemize}
+\item Make the section not communal
+\item Make a reference to the symbol in order to make sure it is always included in the executable file
+\item Include a copy of the communal section in a module added when relinking
+\end{itemize}
+
+A communal section in a relinkable module will retain its properties. A communal section in a non-relinkable module will become non-communal, and any weak symbols in this section will become public and non-weak. If multiple communal sections with the same name are contained in both relinkable and non-relinkable modules then the linker will include only one.
+A bigger section is chosen before a smaller one. A section in an object file is chosen before a section in a library file. Finally, the one that comes first on the command line is preferred.
+\vspace{2mm}
 
 
 \section{Library manager} \label{libraryManager}
 
-A function library is a collection of object files each defining one or more functions that can be called from other modules. The library manager can make a function library and add or remove modules from it.
+A function library is a collection of object files each defining one or more functions that can be called from other modules. The library manager can make a function library and add or remove modules in it.
 \vspace{2mm}
 
 The command line for the library manager has the following format:
@@ -956,22 +1125,33 @@ The command line for the library manager has the following format:
 The following options are supported:\\
 \begin{tabular}{|p{10mm}p{150mm}|}
 \hline
--a & (Default). Add the following object files to the library. Any existing object file with the same name will be replaced.\\
+-a & (Default) Add the following object files to the library. Any existing object file with the same name will be replaced.\\
 -d & Delete the following object files from the library.\\
--x & Extract the following object files from the library. The library itself is not modified by this command.\\
--l & List object files and their public symbols.\\
+-l & List object file members.\\
+-l2 & List object file members and their exported symbols.\\
+-l3 & List object file members and their exported and imported symbols.\\
+-x & Extract the following object files from the library.\\
+-xall & Extract all object files from the library. \\
 \hline
 \end{tabular}
+\vspace{2mm}
+
+If a library with the specified name already exists, then it will be modified by adding, deleting, or replacing object files. The library will be created if it does not already exists.
 \vspace{2mm}
 
 The preferred extension for file names in ForwardCom are .ob for object files and .li for library files.
 \vspace{2mm}
 
-The library manager is not implemented yet.
+The names of the object files are stored in the library without the file path so that they can be extracted on another computer with a different file structure. The library cannot contain multiple object files with the same name.
 \vspace{2mm}
 
+The ForwardCom system has only one type of library files. The same library can be used for static and runtime linking and for relinking of an executable file.
+\vspace{2mm}
 
-\section{Emulator} \label{emulator}
+A standard C library is provided with the name libc.li.
+\vspace{2mm}
+
+\section{Emulator and debugger} \label{emulator}
 
 The emulator can execute a ForwardCom executable file on another platform. It is useful for testing and debugging.
 \vspace{2mm}
@@ -982,7 +1162,19 @@ The command line for the emulator has the following format:
 \hspace{5mm} {\ttfamily forw -emu executable\_file [options]}
 \vspace{2mm}
 
-The emulator is not implemented yet.
+\vspace{2mm}
+The following options are supported:\\
+\begin{tabular}{|p{22mm}p{140mm}|}
+\hline
+-list=name & Make list file with debug output.\\
+-maxlines=n & Maximum number of instructions in debug output list.\\
+-ilist=name & Specify alternative instruction list name.\\
+\hline
+\end{tabular}
+\vspace{2mm}
+
+The debug list output will show all executed instructions and their results.
+Interactive single-step debugging is currently not supported.
 \vspace{2mm}
 
 \section{Dump utililty} \label{dumpUtililty}
@@ -1004,6 +1196,7 @@ h & section headers.\\
 s & symbol table.\\
 n & string table.\\
 r & relocation records.\\
+m & relinkable modules.\\
 \hline
 \end{tabular}
 \vspace{2mm}
@@ -1018,7 +1211,16 @@ Compiling for Windows with MS Visual Studio: Use the project file forw.vcxproj.
 
 Compiling with Gnu C++ compiler: Use the makefile.
 
-Other compilers: Make a project containing all the .cpp files. Compile for console mode, preferably 64 bits. The platform must have little endian memory organization.
+Other compilers: Make a project containing all the .cpp files. Compile for console mode, preferably 64 bits. The platform must have little-endian memory organization.
+
+\section{Code examples} \label{codeExamples}
+A collection of code examples are provided in the examples folder. You can try an example by assembling, linking, and emulating it as follows:
+\vspace{2mm}
+
+forw -ass hello.as \\
+forw -link hello.ex hello.ob libc.li \\
+forw -emu hello.ex
+\vspace{2mm}
 
 
 \end{document}

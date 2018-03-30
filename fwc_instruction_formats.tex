@@ -283,7 +283,10 @@ Instructions have several different formats, defined by the IL and mode bits, ac
 
 Instructions can have up to three source operands (input), one destination operand (output), and a mask. The destination operand always uses the RD field, except where the destination is a memory operand. The source operands are using the available operand fields according to the following algorithm: The required source operands are assigned to the available
 operand fields defined by table \ref{table:instructionFormats} in the following order of 
-priority: immediate data field, memory operand, RT, RS, RU, RD - assigning the last source operands first. Thus, RD is used for both destination and the first source operand only if there are no other vacant register fields. Any remaining register field is used as fallback value if there is a mask. Otherwise, the fallback value will be the first source operand.
+priority: immediate data field, memory operand, RT, RS, RU, RD - assigning the last source operands first. Thus, RD is used for both destination and the first source operand only if there are no other vacant register fields.
+\vspace{2mm}
+
+A fallback value is needed if there is a mask. The fallback is determined as follows. If there are three source operands then the first source register is used as fallback register. If there are less than three source operands then the first vacant register field in the sequence RU, RS is used for the fallback register. If there is no vacant register field then the first source register is used as fallback register. If the fallback register is r31 or v31 then the fallback value is zero, otherwise it is the value of the fallback register.
 \vspace{2mm}
 
 This principle can be illustrated with the following example. Format 2.2.1 uses RT for pointer in a memory operand and RS for vector length, leaving only RU and RD for register operands. An instruction with one input operand will have the memory operand as input and RU as fallback. An instruction with two input operands will have RU and memory as the operands and RU as fallback. An instruction with three input operands will have RD, RU, and memory as the operands and RD as fallback.
@@ -401,7 +404,7 @@ RD = f2(RS, RT). RD = f3(RU, RS, RT).\\
 
 \hline
 2.0.7 & 2 & 0.7  & E2 & Three general purpose registers and a 16-bit integer with left shift.\newline 
-RD = f2(RS, IM2). RD = f3(RS, RT, IM2). 
+RD = f2(RT, IM2). RD = f3(RS, RT, IM2). 
 IM2 (signed) is shifted left by the 6-bit unsigned value of IM3, or whithout shift if IM3 is used for other purposes. \\
 
 \hline
@@ -572,7 +575,9 @@ Formats 2.0.3, 2.2.3, 3.0.3, and 3.2.3 have a 16-bit or 32-bit limit on the inde
 The vector length of memory operands is specified by r0-r30 in the RS field for formats 0.4, 0.5, 2.2.0, 2.2.1, 2.2.2, 2.4, 3.2.0, 3.2.1. A value of 31 in the RS field indicates a scalar with the same length as the operand size (OS).
 \vspace{2mm}
 
-The value of the vector length register gives the vector length in bytes (not the number of elements). If the value is bigger than the maximum vector length then the maximum vector length is used. The value may be zero. The behavior for negative values is implementation dependent: either interpret the value as unsigned or use the absolute value.
+The value of the vector length register gives the vector length in bytes (not the number of elements). If the value is bigger than the maximum vector length then the maximum vector length is used. 
+If the vector length is zero or negative then the resulting vector will be empty and nothing will
+be read or written.
 \vspace{2mm}
 
 The vector length must be a multiple of the operand size OS, as indicated by the OT field. If the vector length is not a multiple of the operand size then the behavior of the partial vector element is implementation dependent.
@@ -656,9 +661,9 @@ The bits in the mask register are coded as follows.
  \hline
 0 & Predicate or mask. The operation is executed only if this bit is one, as explained above.\\
 \hline
-6 & Generate a trap if unsigned integer overflow. \\
+6 & Generate a trap if unsigned integer overflow. This feature is optional.\\
 \hline
-7 & Generate a trap if signed integer overflow. \\
+7 & Generate a trap if signed integer overflow. This feature is optional.\\
 \hline
 10-15 & Instruction-specific option bits.\\
 
@@ -667,22 +672,23 @@ The bits in the mask register are coded as follows.
 00 = nearest or even \newline
 01 = down \newline
 10 = up \newline
-11 = towards zero \\
+11 = towards zero \newline
+This feature is optional.\\
 \hline
-20 & Support subnormal numbers. Subnormal floating point numbers are treated as zero or flushed to zero when this bit is 0 (this is generally faster). \\
+20 & Support subnormal numbers. Subnormal floating point numbers are treated as zero or flushed to zero when this bit is 0 (this is generally faster).  This feature is optional.\\
 \hline
-21 & Better NAN propagation. If this bit is zero then the IEEE Standard 754-2008 (or later) is followed strictly for NAN values. A value of one in bit 21 improves NAN propagation and the use of NANs for tracing floating point errors. The details are described on page \pageref{nanPropagation}. \\
+21 - 22 & Reserved for future options defining the contents of NAN payloads. Optional.\\
 \hline
 23 & Constant execution time. This bit makes the instruction take the same number of clock cycles
 regardless of the values of mask and operands. Most or all instructions have constant execution time anyway, but the guarantee provided by this bit is useful for cryptographic applications. This feature is optional. \\
 \hline
-26 & Generate a trap if floating point overflow or division by zero.  \\
+26 & Generate a trap if floating point overflow or division by zero. This feature is optional. \\
 \hline
-27 & Generate a trap if floating point invalid operation. \\
+27 & Generate a trap if floating point invalid operation. This feature is optional.\\
 \hline
-28 & Generate a trap if floating point underflow and precision loss. \\
+28 & Generate a trap if floating point underflow and precision loss. This feature is optional.\\
 \hline
-29 & Generate a trap if NAN inputs to compare instructions and floating point to integer conversion instructions.\\
+29 & Generate a trap if NAN inputs to compare instructions and floating point to integer conversion instructions. This feature is optional.\\
 \hline
 \end{longtable}
 
@@ -744,122 +750,14 @@ The versions with template C and C2 have no OT field. The operand type is 64-bit
 The OPJ field defines the operation and jump condition. This field has 6 bits in the single size version and 8 bits in the longer versions. The two extra bits in the longer versions are used as follows. Bit 6 is reserved for future extensions, and must be zero. Bit 7 may be used for indicating loop behavior as a hint for choosing the optimal branch prediction algorithm.
 \vspace{2mm}
 
-The lower 6 bits of the OPJ field contains the following codes.
-
-\begin{longtable}
-{|p{10mm}|p{14mm}|p{55mm}|p{50mm}|}
-%\nopagebreak
-\caption{Condition codes for control transfer instructions}
-\label{table:controlTransferInstructions}
-\endfirsthead
-\endhead
-\hline
-OPJ & bit 0 \newline of OPJ & Instruction & Comment \\
-\hline
-0-7 & part of offset & Unconditional jump with 24-bit offset (jump) & Format 1.5 D. Bit 0-2 of OPJ are part of offset \\
-\hline
-8-15 & part of offset & Unconditional call with 24-bit offset (call) & Format 1.5 D.  Bit 0-2 of OPJ are part of offset \\
-\hline
-0-1 & invert & sub/jump\_zero, \newline sub/jump\_nzero & Format 1.4 and 2.5.0. \newline No floating point. \\
-\hline
-2-3 & invert & sub/jump\_neg, \newline sub/jump\_nneg & Format 1.4 and 2.5.0. \newline No floating point. \\
-\hline
-4-5 & invert & sub/jump\_pos, \newline sub/jump\_npos & Format 1.4 and 2.5.0. \newline 
-    No floating point. \\
-\hline
-6-7 & invert & sub/jump\_overfl, \newline sub/jump\_noverfl & Format 1.4 and 2.5.0. \newline No floating point. \\
-\hline
-8-9 & invert & sub/jump\_borrow, \newline sub/jump\_nborrow & Format 1.4 and 2.5.0. \newline No floating point. \\
-\hline
-10-11 & invert & shift\_left/jump\_zero \newline shift\_left/jump\_nzero & Not format 1.5 \\
-\hline
-12-13 & invert & shift\_right\_u/jump\_zero \newline shift\_right\_u/jump\_nzero & Not format 1.5 \\
-\hline
-14-15 & invert & rotate/jump\_carry, \newline rotate/jump\_ncarry & Not format 1.5 \\
-\hline
-
-16-17 & invert & add/jump\_zero, \newline add/jump\_nzero & No floating point \\
-\hline
-18-19 & invert & add/jump\_neg, \newline add/jump\_nneg & No floating point \\
-\hline
-20-21 & invert & add/jump\_pos, \newline add/jump\_npos & No floating point \\
-\hline
-22-23 & invert & add/jump\_overfl, \newline add/jump\_noverfl & No floating point  \\
-\hline
-24-25 & invert & add/jump\_carry, \newline add/jump\_ncarry & No floating point \\
-\hline
-24-25 & invert & compare/jump\_nfinite, \newline compare/jump\_finite & Floating point  \\
-\hline
-26-27 & invert & and/jump\_zero, \newline and/jump\_nzero &  \\
-\hline
-28-29 & invert & or/jump\_zero, \newline or/jump\_nzero &  \\
-\hline
-30-31 & invert & xor/jump\_zero, \newline xor/jump\_nzero &  \\
-\hline
-32-33 & invert & compare/jump\_equal, \newline compare/jump\_nequal & \\
-\hline
-34-35 & invert & compare/jump\_sbelow, \newline compare/jump\_saboveeq &  \\
-\hline
-36-37 & invert & compare/jump\_sabove, \newline compare/jump\_sbeloweq &  \\
-\hline
-38-39 & invert & compare/jump\_ubelow, \newline compare/jump\_uaboveeq & No floating point \\
-\hline
-38-39 & invert & compare/jump\_absbelow, \newline compare/jump\_absaboveeq &  Floating point \\
-\hline
-40-41 & invert & compare/jump\_uabove, \newline compare/jump\_ubeloweq & No floating point \\
-\hline
-40-41 & invert & compare/jump\_absabove, \newline compare/jump\_absbeloweq & Floating point  \\
-\hline
-42-43 & invert & test\_bit/jump\_zero, \newline test\_bit/jump\_nzero &  \\
-\hline
-44-45 & invert & test/jump\_all1, \newline test/jump\_nall1 &  \\
-\hline
-46-49 & invert & Reserved for future use. & \\
-\hline
-
-50-51 & invert & increment\_compare/jump\_above, \newline increment\_compare/jump\_beloweq & No floating point \\
-\hline
-52-53 & invert & sub\_maxlen/jump\_pos, \newline sub\_maxlen/jump\_npos & No floating point \\
-\hline
-54 & 0 & sub/jump & No floating point \\
-\hline
-55 & 1 & add/jump & No floating point \\
-\hline
-56-57 &  & Reserved for future use. & \\
-\hline
-
-58-59 & 0 jump \newline 1 call & Indirect jump or call with memory operand. & Format 1.4 and 2.5.0. \\
-\hline
-58-59 & 0 jump \newline 1 call & Unconditional direct jump or call & Format 1.5 C, 2.5.2, and
-3.1.0. \\
-\hline
-60-61 & 0 jump \newline 1 call & Multiway jump or call with table of relative addresses & 
-Format 1.4 A and 2.5.0 \\
-\hline
-60-61 & 0 jump \newline 1 call & Indirect jump or call to value of register & Format 1.5 C \\
-\hline
-62 & 0 & return  & Format 1.4 B  \\
-\hline
-62 & 0 & sys\_return & Format 1.5 C  \\
-\hline
-63 & 1 & sys\_call. ID in register & Format 1.4 A \\
-\hline
-63 & 1 & sys\_call. ID in constants & Format 2.5.1, 2.5.4 and 3.1.0. \\
-\hline
-63 & 1 & trap or filler & Format 1.5 C \\
-\hline
-63 & 1 & Conditional traps & Format 2.5.3. \\
-\hline
-\end{longtable}
-
 The combined ALU and conditional jump instructions can be coded in the formats 1.4, 1.5 C, 2.5.0, 2.5.1, 2.5.2, 2.5.3, and 3.1.0, except subtraction which cannot be coded in format 1.5 C. Subtraction with an immediate constant can be replaced by addition with the negative constant. The code space that would have been used by subtraction in format 1.5 C is instead used for coding direct jump and call instructions with a 24-bit offset using format 1.5 D, where the lower three bits of OP1 are used as part of the 24-bit offset.
 \vspace{2mm}
 
-Unconditional and indirect jumps and calls use the formats indicated above, where unused fields must be zero. Bit 0 of the OPJ field is zero for jump instructions and one for call instructions.
+Unconditional and indirect jumps and calls use the formats indicated above, where unused fields must be zero. Bit 0 of the OPJ field is zero for unconditional jump instructions and one for call instructions.
 \vspace{2mm}
 
-See page \pageref{descriptionOfControlTransferInstructions} for 
-detailed descriptions of control transfer instructions.
+See page \pageref{table:controlTransferInstructions} for a list of OPJ condition codes.
+\vspace{2mm}
 
 
 \section{Assignment of opcodes}

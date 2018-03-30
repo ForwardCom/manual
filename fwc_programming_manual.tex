@@ -6,9 +6,151 @@
 \lstset{language=C}            % formatting for code listing
 \lstset{basicstyle=\ttfamily,breaklines=true}
 
-\chapter{Code examples}\label{chap:codeExamples}
+\chapter{Programming manual}\label{chap:programmingManual}
+This manual is based primarily on the assembly language syntax described in chapter \ref{chap:assembler}.
+Instructions for other programming languages should be described in the manuals for the respective compilers.
+\vspace{2mm}
 
-This chapter contains examples of assembly code to illustrate the features of the ForwardCom instruction set.
+\subsection{Code and data sections} \label{codeDataSections}
+All code must be placed in executable sections. Data can be placed in read-only sections or
+writeable sections. Read-only sections are used for constants and tables. Function pointers
+and jump tables should preferably be placed in read-only sections for security reasons.
+Variables can be placed in writeable data sections, on the stack, or in registers.
+\vspace{2mm}
+
+Numeric constants can be included in the instruction codes. This will reduce the pressure on the data cache.
+\vspace{2mm}
+
+\subsection{Register use} \label{registerUse}
+There are 32 general purpose registers r0 - r31, and 32 vector registers of variable length v0 - v31.
+r31 is the stack pointer. r0 - r27 can be used as general pointers. r28 - r30 can be used as pointers
+with no offset or with a scaled offset of no more than 8 bits. r0 - r30 can be used as array indexes.
+r0 - r6 and v0 - v6 can be used as masks. r0 - r30 and v0 - v30 can be used as fallback values.
+
+\vspace{2mm}
+The use of registers in function calls must obey the function calling conventions described in chapter \ref{chap:functionCallingConventions} and the regster usage conventions in chapter
+\ref{chap:registerUsageConvention}.
+\vspace{2mm}
+
+\subsection{Addressing of data} \label{AddressingOfData}
+All addresses of code and data should be relative. Pointer tables should use addresses 
+relative to a reference point such as \_\_ip\_base, \_\_datap\_base, the beginning of the table,
+or a reference point near the targets. The relative addresses may be scaled by a power of 2. 
+64-bit absolute addresses should be avoided.
+\vspace{2mm}
+
+\subsection{Special address symbols} \label{SpecialAddressSymbols}
+The following symbol names are defined by the linker:
+
+\begin{longtable} {|p{28mm}|p{12mm}|p{95mm}|}
+\caption{SpecialSymbols} 
+\label{table:specialSymbols}\\
+\endfirsthead
+\endhead
+\hline
+\bfseries Name & \bfseries Base & \bfseries Meaning  \\
+\hline
+\_\_ip\_base & ip & The linker will place this symbol where read-only data ends and code begins. 
+It is possible to explicitly place this symbol elsewhere in an ip-addressable section.\\
+\hline
+\_\_datap\_base & datap & The linker will place this symbol where writeable data ends and uninitialized data begins. 
+It is possible to explicitly place this symbol elsewhere in a datap-addressable section.\\
+\hline
+\_\_threadp\_base & threadp & The linker will place this symbol at the beginning of thread-local data. 
+It is possible to explicitly place this symbol elsewhere in a threadp-addressable section.\\
+\hline
+\_\_program\_entry & ip & This symbol must be specified. It marks the first instructions to execute. 
+This must be a startup code that makes any necessary initialization and then calls \_main.
+The library forwc.li includes a suitable startup code that will be included automatically
+if \_\_program\_entry is not defined elsewhere.\\
+\hline
+\_\_event\_table & ip & Table of event handler records.\\
+\hline
+\_\_event\_table\_num & constant & Number of event handler records.\\
+\hline
+\end{longtable}
+
+\vspace{2mm}
+
+\subsection{Event handlers} \label{EventHandlers}
+You can specify event handlers for all the events defined in the file elf\_forwardcom.h.
+An event handler consists of a function to be called when the event occurs, and a record
+defining the event. The event record must contain the following fields:
+
+\begin{longtable} {|p{20mm}|p{15mm}|p{100mm}|}
+\caption{Event record structure} 
+\label{table:EventRecordStructure}\\
+\endfirsthead
+\endhead
+\hline
+\bfseries Name & \bfseries Size & \bfseries Meaning  \\
+\hline
+functionPtr & 32 bit & Pointer to the event function relative to \_\_ip\_base, scaled by 4.\\
+\hline
+priority    & 32 bit & If there are more than one handler for the same event then the ones with
+the highest value of priority will be called first. 
+Normal priority = 0x1000.\\
+\hline
+key         & 32 bit & Subdivision of event. This can define a hotkey, menu item, or icon id for user command events.\\
+\hline
+event       & 32 bit & Event ID. Possible values are defined in the file elf\_forwardcom.h.\\
+\hline
+\end{longtable}
+\vspace{2mm}
+
+The linker will make a table of all the event handler records, sorted by event, key, and priority.
+\vspace{2mm}
+
+The event function uses register r0 as status. The function should 
+return a value of 1 in r0 in the normal case. The function can return 0 in r0 to bypass further 
+event handlers with lower priority.
+\vspace{2mm}
+
+r1 can be used for further parameters. r2 can point to a zero-terminated string.
+\vspace{2mm}
+
+The following example shows an event handler for the event EVT\_CONSTRUCT (= 1), initializing some data.
+
+\begin{example}
+\label{exampleEventHandler}
+\end{example} % frame disappears if I put this after end lstlisting
+\begin{lstlisting}[frame=single]
+
+// section for event handler records only
+events section read ip event_hand
+int32 (init_func - __ip_base) / 4, 0x1000, 0, 1
+events end
+
+// data section
+data section read write datap
+somedata: int64 0
+data end
+
+// code section
+code section execute ip
+init_func function
+int64 r1 = 5
+int64 [somedata] = r1 // initialize somedata to 5
+int64 r0 = 1          // return status = 1
+return
+init_func end
+
+\end{lstlisting}
+\vspace{4mm}
+
+You can create an event by calling the function \_call\_event in the library forwc.li.
+This function will search the table of event records for an event with the specified 
+event and key number and call all corresponding event handler functions.
+\vspace{2mm}
+
+The table of events cannot be changed while the application is running. 
+A module or library that is added by dynamic linking while the application is running
+cannot add new event handler records.
+\vspace{2mm}
+
+\section{Code examples}\label{chap:codeExamples}
+
+This section contains examples of assembly code to illustrate the features of the ForwardCom instruction set.
 The syntax for assembly language is described in chapter \ref{chap:assembler}.
 The function calling conventions are described in chapter \ref{chap:functionCallingConventions}.
 \vspace{2mm}
@@ -354,58 +496,6 @@ _memcpy end
 \vspace{4mm}
 
 
-\subsection{String length} \label{strlen}
-The standard strlen function finds the length of a zero-terminated string.
-\vspace{2mm}
-
-The ForwardCom standard specifies extra space at the end of user data to make it possible to read beyond the end of a data object of unknown size (see page \pageref{extraSpaceAtEndOfData}). This is convenient here because we can read the string as a full vector before we know the length.
-
-\begin{example}
-\label{exampleStrlen}
-\end{example}
-\begin{lstlisting}[frame=single]
-// C function:
-// size_t strlen (const char * str);
-
-_strlen function public
-// r0 = str
-// start at nearest preceding 16-bytes boundary for efficiency
-int64 r1 = r0 & -16          // 16-bytes boundary
-int64 r2 = r0 - r1           // length of unused part
-int8  v0 = broadcast_max(0)  // vector of zeroes to compare with
-int64 r3 = get_len(v0)       // maximum length
-int64 v1 = mask_length(r2, v0, 0), options=1 // mask off unused part
-int8  v2 = [r1, length = r3] // read vector
-int8  v3 = v1 ? (v0 == v2) : v0 // compare with 0, masked
-int8  v4 = bool_reduce(r3, v3)  // horizontal OR is in bit 1
-// loop as long as no zero is found
-// (vector register can only be tested as float)
-while (float !(v4 & 2)) {
-   int64 r1 += r3               // next block of maximum length
-   int8  v2 = [r1, length = r3] // read vector
-   int8  v3 = (v0 == v2)        // compare with 0, no mask now
-   int8  v4 = bool_reduce(r3, v3)
-}
-// now v3 contains a bit index to the end of the string
-int64 r2 = vec2gp(v3)        // move to general purpose register
-while (int64 r2 == 0) {
-   // nothing in first 64 bits of v3. get next 64 bits
-   int64 r2 = 8
-   int64 r1 += r2
-   int8 v3 = shift_reduce(r2, v3)
-   int64 r2 = vec2gp(v3)
-}
-// get index to first bit
-int64 r2 = bitscan_f(r2)
-// add difference between current block start and string start
-int64 r0 = r2 + r1 - r0
-// the string length is returned unchanged in r0
-return
-_strlen end   
-\end{lstlisting}
-\vspace{4mm}
-
-
 \subsection{High precision arithmetic} \label{highPrecisionArithmetic}
 Function libraries for high precision arithmetic typically use a long sequence of add-with-carry instructions for adding integers with a very large number of bits. A more efficient method for big number calculation is to use vector addition and a carry-look-ahead method. The following algorithm calculates A + B, where A and B are big integers represented as two vectors of n$\cdot$64 bits each, where n \textless{} 64.
 \vspace{2mm}
@@ -506,7 +596,7 @@ in several ways:
 \item Optimize data caching by embedding immediate constants in instructions.
 \item Use register variables instead of saving variables in memory.
 \item Use registers as function parameters.
-\item Avoid spilling registers to memory by using the information about register use in object files, as described on page \pageref{registerUsageConvention}.
+\item Avoid spilling registers to memory by using the information about register use in object files, as described on page \pageref{chap:registerUsageConvention}.
 \end{itemize}
 
 \subsubsection{Use general purpose registers for control code}

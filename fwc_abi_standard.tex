@@ -51,7 +51,8 @@ The compiler will not use variable-length vectors. The compiler can call a vecto
 The compiler can call vector functions, but not generate such functions. The compiler can vectorize a loop automatically and call a vector library function from such a loop. 
 
 \subsubsection{Level 3}
-Full support. The compiler supports data types for variable-length vectors. These data types can be used for variables, function parameters, and function returns. Variable-length vectors can not be included in structures, classes, or unions because such composite types must have known sizes. Support for variable-length vectors in static and global variables is optional.
+Full support. The compiler supports data types for variable-length vectors. These data types can be used for variables, function parameters, and function returns. Variable-length vectors can not be included in structures, classes, or unions because such composite types must have known sizes. 
+Variable-length vectors cannot be stored in static and global variables.
 General operations on variable-length vectors can be specified explicitly, including options for applying boolean vector masks and fallback values.
 
 \subsubsection{Other compiler features}
@@ -148,7 +149,7 @@ It is much more efficient to transfer parameters in registers than on the stack.
 Nevertheless, we must have precise rules for covering an unlimited number of parameters if the programming language has no limit to the number of parameters. We are putting any extra parameters in a list rather than on the stack as most other systems do. The main reason for this is to make the software independent of whether there is a separate call stack or the same stack is used for return addresses and local variables. The addresses of parameters on the stack would depend on whether there is a return address on the same stack. The list method has further advantages. There will be no disagreement over the order of parameters on the stack and whether the stack should be cleaned up by the caller or the callee. The list can be reused by the caller for multiple calls if the parameters are constant, and the called function can reuse a variable argument list by forwarding it to another function. The function is guaranteed to return properly without messing up the stack even if caller and callee disagree on the number of parameters. Tail calls are possible in all cases regardless of the number and types of parameters. 
 \vspace{2mm}
 
-\section{Register usage convention} \label{registerUsageConvention}
+\section{Register usage convention} \label{chap:registerUsageConvention}
 Most systems have rules that certain registers have callee-save status. This means that a function must save these registers and restore them before it returns, if they are used. The caller can then rely on these registers being unchanged after the function call.
 \vspace{2mm}
 

@@ -81,17 +81,36 @@ Tail calls can be implemented efficiently with a simple jump instruction regardl
 Exceptions for floating point errors are disabled by default, but can be enabled with bits 26-29 in the numeric control register or a mask register. Enabled exceptions are caught as traps (synchronous interrupts).
 \vspace{2mm}
 
-It is a problem that an exception caused by a single element in a vector will interrupt the processing of the whole vector. The behavior of a program using floating point vectors will depend on the vector length in case of traps caused by a single vector element. We can rely on the generation and propagation of NAN and INF values instead of traps if we want consistent results on different processors with different vector lengths. 
+It is a problem that an exception caused by a single element in a vector will interrupt the processing of the whole vector. The behavior of a program using floating point vectors will depend on the vector length in the case of multiple traps caused by a single vector element. We can rely on the generation and propagation of NAN and INF values instead of traps if we want consistent results on different processors with different vector lengths. 
 \vspace{2mm}
 
+\subsection{Propagation of NANs}
 \label{nanPropagation}
-NAN values will be propagated through the sequence of floating point calculations. A NAN can contain a bit pattern of diagnostic information called the payload, and this bit pattern is propagated to the result. A problem arises when two different NANs are combined, for example NAN1 + NAN2. The IEEE standard (754-2008) specifies that only one of the two NAN operands is propagated to the result. This violates the fundamental principle that addition is commutative. The result can be inconsistent when a compiler swaps the two operands. Another problem with the IEEE standard is that NAN values are not propagated through the max and min instructions according to this standard.
+If the result of a floating point calculation cannot be represented as a real number, it will be coded as $\pm$ infinity or NAN (Not a number). Overflow and division by zero gives infinity.
+Operations that generate NAN include the following:\\
+0/0, $\infty$/$\infty$, 0*$\infty$, $\infty$-$\infty$, rem(1,0), rem($\infty$,1), sqrt(-1), log(-1), pow(-1, 0.1), asin(2).
 \vspace{2mm}
 
-Here, it is proposed to deviate from this unfortunate standard and output the OR combination of the input NAN payloads when multiple NAN operands are combined. This will make the propagation of NANs more useful and consistent. Different bits in the NAN payload can be used for indicating different error conditions. If multiple different error conditions have arisen in a sequence of calculations then all these conditions can be traced in the final result. This better propagation of NAN values is enabled by setting bit 21 in the numeric control register or in a mask register.
+These values are propagated through a series of calculations because any floating point calculation with a NAN input will produce a NAN output. This makes it possible to detect the error in the final result after a series of calculations. This method of detecting floating point errors is particularly useful for vector instructions because the result is independent of the vector length.
 \vspace{2mm}
 
-The implementation will use only one bit in the NAN payload for each error condition. A quiet NAN has bit number -1 of the significand set, while the remaining bits are available for any payload information. The ForwardCom processor puts diagnostic information in the payload if better NAN propagation is enabled by bit 21 in the numeric control register or a mask register. Bit number -2 in the significand indicates invalid arithmetic operations such as 0/0, $0\cdot\infty$, $\infty-\infty$, etc. Bit number -3 indicates a square root of a negative number, and other complex number results. The remaining payload bits are available for other purposes such as function libraries.
+A NAN can contain a bit pattern of diagnostic information called the payload, and this bit pattern is propagated to the result. A problem arises when two different NANs are combined, for example NAN1 + NAN2. The IEEE floating point standard (754-2008) has no definite rule for the result of the combination of two NANs, but it recommends that one of the two NAN operands is propagated to the result. Most microprocessors just propagate the first operand in this case. This is unfortunate because the result is not predictable when the compiler may code a+b as b+a. ForwardCom solves this problem by propagating the NAN value with the highest payload. Therefore, a+b and b+a will always give the same result.
+\vspace{2mm}
+
+Another problem with the 2008 standard is that NAN values are not propagated through the max and min instructions according to this standard. This problem is solved in the forthcoming revision of the IEEE standard. ForwardCom will use the revised standard so that max and min instructions always produce a NAN output when at least one of the inputs is NAN.
+\vspace{2mm}
+
+Certain instructions have floating point inputs but no floating point output. 
+This includes float2int, compare, and compare-and-jump instructions.
+A trap is generated when these instructions encounter a NAN if bit 29 in the mask or NUMCONTR is set.
+\vspace{2mm}
+
+Infinity will also propagate to the end result in many cases. 
+Infinity will be converted to NAN in cases like $\infty$/$\infty$, 0*$\infty$, and $\infty$-$\infty$.
+Infinity will be converted to zero in situations like $1/\infty$. Infinity will not be propagated in situations like min(1,$\infty$).
+\vspace{2mm}
+
+The contents of the NAN payload is not defined yet. It may contain information about the type and place of the fault. Function libraries may put information about an error in a NAN payload. Bit number 21 and 22 in instruction masks and NUMCONTR are reserved for different options for the information contained in NAN payloads. This may be subject to future experimentation.
 \vspace{2mm}
 
 Other methods for generating error messages in function libraries are discussed on page \pageref{errorMessageHandling}.
@@ -146,7 +165,7 @@ Additional parallelism can be obtained by running multiple threads in each their
 Communication and synchronization between threads can be a performance problem. The system should have efficient means for these purposes, including speculative synchronization.
 \vspace{2mm}
 
-It is probably not worthwhile to allow multiple threads to share the same CPU core and level-1 cache simultaneously (this is what Intel calls hyper-threading) because this could allow a low priority thread to steal resources from a high priority thread, and it is difficult for the operating system to determine which threads might be competing for the same execution resources if they are run in the same CPU core.
+It is probably not worthwhile to allow multiple threads to share the same CPU core and level-1 cache simultaneously (this is what Intel calls hyper-threading) because this could allow a low priority thread to steal resources from a high priority thread, and it is difficult for the operating system to determine which threads might be competing for the same execution resources if they are run in the same CPU core. Simultaneous multithreading may also involve security problems by making the design vulnerable to side-channel attacks.
 \vspace{2mm}
 
 \section{Security features} \label{securityFeatures}
@@ -160,7 +179,10 @@ Security is included in the fundamental design of both hardware and software. Th
 \item Each thread has its own protected memory space, except where compatibility with legacy 
 software requires a shared memory space for all threads in an application.
 
-\item Device drivers and system functions have carefully controlled access rights. These functions do not have general access to application memory, but only to a specific block of memory that an application may share with a system function when calling it. A device driver has only access to a specific range of input/output ports and system registers as specified in the executable file header and controlled by the system core.
+\item Device drivers and system functions have limited memory access. 
+Buffer overrun errors can be effectively prevented by controlling which memory area a device driver has access to, since all program input goes through device drivers. A calling program can limit the memory access of a device driver to only a specific input buffer.
+
+\item Device drivers and system functions have carefully controlled access rights to input/output ports and other system resources. These access rights are defined in the executable file header of the device driver and controlled by the system core.
 
 \item A fault in a device driver should not generate a ``blue screen of death'', but generate an error message and close the application that called it and free its resources.
 
@@ -168,7 +190,7 @@ software requires a shared memory space for all threads in an application.
 
 \item Array bounds checking is simple and efficient, using an addressing mode with built-in bounds checking or a conditional trap.
 
-\item Various optional methods for checking integer overflow.
+\item There are various optional methods for checking integer overflow.
 
 \item There is no ``undefined'' behavior. There is always a limited set of permissible responses to an error condition.
 \end{itemize}
@@ -177,7 +199,7 @@ software requires a shared memory space for all threads in an application.
 Several methods for improving security are listed below. These methods may be useful in ForwardCom applications and operating systems where security is important.
 
 \subsubsection{Protect against buffer overflow}
-Input buffers must be protected against overflow. If a software-based protection is not sufficient then you may allocate an isolated block of memory for the input buffer. See page \pageref{isolatedMemoryBlocks}.
+Input buffers must be protected against overflow. This can be done efficiently by limiting the memory access of the device driver that handles the input. Furthermore, it is possible to allocate an isolated block of memory for a data buffer. See page \pageref{isolatedMemoryBlocks}.
 
 \subsubsection{Protect arrays} Array bounds should be checked.
 
@@ -199,7 +221,7 @@ Function pointers and other pointers to code are vulnerable to control flow hija
 
 \item[Callback function pointers.] If a function receives a pointer to a callback function as parameter, then keep this pointer in a register rather than saving it to memory.
 
-\item[State machines.] If a state machine or similar algorithm is implemented with function pointers then place these function pointers in a constant array, use a state variable as index into this array and check the index for overflow. The compiler should have support for defining an array of relative function pointers in a read-only section and access them with the call table instruction.
+\item[State machines.] If a state machine or similar algorithm is implemented with function pointers then place these function pointers in a read-only array, use a state variable as index into this array and check the index for overflow. The compiler should have support for defining an array of relative function pointers in a read-only section and access them with the call table instruction.
 
 \item[Other function pointers.] Most uses of function pointers can be covered by the methods described above. Other uses of function pointers should be avoided in high security applications, or the pointers should be placed in protected memory areas or with unpredictable addresses. (See
 \href{http://dslab.epfl.ch/proj/cpi/}{Code-Pointer Integrity link}).
@@ -213,7 +235,7 @@ The executable file header of an application program should include information 
 Many operating systems are giving very extensive rights to device drivers. Rather than having a bureaucratic centralized system for approval of device drivers, we should have a more careful control of the access rights of each device driver. The system call instruction in ForwardCom gives a device driver access to only a limited area of application memory (see page \pageref{systemCallInstruction}). The executable file header of a device driver should have information about which ports and system registers the device driver has access to. The user should have a simple way of checking if these access rights are acceptable.
 
 \subsubsection{Standardized installation procedure} 
-Malware protection should be an integral part of the operating system, not a third-party add on with possible compatibility problems. The operating system should provide a standardized way of installing and uninstalling applications. The system should refuse to run any program, script or driver that has not been installed through this procedure. This will make it possible for the user to review the access requirements of all installed programs and to remove any malware or other unwanted software through the normal uninstallation procedure.
+Malware protection should be an integral part of the operating system, not a third-party add on with possible compatibility problems and performance problems. The operating system should provide a standardized way of installing and uninstalling applications. The system should refuse to run any program, script or driver that has not been installed through this procedure. This will make it possible for the user to review the access requirements of all installed programs and to remove any malware or other unwanted software through the normal uninstallation procedure.
 
 
 \end{document}
