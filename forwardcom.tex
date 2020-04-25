@@ -1,5 +1,7 @@
 \documentclass[11pt,a4paper,oneside,openright]{report}
 
+% compile with XeLatex or LuaLatex, not PDFLatex
+
 \usepackage[bindingoffset=5mm,left=20mm,right=20mm,top=20mm,bottom=20mm,footskip=10mm]{geometry}
 \usepackage[utf8x]{inputenc}
 \usepackage{hyperref}
@@ -12,9 +14,16 @@
 \usepackage{cmap} % avoid fi ligatures in pdf file
 \usepackage{amsthm} % example numbering
 \usepackage{color}
+\usepackage[T1]{fontenc} % fix problem with underscore not searchable
+\usepackage{fontspec}
+\defaultfontfeatures{Mapping=tex-text}
+%\setmainfont{Verdana}
+\setmainfont{Arial}
+\setsansfont{Arial}
+\renewcommand{\familydefault}{\sfdefault}
+
 
 % modify style
-\renewcommand{\familydefault}{\sfdefault}
 \newtheorem{example}{Example}[chapter]  % example numbering
 \lstset{language=C}                     % formatting for code listing
 \lstset{basicstyle=\ttfamily,breaklines=true}

@@ -3,7 +3,7 @@
 \begin{document}
 \RaggedRight
 
-\chapter{Instruction lists}
+\chapter{Instruction lists}\label{chap:InstructionLists}
 The ForwardCom instructions are listed in a comma-separated file instruction\_list.csv. This file is intended for use by assemblers, disassemblers, debuggers and emulators. The list is preliminary and subject to possible changes. Please remember to keep the lists in this document and the list in the instruction\_list.cvs file synchronized.
 \vspace{2mm}
 
@@ -160,10 +160,10 @@ For example 0x223 means format 2.2.3.
 \multirow{12}{*}{\parbox[t]{18mm}{4. Jump instruction}} 
   &  \multicolumn{2}{|l|}{
      Hexadecimal number composed of one bit for each format supported:} \\
-  &  0x001 & Format 1.4.0: Two registers, 8-bit address. \\
-  &  0x002 & Format 1.4.1: Memory operand with 8-bit offset. \\
-  &  0x004 & Format 1.4.2: Reg. and memory w. scaled index. \\
-  &  0x008 & Format 1.4.3: Three registers. \\
+  &  0x001 & Format 1.4.0 B: Two registers, 8-bit address. \\
+  &  0x002 & Format 1.4.1 B: Memory operand with 8-bit offset. \\
+  &  0x004 & Format 1.4.2 A: Reg. and memory w. scaled index. \\
+  &  0x008 & Format 1.4.3 A: Three registers. \\
   
   &  0x010 & Format 1.5.0 D: No register, 24-bit address. \\  
   &  0x020 & Format 1.5.1 C: One register, 8-bit immediate, 8-bit address. \\
@@ -260,7 +260,7 @@ Jump instructions are listed on page \pageref{table:controlTransferInstructions}
 The following list covers general instructions that can be coded in most or all of the formats
 assigned to multi-format instructions.
 
-\begin{longtable} {|p{18mm}|p{9mm}|p{9mm}|p{76mm}|}
+\begin{longtable} {|p{25mm}|p{12mm}|p{12mm}|p{100mm}|}
 \caption{
 List of multi-format instructions} 
 \label{table:ListOfMultiFormatInstructions} \\
@@ -333,7 +333,7 @@ Tiny instructions have an operand size of 64 bits unless otherwise noted. RD is 
 
 It is not possible to jump to the second instruction in a tiny pair because instruction addresses must be divisible by four. If an interrupt or trap occurs in a tiny instruction then the interrupt handler must remember which of the two tiny instructions in the pair was interrupted.
 
-\begin{longtable} {|p{20mm}|p{8mm}|p{80mm}|}
+\begin{longtable} {|p{20mm}|p{10mm}|p{100mm}|}
 \caption{List of tiny instructions with general purpose registers} 
 \label{table:tinyInstructionsGP} \\
 \endfirsthead
@@ -358,7 +358,7 @@ store         & 15 & Write RD to memory operand with pointer RS (RS = r0-r14, r3
 \hline
 \end{longtable}
 
-\begin{longtable} {|p{20mm}|p{8mm}|p{80mm}|}
+\begin{longtable} {|p{20mm}|p{10mm}|p{100mm}|}
 \caption{List of tiny instructions with vector registers}
 \label{table:tinyInstructionsVector}  \\
 \endfirsthead
@@ -387,7 +387,7 @@ save\_cp      & 31 & Save vector register RD to compressed image pointed to by R
 \section{List of single-format instructions}
 These instructions are mostly available in only one or a few formats.
 
-\begin{longtable} {|p{20mm}|p{10mm}|p{8mm}|p{75mm}|}
+\begin{longtable} {|p{25mm}|p{12mm}|p{12mm}|p{95mm}|}
 \caption{List of single-format instructions with general purpose registers} 
 \label{table:ListOfSingleFormatInstructionsGP} \\
 \endfirsthead
@@ -395,10 +395,6 @@ These instructions are mostly available in only one or a few formats.
 \hline
 \bfseries Instruction & \bfseries Format &\bfseries OP1 & \bfseries Description \\
 \hline
-bitscan\_f    & 1.0   &  1 & Bit scan forward. Find index to lowest set bit. \\
-bitscan\_r    & 1.0   &  2 & Bit scan reverse. Find index to highest set bit. \\
-round\_d2     & 1.0   &  3 & Round down to nearest power of 2. \\
-round\_u2     & 1.0   &  4 & Round up to nearest power of 2. \\
 move          & 1.1   &  0 & Move 16-bit sign-extended constant to general purpose register. \\
 move\_u       & 1.1   &  1 & Move 16-bit zero-extended constant to general purpose register. \\
 add           & 1.1   &  2  & Add 16-bit sign-extended constant. \\
@@ -410,8 +406,11 @@ add           & 1.1   & 17  & RD += IM2 \textless\textless{} IM1. Sign-extend IM
 and           & 1.1   & 18  & RD \&= IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits, shift left by the unsigned value IM1, AND with RD. \\
 or            & 1.1   & 19  & RD \textbar{}= IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits, shift left by the unsigned value IM1, OR with RD. \\
 xor           & 1.1   & 20  & RD \^{}= IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits, shift left by the unsigned value IM1, XOR with RD. \\
-abs           & 1.8   &  0  & Absolute value of integer. IM1 determines handling of overflow: 0: wrap around, 1: saturate, 2: zero, 3: trap. \\
+abs           & 1.8   &  0  & Absolute value of integer. IM1 determines handling of overflow: 0: wrap around, 1: saturate, 2: zero. \\
 shift\_add    & 1.8   &  1  & Shift and add. RD += RS \textless\textless{} IM1 \\
+bitscan       & 1.8   &  2 & Bit scan forward or reverse. Find index to first or last set bit. \\
+roundp2       & 1.8   &  3 & Round up or down to nearest power of 2. \\
+popcount      & 1.8   &  4 & Count the number of bits that are 1.\\
 read\_spec    & 1.8   & 32  & Read special register RS into g. p. register RD. \\
 write\_spec   & 1.8   & 33  & Write g. p. register RS to special register RD. \\
 read\_capabi-lities & 1.8   & 34  & Read capabilities register RS into g. p. register RD. \\
@@ -437,7 +436,8 @@ address       & 2.9   & 32  & RD = RT + IM2, RT can be THREADP (28), DATAP (29) 
 \hline
 \end{longtable}
 
-\begin{longtable} {|p{20mm}|p{10mm}|p{8mm}|p{75mm}|}
+
+\begin{longtable} {|p{25mm}|p{12mm}|p{12mm}|p{95mm}|}
 \caption{List of single-format instructions with vector registers and mixed register types} 
 \label{table:ListOfSingleFormatInstructionsVector} \\
 \endfirsthead
@@ -449,34 +449,32 @@ set\_len      & 1.2 &  0 & RD = vector register RT with length changed to value 
 get\_len      & 1.2 &  1 & Get length of vector register RT into general purpose register RD. \\
 set\_num      & 1.2 &  2 & Change the length of vector register RT to RS$\cdot$OS. \\
 get\_num      & 1.2 &  3 & Get length of vector register RT divided by the operand size. \\
-compress      & 1.2 &  4 & Compress vector RT of length RS to a vector of half the length and half the element size. Double precision $\rightarrow$ single precision, 64-bit
-integer $\rightarrow$ 32-bit integer, etc. \\
-compress\_ss  & 1.2 &  5 & Compress integer vector RT of length RS to a vector of half the length and half the element size, signed with saturation (optional). \\
-compress\_us  & 1.2 &  6 & Compress integer vector RT of length RS to a vector of half the length and half element size, unsigned with saturation (optional). \\
-expand        & 1.2 &  7 & Expand vector RT of length RS/2 and half the specified element size to a vector of length RS with the specified element size. Half
-precision $\rightarrow$ single precision, 32-bit integer $\rightarrow$ 64-bit integer with sign extension, etc. \\
-expand\_u    & 1.2 &  8 & Expand integer vector RT of length RS/2 and half the specified element size to a vector of length RS with the specified element
-size. 32-bit integer $\rightarrow$ 64-bit integer with zero extension, etc. \\
-compress\_ sparse&1.2 &  9 & Compress sparse vector elements indicated by mask bits into contiguous vector. RS = length of input vector. (optional). \\
-expand\_sparse& 1.2 & 10 & Expand contiguous vector into sparse vector with positions
-indicated by mask bits. RS = length of output vector. (optional). \\
-extract       & 1.2 & 11 & Extract one element from vector RT, starting at offset RS$\cdot$OS, with size OS into scalar in vector register RD. \\
-insert        & 1.2 & 12 & Replace one element in vector RD, starting at offset RS$\cdot$OS, with scalar RT. \\
-broad         & 1.2 & 13 & Broadcast first element of vector RT into all elements of RD with length RS. \\
-bits2bool     & 1.2 & 14 & The lower n bits of RT are unpacked into a boolean vector RD with length RS, with one bit in each element, where n = RS / OS. \\
-bool2bits     & 1.2 & 15 & The boolean vector RT with length RS is packed into the lower n bits of RD, taking bit 0 of each element, where n = RS / OS. The
+
+insert        & 1.2 &  4 & Replace one element in vector RD, starting at offset RS$\cdot$OS, with scalar RT. \\
+
+extract       & 1.2 & 5 & Extract one element from vector RT, starting at offset RS$\cdot$OS, with size OS into scalar in vector register RD. \\
+
+broad         & 1.2 & 6 & Broadcast first element of vector RT into all elements of RD with length RS bytes. \\
+
+compress\_ sparse&1.2 &  8 & Compress sparse vector elements indicated by mask bits into contiguous vector. RS = length of input vector. (optional). \\
+expand\_sparse& 1.2 & 9 & Expand contiguous vector into sparse vector with positions indicated by mask bits. RS = length of output vector. (optional). \\
+
+bits2bool     & 1.2 & 12 & The lower n bits of RT are unpacked into a boolean vector RD with length RS, with one bit in each element, where n = RS / OS. \\
+bool2bits     & 1.2 & 13 & The boolean vector RT with length RS is packed into the lower n bits of RD, taking bit 0 of each element, where n = RS / OS. The
 length of RD is at least sufficient to contain n bits. \\
-bool\_reduce  & 1.2 & 16 & The integer vector RT with length RS is reduced by combining bit 0 of all elements. The output is a scalar integer where bit 0 is the
+bool\_reduce  & 1.2 & 14 & The integer vector RT with length RS is reduced by combining bit 0 of all elements. The output is a scalar integer where bit 0 is the
 AND combination of all the bits, and bit 1 is the OR combination of
 all the bits. The remaining bits are reserved for future use. \\
-category\_ reduce & 1.2 & 16 & The floating point vector RT with length RS is reduced to a scalar integer where each bit indicates that the source vector contains at least one element in a certain category, such as NAN, zero, normal positive, etc. \\
-shift\_expand & 1.2 & 18 & Shift vector RT up by RS bytes and extend the vector length by RS. The lower RS bytes of RD will be zero. \\
-shift\_reduce & 1.2 & 19 & Shift vector RT down RS bytes and reduce the length by RS. The lower RS bytes of RT are lost. \\
-shift\_up     & 1.2 & 20 & Shift elements of vector RT up RS elements. The lower RS elements of RD will be zero, the upper RS elements of RT are lost. \\
-shift\_down   & 1.2 & 21 & Shift elements of vector RT down RS elements. The upper RS
+category\_ reduce & 1.2 & 14 & The floating point vector RT with length RS is reduced to a scalar integer where each bit indicates that the source vector contains at least one element in a certain category, such as NAN, zero, normal positive, etc. \\
+
+shift\_expand & 1.2 & 16 & Shift vector RT up by RS bytes and extend the vector length by RS. The lower RS bytes of RD will be zero. \\
+shift\_reduce & 1.2 & 17 & Shift vector RT down RS bytes and reduce the length by RS. The lower RS bytes of RT are lost. \\
+shift\_up     & 1.2 & 18 & Shift elements of vector RT up RS elements. The lower RS elements of RD will be zero, the upper RS elements of RT are lost. \\
+shift\_down   & 1.2 & 19 & Shift elements of vector RT down RS elements. The upper RS
 elements of RD will be zero, the lower RS elements of RT are lost. \\
-rotate\_up  & 1.2 & 22 & Rotate vector RT up one element. The length of the vector is RS bytes. Optional. \\
-rotate\_down  & 1.2 & 23 & Rotate vector RT down one element. The length of the vector is RS bytes. Optional. \\
+rotate\_up  & 1.2 & 20 & Rotate vector RT up one element. The length of the vector is RS bytes. Optional. \\
+rotate\_down  & 1.2 & 21 & Rotate vector RT down one element. The length of the vector is RS bytes. Optional. \\
+
 div\_ex    & 1.2 & 24 & Divide vector of double-size signed integers RS by signed integers RT. RS has element size 2$\cdot$OS. These are divided by the even numbered
 elements of RT with size OS. The truncated results are stored in
 the even-numbered elements of RD. The remainders are stored in
@@ -512,7 +510,17 @@ gp2vec        & 1.3 B &  0 & Move value of general purpose register RS to scalar
 vec2gp        & 1.3 B &  1 & Move value of first element of vector register RS to general purpose register RD. \\
 
 read\_spev    & 1.3 B &  2 & Read special register RT into vector register RD with  length RS. \\
-make\_sequen-ce& 1.3 B &  4 & Make a vector with RS sequential numbers. First value is IM1. \\
+
+make\_sequen-ce& 1.3 B & 3 & Make a vector with RS sequential numbers. First value is IM1. \\
+
+insert        & 1.3 B &  4 & Replace one element in vector RD, starting at offset IM1$\cdot$OS, with first element in RS. \\
+
+extract       & 1.3 B & 5 & Extract one element from vector RS, starting at offset IM1$\cdot$OS into a scalar in vector register RD. \\
+
+compress      & 1.3 B &  6 & Compress vector to half the length and half the element size. Double precision $\rightarrow$ single precision, 64-bit
+integer $\rightarrow$ 32-bit integer, etc. \\
+
+expand        & 1.3 B &  7 & Expand vector to the double length and the double element size. Half precision $\rightarrow$ single precision, 32-bit integer $\rightarrow$ 64-bit integer, etc. \\
 
 float2int     & 1.3 B & 12 & Conversion of floating point to integer with the same operand size. The rounding mode is specified in IM1. \\
 int2float     & 1.3 B & 13 & Conversion of integer to floating point with same operand size. \\
@@ -529,12 +537,12 @@ broad         & 1.3 B & 18 & Broadcast 8-bit constant into all elements of RD wi
 broadcast\_ max & 1.3 B & 19 & Broadcast 8-bit constant into all elements of RD with maximum vector length. \\
 
 byte\_reverse & 1.3 B & 20 & Reverse the order of bytes in each element of vector. \\
-bit\_reverse  & 1.3 B & 21 & Reverse the order of bits in each element of vector (optional). \\
+bit\_reverse  & 1.3 B & 20 & Reverse the order of bits in each element of vector (optional). \\
 
-bitscan\_f    & 1.3 B & 22 & Bit scan forward. Find index to lowest set bit in RS (optional for vectors). \\
-bitscan\_r    & 1.3 B & 23 & Bit scan reverse. Find index to highest set bit in RS (optional for vectors). \\
-popcount      & 1.3 B & 24 & Count the number of bits in RS that are 1 (optional for vectors). \\
-truth\_tab2   & 1.3 B & 25 & Boolean function of two inputs, given by a truth table. \\
+bitscan       & 1.3 B & 21 & Bit scan forward or reverse. Find index to lowest set bit. \\
+
+popcount      & 1.3 B & 22 & Count the number of bits that are 1 (optional for vectors). \\
+truth\_tab2   & 1.3 B & 24 & Boolean function of two inputs, given by a truth table. \\
 
 move          & 1.3 C & 32 & Move 16 bit integer constant to 16-bit scalar (optional). \\
 add           & 1.3 C & 33 & Add broadcasted 16 bit constant to 16-bit vector elements (optional). \\
@@ -585,16 +593,17 @@ replace\_even & 2.6 & 4 & Replace even-numbered elements in RT by constant
 IM2. \\
 replace\_odd  & 2.6 & 5 & Replace odd-numbered elements in RT by constant
 IM2. \\
-broad         & 2.6 & 6 & Broadcast 32-bit constant into all elements of RD with length RS (31 in RS field gives scalar output). \\
+broad         & 2.6 & 6 & Broadcast 32-bit or float32 constant into all elements of RD with length RS (31 in RS field gives scalar output). \\
 permute       & 2.6 & 8 & The vector elements of RT are permuted within each block of size RS bytes. The 4$\cdot$n bits of IM2 are used as index with 4 bits for
 each element in blocks of size n. The same pattern is used in each
 block. The number of elements in each block, n = RS / OS $\leq$ 8. \\
 replace\_bits & 2.6 &  9  & Replace a group of contiguous bits in RT by a specified constant. \\
 replace       & 3.1 & 8 & Replace elements in RT by constant IM2,IM3. \\
+broad         & 3.1 & 9 & Broadcast 64-bit or float64 constant into all elements of RD with length RS (31 in RS field gives scalar output). \\
 \hline
 \end{longtable}
 
-\begin{longtable} {|p{20mm}|p{10mm}|p{8mm}|p{75mm}|}
+\begin{longtable} {|p{25mm}|p{12mm}|p{12mm}|p{95mm}|}
 \caption{List of single-format instructions with memory operands.} 
 \label{table:ListOfSingleFormatInstructionsMemory} \\
 \endfirsthead
@@ -622,7 +631,7 @@ extract\_store& 2.5 A & 32 & Extract one element from vector RD, starting at off
 \section{List of control transfer instructions}
 
 \begin{longtable}
-{|p{10mm}|p{14mm}|p{55mm}|p{50mm}|}
+{|p{12mm}|p{16mm}|p{60mm}|p{55mm}|}
 %\nopagebreak
 \caption{Condition codes for control transfer instructions with integer operands in general purpose registers }
 \label{table:controlTransferInstructions}
@@ -635,15 +644,15 @@ OPJ & bit 0 \newline of OPJ & Instruction & Comment \\
 \hline
 8-15 & part of offset & Unconditional call with 24-bit offset (call) & Format 1.5 D.  Bit 0-2 of OPJ are part of offset \\
 \hline
-0-1 & invert & sub/jump\_zero, \newline sub/jump\_nzero & Format 1.4 and 2.5.0. \\
+0-1 & invert & sub/jump\_zero, \newline sub/jump\_nzero & Format 1.4 B and 2.5.0. \\
 \hline
-2-3 & invert & sub/jump\_neg, \newline sub/jump\_nneg & Format 1.4 and 2.5.0.  \\
+2-3 & invert & sub/jump\_neg, \newline sub/jump\_nneg & Format 1.4 B and 2.5.0.  \\
 \hline
-4-5 & invert & sub/jump\_pos, \newline sub/jump\_npos & Format 1.4 and 2.5.0.  \\
+4-5 & invert & sub/jump\_pos, \newline sub/jump\_npos & Format 1.4 B and 2.5.0.  \\
 \hline
-6-7 & invert & sub/jump\_overfl, \newline sub/jump\_noverfl & Format 1.4 and 2.5.0.  \\
+6-7 & invert & sub/jump\_overfl, \newline sub/jump\_noverfl & Format 1.4 B and 2.5.0.  \\
 \hline
-8-9 & invert & sub/jump\_borrow, \newline sub/jump\_nborrow & Format 1.4 and 2.5.0. \\
+8-9 & invert & sub/jump\_borrow, \newline sub/jump\_nborrow & Format 1.4 B and 2.5.0. \\
 \hline
 10-11 & invert & shift\_left/jump\_zero \newline shift\_left/jump\_nzero & Not format 1.5 \\
 \hline
@@ -696,7 +705,7 @@ OPJ & bit 0 \newline of OPJ & Instruction & Comment \\
 56-57 &  & Reserved for future use. & \\
 \hline
 
-58-59 & 0 jump \newline 1 call & Indirect jump or call with memory operand. & Format 1.4 and 2.5.0. \\
+58-59 & 0 jump \newline 1 call & Indirect jump or call with memory operand. & Format 1.4 B and 2.5.0. \\
 \hline
 58-59 & 0 jump \newline 1 call & Unconditional direct jump or call & Format 1.5 C, 2.5.2, and
 3.1.0. \\

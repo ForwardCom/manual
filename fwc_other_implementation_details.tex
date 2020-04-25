@@ -70,6 +70,7 @@ A separate call stack may be implemented with the ForwardCom architecture. The s
 
 \subsubsection{Unified stack for return addresses and local data} \label{singleStack}
 Many current systems use the same stack for return addresses and local data. This method may be used with the ForwardCom architecture because it is simple to implement. 
+\vspace{2mm}
 
 \subsubsection{Conclusion for ForwardCom}
 A ForwardCom system may use a separate call stack or a unified stack, but not a link register. The hardware implementation of call and return instructions depends on whether there is one or two stacks. The dual stack system will be used for large processors where performance or security is important, while the unified stack system may be used in small processors where simplicity is preferred. A ForwardCom microprocessor does not have to support both systems, but the software does. 
@@ -77,12 +78,6 @@ The calling conventions defined in chapter \ref{chap:functionCallingConventions}
 Tail calls can be implemented efficiently with a simple jump instruction regardless of the stack type.
 \vspace{2mm}
 
-\section{Floating point errors and exceptions}
-Exceptions for floating point errors are disabled by default, but can be enabled with bits 26-29 in the numeric control register or a mask register. Enabled exceptions are caught as traps (synchronous interrupts).
-\vspace{2mm}
-
-It is a problem that an exception caused by a single element in a vector will interrupt the processing of the whole vector. The behavior of a program using floating point vectors will depend on the vector length in the case of multiple traps caused by a single vector element. We can rely on the generation and propagation of NAN and INF values instead of traps if we want consistent results on different processors with different vector lengths. 
-\vspace{2mm}
 
 \subsection{Propagation of NANs}
 \label{nanPropagation}
@@ -94,15 +89,16 @@ Operations that generate NAN include the following:\\
 These values are propagated through a series of calculations because any floating point calculation with a NAN input will produce a NAN output. This makes it possible to detect the error in the final result after a series of calculations. This method of detecting floating point errors is particularly useful for vector instructions because the result is independent of the vector length.
 \vspace{2mm}
 
-A NAN can contain a bit pattern of diagnostic information called the payload, and this bit pattern is propagated to the result. A problem arises when two different NANs are combined, for example NAN1 + NAN2. The IEEE floating point standard (754-2008) has no definite rule for the result of the combination of two NANs, but it recommends that one of the two NAN operands is propagated to the result. Most microprocessors just propagate the first operand in this case. This is unfortunate because the result is not predictable when the compiler may code a+b as b+a. ForwardCom solves this problem by propagating the NAN value with the highest payload. Therefore, a+b and b+a will always give the same result.
+A NAN can contain a bit pattern of diagnostic information called the payload, and this bit pattern is propagated to the result. A problem arises when two different NANs are combined, for example NAN1 + NAN2. The IEEE-754 floating point standard  has no definite rule for the result of the combination of two NANs, but it recommends that one of the two NAN operands is propagated to the result. Most microprocessors just propagate the first operand in this case. This is unfortunate because the result is not predictable when the compiler may code a+b as b+a. ForwardCom solves this problem by propagating the NAN value with the highest payload. Therefore, a+b and b+a will always give the same result.
 \vspace{2mm}
 
-Another problem with the 2008 standard is that NAN values are not propagated through the max and min instructions according to this standard. This problem is solved in the forthcoming revision of the IEEE standard. ForwardCom will use the revised standard so that max and min instructions always produce a NAN output when at least one of the inputs is NAN.
+Another problem is that NAN values are not propagated through the max and min instructions according to the 2008 version of the IEEE-754 standard. 
+This problem is solved in the 2019 revision of the IEEE standard. ForwardCom will use the 2019 standard so that max and min instructions always produce a NAN output when at least one of the inputs is NAN.
 \vspace{2mm}
 
 Certain instructions have floating point inputs but no floating point output. 
-This includes float2int, compare, and compare-and-jump instructions.
-A trap is generated when these instructions encounter a NAN if bit 29 in the mask or NUMCONTR is set.
+This includes float2int, compare, and compare-and-jump instructions. 
+Some systems are able to trap NANs in these cases, but ForwardCom is not fond of traps, as explained below. The float2int instruction can detect NANs by generating error codes in the output vector. Compare instructions can explicitly detect NAN inputs.
 \vspace{2mm}
 
 Infinity will also propagate to the end result in many cases. 
@@ -110,50 +106,112 @@ Infinity will be converted to NAN in cases like $\infty$/$\infty$, 0*$\infty$, a
 Infinity will be converted to zero in situations like $1/\infty$. Infinity will not be propagated in situations like min(1,$\infty$).
 \vspace{2mm}
 
-The contents of the NAN payload is not defined yet. It may contain information about the type and place of the fault. Function libraries may put information about an error in a NAN payload. Bit number 21 and 22 in instruction masks and NUMCONTR are reserved for different options for the information contained in NAN payloads. This may be subject to future experimentation.
+It is possible to generate NANs instead of infinity by enabling exception handling, as explained in the next section. This will improve propagation of error information. 
+\vspace{2mm}
+
+Signalling NANs are not trapped in ForwardCom. Instead, signalling NANs are propagated without conversion to quiet NANs. Signalling NANs take precedence over quiet NANs when two NANs are combined. Signalling NANs may be used for NAN boxing of non-numeric data or for application-specific error tracking.
 \vspace{2mm}
 
 Other methods for generating error messages in function libraries are discussed on page \pageref{errorMessageHandling}.
 \vspace{2mm}
 
 
+\section{Floating point errors and exceptions}
+The traditional ways of detecting floating point errors is to check a global status register or to use traps (software interrupts). Both methods are problematic and inefficient for SIMD processing and for out-of-order processing. 
+A global status register does not tell where the error occurred or how many errors occurred. It is a problem for out-of-order processing that all floating point operations can write to the floating point status register. 
+ForwardCom has no status register for this reason. In fact, the ForwardCom hardware design does not support instructions with multiple output registers. 
+\vspace{2mm}
+
+Traps are avoided too because traps have to occur in order. This means that all instructions would have to execute speculatively until all preceding instructions that might possibly generate traps have retired (see  
+\href{https://www.agner.org/optimize/nan_propagation.pdf}{www.agner.org/optimize/nan\_propagation.pdf}).
+\vspace{2mm}
+
+The ForwardCom design can overcome these problems by signalling numerical exceptions in the same register that outputs the normal result of an instruction. 
+This behavior is controlled by bits 2-5 in the mask register or the numerical control register. Floating point exceptions will generate a NAN with a payload that indicates the kind of error and its position if these bits are enabled. The NAN code will appear in the specific vector element that caused the exception, and this value will propagate to the end result if the sequence of instructions allows it. This method is sure to give deterministic results despite out-of-order processing and parallelism.
+\vspace{2mm}
+
+The exception indications are as follows:
+
+\begin{longtable}
+{|p{55mm}|p{20mm}|p{50mm}|}
+\caption{Floating point results with and without exceptions enabled}
+\label{table:FPExceptionResults}
+\endfirsthead
+\endhead
+\hline
+\bfseries Error type & \bfseries Option bit & \bfseries Result \\ \hline
+inexact & & rounded result \\
+inexact & bit 5 & NAN(1) \\
+underflow & & $\pm$ 0 \\
+underflow & bit 4 & NAN(2) \\
+division by zero &  & $\pm$ INF \\
+division by zero & bit 2 & NAN(3) \\
+overflow & & $\pm$ INF \\
+division overflow & bit 3 & NAN(4) \\
+multiplication overflow & bit 3 & NAN(5) \\
+addition overflow & bit 3 & NAN(6) \\
+conversion overflow & bit 3 & NAN(7) \\
+other overflow & bit 3 & NAN(8) \\
+$\infty - \infty$ &  & NAN(0x20) \\
+$0 / 0$  &  & NAN(0x21) \\
+$\infty / \infty$ &  & NAN(0x22) \\ 
+$0 * \infty$ &  & NAN(0x23) \\ 
+invalid remainder & & NAN(0x24) \\
+sqrt of negative & & NAN(0x25) \\
+invalid pow & & NAN(0x28) \\
+log of negative & & NAN(0x29) \\
+other math functions & & NAN(0x2A - 0xFF) \\
+\hline
+\end{longtable}
+
+Bits 0-7 of the NAN payload contains the exception code according to the table above. 
+The quiet bit of the NAN is set. The remaining bits of the NAN payload contain the code address where the error occurred, with all bits inverted (lower 14 bits of the address for single precision, lower 43 bits for double precision, 64 bits for quadruple precision). This makes sure that the first error in a linear code sequence will have preference when multiple NAN codes are propagated to the end result.
+\vspace{2mm}
+
+Floating point exceptions can be detected by enabling the exception types you want to detect and checking for NAN values at the end of the floating point instruction sequence, at the end of any 
+try/catch block, and before any instruction that cannot propagate NANs. 
+\vspace{2mm} 
+
+While ForwardCom has no status flags, the NAN payload is replacing the 
+status flags for floating point exceptions specified by the IEEE-754 standard. 
+Any arithmetic operation can signal at most one exception per vector element, according to the standard.
+\vspace{2mm} 
+
+If you want to find the first floating point error during debugging then you may insert additional NAN checks before any backward jump or call and before any overflow of the address bits.
+\vspace{2mm}
+
+Traditional fault trapping is not possible in the preferred implementation of ForwardCom. However, bits 26-30 of the mask register or numerical control register may be used for enabling floating point fault trapping and trapping of signalling NANs if hardware support for traditional fault trapping is needed.
+\vspace{2mm}
+
+
+
 \section{Detecting integer overflow} 
 \label{integerOverflowDetection}
-There is no common standard method for detecting overflow in integer calculations. The detection of overflow in signed integer operations is a real nightmare in some programming languages like C++ (see e. g. 
+There is no common standard method for detecting overflow in integer calculations. The detection of overflow in signed integer operations is a real nightmare in some programming languages like C++ (see 
 \href{http://stackoverflow.com/questions/199333/how-to-detect-integer-overflow-in-c-c}{stackoverflow.com/questions/199333/how-to-detect-integer-overflow-in-c-c}).
 \vspace{2mm}
 
-It would be nice to have a reliable way of detecting integer overflow and perhaps to propagate it through a series of calculations, analogous to the NAN propagation for floating point calculations, so that errors can be checked at the end of a series of calculations rather than after each operation. Compilers could support this method by offering overflow detection with a try/catch block. It is more likely that compilers will support integer overflow detection if the hardware offers a reasonable method.
+Possible solutions with a status register or fault trapping are not recommended in ForwardCom for the same reasons as explained above for floating point errors. 
+Instead, the following methods may be used for detecting signed and unsigned integer overflow: 
+
+\begin{itemize}
+  \item Use conditional jump instructions. \\
+    Signed: add/jump\_overfl, sub/jump\_overfl. \\
+    Unsigned: add/jump\_carry, sub/jump\_borrow. \\
+    Division: compare with zero and jump if equal before dividing. \\
+    This method cannot detect multiplication overflow.  
+  
+  \item Use instructions with overflow check in a vector register. 
+    The even-numbered vector elements are used for calculations, while
+    the odd-numbered vector elements are used for propagating error flags. 
+    See page \pageref{table:addOcInstruction} for details. 
+    
+  \item Use floating point instructions with integer data. 
+    Enable the mask bits for detection of overflow and inexact.
+  
+\end{itemize}
 \vspace{2mm}
 
-The following methods have been proposed:
-
-\begin{enumerate}
-\item Use a few vacant bits in the mask registers for detecting and propagating overflow and other errors. This method has a number of problems that will impede out-of-order execution. The mask register will be used not only for input to each instruction but also output. Each instruction will then have two outputs rather than one. This will make the out-of-order scheduler much more complicated, and it will cause undesired dependencies when the same mask register is used for multiple instructions that otherwise would be independent.
-
-\item Use the even-numbered elements in a vector register for normal calculation on integers 
-and use the following odd-numbered elements for the overflow information. The overflow
-information is propagated together with the calculated values. 
-This method will be efficient for scalar integer calculations, but wasteful for vectors because half the vector elements are used only for this purpose. 
-
-\item Use one element of a vector for the overflow bits of all the other elements. This method may be tempting because it does not waste as much register space as the previous method, but it will have inferior performance because of the transport delay when moving overflow bits to a distant part of a long vector.
-
-\item Add extra bits in the vector registers for overflow information. All vector registers will have one extra overflow bit for each 32 bits of normal data. These overflow bits are preserved when a vector register is saved and restored with the save\_cp and restore\_cp instructions, but they are lost when the vector is saved as normal data. The behavior of the overflow bits is controlled by bits in the numeric control register or a mask register to enable the detection and propagation of signed and unsigned integer overflow.
-An extra instruction must be provided for extracting the overflow bits from a vector register.
-
-\item Generate a trap in case of integer overflow. Use a mask register or the numeric control register to control this behavior. Bit 6 enables a trap for unsigned integer overflow and bit 7 enables a trap for signed integer overflow. This method requires little extra code, but it is subject to the problem that the behavior of vector code depends on the vector length in case of traps, as explained in the previous chapter for floating point errors.
-\end{enumerate}
-
-Method 2 is tentatively supported here with the optional instructions add\_oc, etc., described on page \pageref{table:addOcInstruction}. 
-\vspace{2mm}
-
-Support for method 4 may be considered, since it would be more efficient and useful. The cost of implementing method 4 is that we will need 3\% more bits in the vector registers; the save\_cp and restore\_cp instructions will be more complicated; and the compiler has to check for overflow before saving vectors to memory in the normal way. 
-\vspace{2mm}
-
-Method 5 should be supported. It is useful for integer code in general purpose registers and it is useful for verifying that overflow does not occur in vector registers.
-\vspace{2mm}
-
-These methods should not detect overflow in saturated arithmetic instructions and shift instructions.
 
 \section{Multithreading}
 The ForwardCom design makes it possible to implement very large vector registers to process large data sets. However, there are practical limits to how much you can speed up the performance by using larger vectors. First, the actual data structures and algorithms often limit the vector length that can be used. And second, large vectors mean longer physical distances on the semiconductor chip and longer transport delays.

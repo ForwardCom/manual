@@ -364,7 +364,10 @@ RD = f2(RS, IM1). RD = f3(RD, RS, IM1). \\
 RD = f2(RD, IM1-2). \\
 
 \hline
-1.4 & 1 & 4 & B & Jump instructions with two register operands and 8 bit offset.\\
+1.4 A & 1 & 4 & A & Multiway jump instructions and system calls with three register operands.\\
+
+\hline
+1.4 B & 1 & 4 & B & Jump instructions with two register operands and 8 bit offset.\\
 
 \hline
 1.5C & 1 & 5 & C & Jump instructions with one register operand, 8 bit constant (IM2) and 8 bit offset (IM1).\\
@@ -610,7 +613,7 @@ Immediate constants can be 4, 8, 16, 32, and optionally 64 bits. Immediate field
 If OT specifies an integer type then the field is interpreted as an integer. If the field is smaller than the operand size then it is sign-extended to the appropriate size, except for 4-bit fields which are zero-extended. If the field is larger than the operand size then the superfluous upper bits are ignored. The truncation of a too large immediate operand will not trigger any overflow condition.
 \vspace{2mm}
 
-If OT specifies a floating point type then the field is interpreted as follows. Immediate fields of 4 or 8 bits are interpreted as integers and converted to floating point numbers of the desired precision. A 16-bit field is interpreted as a half precision floating point number (subnormal values are not supported). A 32-bit field is interpreted as a single precision floating point number. It is converted to the desired precision if necessary. A 64-bit field (if supported) is interpreted as a double precision floating point number. A 64-bit field is not allowed with a single precision operand type.
+If OT specifies a floating point type then the field is interpreted as follows. Immediate fields of 4 or 8 bits are interpreted as integers and converted to floating point numbers of the desired precision. A 16-bit field is interpreted as a half precision floating point number (subnormal numbers are supported). A 32-bit field is interpreted as a single precision floating point number. It is converted to the desired precision if necessary. A 64-bit field (if supported) is interpreted as a double precision floating point number. A 64-bit field is not allowed with a single precision operand type.
 \vspace{2mm}
 
 Some instruction formats allow immediate integer constants with a left shift. Large integer constants with a limited number of significant bits can be represented with fewer bits in this way.
@@ -659,36 +662,30 @@ The bits in the mask register are coded as follows.
 \hline
 \bfseries Bit number & \bfseries Meaning \\
  \hline
-0 & Predicate or mask. The operation is executed only if this bit is one, as explained above.\\
+0 & Predicate or mask. The operation is executed only if this bit is one.\\
+1 & Guaranteed to be ignored. \\
 \hline
-6 & Generate a trap if unsigned integer overflow. This feature is optional.\\
+2-7 & Numerical exception control. See page \pageref{table:FPExceptionResults}. \\
+2 & Floating point division by zero generates NAN \\
+3 & Floating point overflow generates NAN \\
+4 & Floating point underflow generates NAN \\
+5 & Floating point inexact generates NAN \\
+  & Bits 2-7 may also be used for controlling integer division by zero and integer overflow \\ \hline
+10-12 & Floating point rounding mode: \newline
+000 = nearest or even \newline
+001 = down \newline
+010 = up \newline
+011 = towards zero \newline
+This feature is optional.\\ \hline
+13 & Support subnormal numbers in single and higher precision. 
+(Subnormal numbers are always supported for half precision). This feature is optional.\\ \hline  
+  
+18-23 & Instruction-specific option bits.\\
 \hline
-7 & Generate a trap if signed integer overflow. This feature is optional.\\
+26 - 30 & Possible use for enabling numerical traps. Not used in the standard version. \\
 \hline
-10-15 & Instruction-specific option bits.\\
-
-\hline
-18-19 & Floating point rounding mode: \newline
-00 = nearest or even \newline
-01 = down \newline
-10 = up \newline
-11 = towards zero \newline
-This feature is optional.\\
-\hline
-20 & Support subnormal numbers. Subnormal floating point numbers are treated as zero or flushed to zero when this bit is 0 (this is generally faster).  This feature is optional.\\
-\hline
-21 - 22 & Reserved for future options defining the contents of NAN payloads. Optional.\\
-\hline
-23 & Constant execution time. This bit makes the instruction take the same number of clock cycles
+31 & Constant execution time. This bit makes the instruction take the same number of clock cycles
 regardless of the values of mask and operands. Most or all instructions have constant execution time anyway, but the guarantee provided by this bit is useful for cryptographic applications. This feature is optional. \\
-\hline
-26 & Generate a trap if floating point overflow or division by zero. This feature is optional. \\
-\hline
-27 & Generate a trap if floating point invalid operation. This feature is optional.\\
-\hline
-28 & Generate a trap if floating point underflow and precision loss. This feature is optional.\\
-\hline
-29 & Generate a trap if NAN inputs to compare instructions and floating point to integer conversion instructions. This feature is optional.\\
 \hline
 \end{longtable}
 
@@ -703,7 +700,7 @@ The same mask is applied to all vector elements in this case.
 Bit 0 in NUMCONTR must be 1.
 \vspace{2mm}
 
-The instruction-specific option bits (bit 10-15) are used for various options in compare, add\_add, mul\_add, and a few other instructions. The instruction-specific options are determined by IM3 in format 2.0.x, 2.2.x, 3.0.x, 3.2.x and by the mask register in other formats. The option bits in the mask are considered zero in vector operands with an 8-bit operand type because each mask element has only 8 bits in this case. The instruction-specific options are also zero when there is no IM3 and no mask. Unlike other options, the instruction-specific options are not taken from the numeric control register. The reason for this is that frequent changes of the numeric control register would be inefficient (renaming of the numeric control register is not necessarily supported).
+The instruction-specific option bits (bit 18-23) are used for various options in compare, add\_add, mul\_add, and a few other instructions. The instruction-specific options are determined by IM3 in format 2.0.x, 2.2.x, 3.0.x, 3.2.x and by the mask register in other formats. The option bits in the mask are considered zero in vector operands with an 8-bit or 16-bit operand type because each mask element has too few bits in this case. The instruction-specific options are also zero when there is no IM3 and no mask. Unlike other options, the instruction-specific options are not taken from the numeric control register. The reason for this is that frequent changes of the numeric control register would be inefficient (renaming of the numeric control register is not necessarily supported).
 
 
 \section{Format for jump, call and branch instructions}
@@ -721,23 +718,25 @@ The jumps, calls, branches and multiway branches will use the following formats.
 \hline
 Format & IL & Mode & OP1 & Tem-plate & Description \\
 \hline
-1.4 & 1 & 4 & OPJ & B & Short version with two register operands (RD, RS) and 8 bit offset  (IM1).  \\
+1.4 A & 1 & 4 & OPJ & B & Multiway jump and system cals with three register operands.  \\
 \hline
-1.5 C & 1 & 5 & OPJ & C & Short version with one register operand (RD), an 8-bit immediate constant (IM2) and 8 bit offset (IM1), or a 16-bit offset (IM2+IM1 combined). \\
+1.4 B & 1 & 4 & OPJ & B & Short jump with two register operands (RD, RS) and 8 bit offset  (IM1).  \\
+\hline
+1.5 C & 1 & 5 & OPJ & C & Short jump with one register operand (RD), an 8-bit immediate constant (IM2) and 8 bit offset (IM1), or a 16-bit offset (IM2+IM1 combined). \\
 \hline
 1.5 D & 1 & 5 & 0-15 & D & Jump or call with 24-bit offset. \\
 \hline
-2.5.0 & 2 & 5 & 0 & B2 & Double size version with two register operands and 32 bit offset  (IM2). IM1 = OPJ. \\
+2.5.0 & 2 & 5 & 0 & B2 & Double size jump with two register operands and 32 bit offset  (IM2). IM1 = OPJ. \\
 \hline
-2.5.1 & 2 & 5 & 1 & B2 & Double size version with a register destination operand, a register source operand, a 16-bit offset (IM2 lower half) and a 16-bit immediate operand (IM2 upper half).  \\
+2.5.1 & 2 & 5 & 1 & B2 & Double size jump with a register destination operand, a register source operand, a 16-bit offset (IM2 lower half) and a 16-bit immediate operand (IM2 upper half).  \\
 \hline
-2.5.2 & 2 & 5 & 2 & C2 & Double size version with one register operand (RD), one 8-bit immediate constant (IM2) and 32 bit offset (IM3). \\
+2.5.2 & 2 & 5 & 2 & C2 & Double size jump with one register operand (RD), one 8-bit immediate constant (IM2) and 32 bit offset (IM3). \\
 \hline
-2.5.3 & 2 & 5 & 3 & C2 & Double size version with one register operand (RD), an 8-bit offset (IM2) and a 32-bit immediate constant (IM3).  \\
+2.5.3 & 2 & 5 & 3 & C2 & Double size jump with one register operand (RD), an 8-bit offset (IM2) and a 32-bit immediate constant (IM3).  \\
 \hline
 2.5.4 & 2 & 5 & 4 & C2 & Double size system call, no OPJ, 16 bit constant (IM1,IM2) and 32-bit constant (IM3). \\
 \hline
-3.1.0 & 3 & 1 & 0 & B3 & Triple size version with a register destination operand, a register source operand, a 32-bit immediate operand (IM2) and a 32-bit offset (IM3). Optional.  \\
+3.1.0 & 3 & 1 & 0 & B3 & Triple size jump with a register destination operand, a register source operand, a 32-bit immediate operand (IM2) and a 32-bit offset (IM3). Optional.  \\
 \hline
 \end{longtable}
 
@@ -750,7 +749,7 @@ The versions with template C and C2 have no OT field. The operand type is 64-bit
 The OPJ field defines the operation and jump condition. This field has 6 bits in the single size version and 8 bits in the longer versions. The two extra bits in the longer versions are used as follows. Bit 6 is reserved for future extensions, and must be zero. Bit 7 may be used for indicating loop behavior as a hint for choosing the optimal branch prediction algorithm.
 \vspace{2mm}
 
-The combined ALU and conditional jump instructions can be coded in the formats 1.4, 1.5 C, 2.5.0, 2.5.1, 2.5.2, 2.5.3, and 3.1.0, except subtraction which cannot be coded in format 1.5 C. Subtraction with an immediate constant can be replaced by addition with the negative constant. The code space that would have been used by subtraction in format 1.5 C is instead used for coding direct jump and call instructions with a 24-bit offset using format 1.5 D, where the lower three bits of OP1 are used as part of the 24-bit offset.
+The combined ALU and conditional jump instructions can be coded in the formats 1.4 B, 1.5 C, 2.5.0, 2.5.1, 2.5.2, 2.5.3, and 3.1.0, except subtraction which cannot be coded in format 1.5 C. Subtraction with an immediate constant can be replaced by addition with the negative constant. The code space that would have been used by subtraction in format 1.5 C is instead used for coding direct jump and call instructions with a 24-bit offset using format 1.5 D, where the lower three bits of OP1 are used as part of the 24-bit offset.
 \vspace{2mm}
 
 Unconditional and indirect jumps and calls use the formats indicated above, where unused fields must be zero. Bit 0 of the OPJ field is zero for unconditional jump instructions and one for call instructions.
@@ -796,6 +795,8 @@ with any value of OP1.
 Other single-format templates may be divided into groups of eight consecutive OP1 values with the same format.
 New addressing modes or other formats that apply to all multi-format instructions can use vacant values of Mode2 with E templates.
 
+\item Format 1.0 is intended for single-format instructions with three general purpose registers. There are currently no such instructions. Therefore, format 1.0 A or B may be used for application-specific single-size instructions or for other purposes. Note that the M bit is not available in format 1.0 because this bit is used for distinguishing format 1.8 from 1.0. This means that format 1.0 cannot be used for vector instructions without violating the general coding scheme.
+
 \end{itemize}
 
 Application-specific instructions should preferably use E template formats with OP2 $\neq$ 0. There are many vacant opcodes in these formats. General multi-purpose instructions may use some of the more crowded formats.
@@ -803,6 +804,10 @@ Application-specific instructions should preferably use E template formats with 
 
 Unused register fields may have the same value as the first source register operand in order to avoid false dependences in a superscalar processor design. Unused mask fields have the value 7 in instructions that can have a mask.
 All other unused fields must be zero. The instructions with the fewest input operands should preferably have the lowest OP1 codes. 
+\vspace{2mm}
+
+The file forwardcom\_sourcecode\_documentation has a checklist of what to do when making or modifying instructions.
+\vspace{2mm}
 
 
 \end{document}
