@@ -168,7 +168,7 @@ The sum of all elements in a vector can be calculated by repeatedly adding the l
 \begin{lstlisting}[frame=single]
 v0 = my_vector              // we want the horizontal sum of this
 int64 r0 = get_len(v0)      // length of vector in bytes
-int64 r0 = round_u2(r0)     // round up to nearest power of 2
+int64 r0 = roundp2(r0, 1)   // round up to nearest power of 2
 float v0 = set_len(r0,v0)   // adjust vector length
 while (uint64 r0 > 4) {     // loop to calculate horizontal sum
    uint64 r0 >>= 1          // the vector length is halved
@@ -190,7 +190,7 @@ The same method can be used for other horizontal operations. It may cause proble
 \begin{lstlisting}[frame=single]
 v0 = my_vector             // find the smallest element in this
 r0 = get_len(v0)           // length of vector in bytes
-int64 r1 = round_u2(r0)    // round up to nearest power of 2
+int64 r1 = roundp2(r0, 1)  // round up to nearest power of 2
 uint64 r1 >>= 1            // half length
 v1 = shift_reduce(r1,v0)   // upper part of vector
 int64 r2 = r0 - r1         // length of v1

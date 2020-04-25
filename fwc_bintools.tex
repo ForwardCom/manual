@@ -158,7 +158,7 @@ The command line for the assembler has the following format:
 
 \vspace{2mm}
 The following options are supported:\\
-\begin{tabular}{|p{22mm}p{140mm}|}
+\begin{tabular}{|p{25mm}p{135mm}|}
 \hline
 -list=name & Make output list file. This is very useful for checking the generated code.\\
 -O0 & Optimization level 0: The assembler finds the smallest possible instruction that fits the specified operands. Two consecutive tiny instructions are joined together if possible. \\
@@ -1177,6 +1177,10 @@ The debug list output will show all executed instructions and their results.
 Interactive single-step debugging is currently not supported.
 \vspace{2mm}
 
+The current version of the emulator supports all general instructions but only few system instructions. Integers of 8, 16, 32, and 64 bits are supported. Floating point numbers with half, single, and double precision are supported. Quadruple precision is not supported. Only few instructions with 128 bit integers are supported. 
+Most optional features are supported by the emulator, including exception handling, rounding control, and subnormal numbers.
+\vspace{2mm}
+
 \section{Dump utililty} \label{dumpUtililty}
 
 The dump utility can show metadata from object files and executable files.
@@ -1203,15 +1207,10 @@ m & relinkable modules.\\
 
 
 \section{Compiling the forw tools} \label{compilingForw}
-
-These tools can be compiled for Windows, Linux, MacOS, and other platforms.
+These tools can be compiled for Windows, Linux, MacOS, and other platforms. 
+See the file forwardcom\_sourcecode\_documentation for details.
 \vspace{2mm}
 
-Compiling for Windows with MS Visual Studio: Use the project file forw.vcxproj.
-
-Compiling with Gnu C++ compiler: Use the makefile.
-
-Other compilers: Make a project containing all the .cpp files. Compile for console mode, preferably 64 bits. The platform must have little-endian memory organization.
 
 \section{Code examples} \label{codeExamples}
 A collection of code examples are provided in the examples folder. You can try an example by assembling, linking, and emulating it as follows:
