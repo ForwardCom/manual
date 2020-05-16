@@ -160,7 +160,8 @@ The command line for the assembler has the following format:
 The following options are supported:\\
 \begin{tabular}{|p{25mm}p{135mm}|}
 \hline
--list=name & Make output list file. This is very useful for checking the generated code.\\
+-list=name & Make output list file. This is useful for checking the generated code.\\
+-b         & Make binary listing in -list file. \\
 -O0 & Optimization level 0: The assembler finds the smallest possible instruction that fits the specified operands. Two consecutive tiny instructions are joined together if possible. \\
 -O1 & Optimization level 1 (default): An instruction may be replaced by another instruction that does the same thing more efficiently. For example, {\ttfamily float v1 *= 4} can be replaced by
  {\ttfamily float v1 = mul\_2pow(v1, 2)}. 
