@@ -18,8 +18,7 @@ The instructions are designed so that the microprocessor pipeline can be simple 
 \vspace{2mm}
 
 The decoder front-end can load multiple instructions per clock cycle because it is easy to detect the length of each instruction, and the decoder needs only distinguish between a few different instruction sizes. Actually, the only instruction size that must be supported is single-word. It is 
-possible to make a working program with only single-word (32 bits) instructions, but it is highly recommended to also support double-word and triple-word instructions. Tiny instructions (two in one code word) are useful for making the code more compact. 
-\vspace{2mm}
+possible to make a working program with only single-word (32 bits) instructions, but it is highly recommended to also support double-word and triple-word instructions. \vspace{2mm}
 
 It is possible to add support for longer instructions in future extensions, but the priority has been to avoid any bottleneck in the decoding of instruction length (which is a serious bottleneck in the x86 architecture). 
 \vspace{2mm}

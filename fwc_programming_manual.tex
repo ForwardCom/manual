@@ -570,7 +570,7 @@ Instructions can have different versions with 4-bit, 8-bit, 16-bit, 32-bit, and 
 A large integer constant with few significant bits can be represented as a smaller constant with a left shift. For example, the constant 0x5000000000 can be represented as 5 $<<$ 36. The assembler will do this automatically when possible.
 Small floating point constants with no decimals can be represented as 8-bit signed integers. Simple rational numbers where the denominator is a power of 2 can be represented as half precision without loss of precision. The assembler does this automatically, too.
 It is recommended to check the output listing from the assembler to see 
-how much space each instruction takes. Sometimes, you can reduce the instruction size by simple changes in the code. Many instructions will be smaller if the first source register is the same as the destination register. You can also see from the output listing if there are unpaired tiny instructions that can be paired if you reorder the instructions.
+how much space each instruction takes. Sometimes, you can reduce the instruction size by simple changes in the code. Many instructions will be smaller if the first source register is the same as the destination register. 
 
 \subsubsection{Optimize jumps}
 The assembler will merge a jump with a preceding arithmetic instruction if possible, unless optimization is turned off. For example, an integer addition followed by a conditional jump that compares the result with zero may be merged into a single instruction. This is only possible when a number of conditions are fulfilled: 
@@ -592,7 +592,7 @@ Memory and cache throughput is often a bottleneck. You can improve caching
 in several ways:
 
 \begin{itemize}
-\item Optimize code caching by minimizing instruction sizes, pairing tiny instructions, and inlining functions.
+\item Optimize code caching by minimizing instruction sizes and inlining functions.
 \item Optimize data caching by embedding immediate constants in instructions.
 \item Use register variables instead of saving variables in memory.
 \item Use registers as function parameters.

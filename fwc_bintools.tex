@@ -162,7 +162,7 @@ The following options are supported:\\
 \hline
 -list=name & Make output list file. This is useful for checking the generated code.\\
 -b         & Make binary listing in -list file. \\
--O0 & Optimization level 0: The assembler finds the smallest possible instruction that fits the specified operands. Two consecutive tiny instructions are joined together if possible. \\
+-O0 & Optimization level 0: The assembler finds the smallest possible instruction that fits the specified operands. \\
 -O1 & Optimization level 1 (default): An instruction may be replaced by another instruction that does the same thing more efficiently. For example, {\ttfamily float v1 *= 4} can be replaced by
  {\ttfamily float v1 = mul\_2pow(v1, 2)}. 
  A conditional jump statement is merged with a preceding arithmetic instruction when possible.

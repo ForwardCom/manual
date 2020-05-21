@@ -4,19 +4,20 @@
 \RaggedRight
 
 \chapter{Microarchitecture and pipeline design}
-The ForwardCom instruction set is intended to facilitate a consistent and efficient design of the pipeline of a superscalar microprocessor. Instructions can have no more than one destination operand, up to three source operands, a mask register, a fallback register, and a register specifying vector length. The last source operand can be a register, a memory operand or an immediate constant. All other operands are registers, except for memory write instructions. The total number of input registers to an instruction, including source operands, mask, fallback, memory base pointer, index, and vector length specifier cannot exceed five, and may be limited to four.
+The ForwardCom instruction set is intended to facilitate a consistent and efficient design of the pipeline of a superscalar microprocessor. Normal instructions can have no more than one destination operand, up to three source operands, a mask register, a fallback register, and a register specifying vector length. The last source operand can be a register, a memory operand or an immediate constant. All other operands are registers, except for memory write instructions. The total number of input registers to an instruction, including source operands, mask, fallback, memory base pointer, index, and vector length specifier cannot exceed five, and may be limited to four.
 \vspace{2mm}
 
 No instruction can have more than one memory operand. Only few instructions can have both a memory source operand and an immediate operand. Any extra immediate operand field can be used for option bits, memory offset, or memory limit. 
 \vspace{2mm}
 
 A high performance pipeline may be designed as superscalar with the following stages.
+
 \begin{itemize}
 \item  Fetch. Fetching blocks of code from the instruction cache, one cache line at a time, or as determined by the branch prediction machinery. 
 
-\item  Instruction length decode. Determine the length of each instruction and identify tiny instructions. Distribute the first P instructions into each their pipeline lane, where P is the number of parallel lanes implemented in the pipeline. Excess instructions may be queued for the next clock cycle. The length of an instruction is determined by two bits of the first code word in order to simplify this process.
+\item  Instruction length decode. Determine the length of each instruction. Distribute the first P instructions into each their pipeline, where P is the number of parallel pipelines implemented. Excess instructions may be queued for the next clock cycle. The length of an instruction is determined by two bits of the first code word in order to simplify this process.
 
-\item  Instruction decode. Identify and classify all operands, opcode and option bits. Determine input and output dependencies. A consistent template system simplifies this step.
+\item  Instruction decode. Identify and classify all operands, opcode, and option bits. Determine input and output dependencies. A consistent template system simplifies this step.
 
 \item  Register allocation and renaming. 
 
@@ -33,16 +34,33 @@ A high performance pipeline may be designed as superscalar with the following st
 \item  Retire or branch. 
 \end{itemize}
 
-It is not necessary to split instructions into micro-operations if the reading of memory operands is done in a separate pipeline stage and instructions are allowed to stay in the reservation station until the memory operand has been read. 
+A disadvantage of register renaming and out-of-order execution is that it makes the pipeline long. This increases the branch misprediction delay. A simpler design may have one or more in-order pipelines for integer instructions in general purpose registers and one pipeline for vector registers. Such a design will have fewer pipeline stages, for example:
 \vspace{2mm}
 
-Each stage in the pipeline should ideally require only one clock cycle. Instructions waiting for an operand should stay in the reservation station. Most instructions will use only one clock cycle in the execution unit. Multiplication and floating point addition need a pipelined execution unit with several stages. Division and square root may use a separate state machine. 
+\begin{itemize}
+\item  Fetch. Fetching blocks of code from the instruction cache. 
+
+\item  Instruction decode. Identify and classify all operands, opcode and option bits. Determine input and output dependencies.
+
+\item  Calculate address and length of memory operand. Check access rights. Do calculations that depend on immediate operand only.
+
+\item  Read memory operand.
+
+\item  Execution units.  
+
+\end{itemize}
+\vspace{2mm}
+
+It is not necessary to split read-operate instructions into micro-operations if the reading of memory operands is done in a separate pipeline stage and instructions are allowed to wait until the memory operand has been read. 
+\vspace{2mm}
+
+Each stage in the pipeline should ideally require only one clock cycle unless they are waiting for an operand.  Most instructions will use only one clock cycle in the execution unit. Multiplication and floating point addition need a pipelined execution unit with several stages. Division and square root may use a separate state machine. 
 \vspace{2mm}
 
 Jump, branch, call, and return instructions also fit into this pipeline design. 
 \vspace{2mm}
 
-The reservation station has to consider all the input and output dependencies of each instruction. Each instruction can have up to four or five input dependencies and one output dependency. 
+A reservation station has to consider all the input and output dependencies of each instruction. Each instruction can have up to four or five input dependencies and one output dependency. 
 \vspace{2mm}
 
 There may be multiple execution units so that it is possible to run multiple instructions in the same clock cycle if their operands are independent. 
@@ -51,77 +69,94 @@ There may be multiple execution units so that it is possible to run multiple ins
 An efficient out-of-order processing requires renaming of the general purpose registers and vector registers, but not necessarily the special registers. 
 \vspace{2mm}
 
-Complex instructions and microcode should generally be avoided. We do not have an instruction for saving or restoring all registers during a task switch. Instead, the necessary instructions for saving and restoring registers are implemented as tiny instructions to reduce the size of an instruction sequence that saves all registers. 
+Complex instructions and microcode should generally be avoided. It is not recommended to use microcode, because this is quite inefficient in current state-of-the-art processors. Important instructions may generate multiple micro-operations if this can be implemented in a simple way in the decoder. A register POP instruction needs to be split into at least two micro-operations, because it modifies two registers - the popped register and the stack pointer. The optional multi-register push and pop instructions need more micro-operations to be generated by the decoder. 
 \vspace{2mm}
 
-The following instructions are moderately complex: call, return, div, rem, sqrt, cmp\_swap, save\_cp, restore\_cp. These instructions may be implemented as dedicated state machines. The same applies to traps, Interrupts and system calls. 
+The following instructions are moderately complex: div, rem, sqrt, cmp\_swap, push, pop. These instructions may be implemented as dedicated state machines. The same applies to traps, Interrupts and system calls. 
 \vspace{2mm}
 
-Some current CPUs have a ``stack engine'' in order to predict the value of the stack pointer for a push, pop or call instruction when preceding stack operations are delayed due to operands that are not available yet. Such a system is not needed if we have a dual stack design (see page \pageref{dualStack}). Even with a single stack design, there is little need for a stack engine because push and pop operations will be rare in critical parts of the code if the function calling conventions in this document are followed (chapter \ref{chap:functionCallingConventions}). 
+Some current CPUs have a ``stack engine'' in order to predict the value of the stack pointer for a push, pop or call instruction when preceding stack operations are delayed due to operands that are not available yet. Such a system is not needed if we have a separate call stack (see page \pageref{dualStack}). The depth of function calls in most programs is so small that even a moderately small on-chip call stack would rarely need to spill to main memory.
 \vspace{2mm}
 
-Branch prediction is important for the performance. We may implement four different branch prediction algorithms: one for ordinary branches, one for loops, one for indirect jumps, and one for function returns. The long form of branch instructions have an option bit for indicating loop behavior. The short form of branch instructions does not have space for such a bit. The initial guess may be to assume loop behavior if the branch goes backwards and ordinary branch behavior if the branch goes forwards. This assumption may be corrected later, if necessary, by the branch prediction machinery. 
+Branch prediction is important for the performance of a CPUs with long pipelines. We may implement four different branch prediction algorithms: one for ordinary branches, one for loops, one for indirect jumps, and one for function returns. The long form of branch instructions have an option bit for indicating loop behavior. The short form of branch instructions does not have space for such a bit. The initial guess may be to assume loop behavior if the branch goes backwards and ordinary branch behavior if the branch goes forwards. This assumption may be corrected later, if necessary, by the branch prediction machinery. The code following a branch may be executed speculatively until it is determined whether the prediction was right. We may implement features for running both sides of a branch speculatively at the same time. Other ways of reducing branch misprediction delays are discussed on page \pageref{branchProposal} below.
 \vspace{2mm}
 
-The code following a branch is executed speculatively until it is determined whether the prediction was right. We may implement features for running both sides of a branch speculatively at the same time. 
+A full out-of-order design with register renaming requires a lot of chip space for a reservation station typically holding hundreds or pending instructions and hundreds or rename-able temporary registers, including vector registers. A simpler design may prioritize the chip space differently. Instead of a large reservation station, we may have more execution pipelines. Each pipeline is processing its instructions in order, but instructions may execute out of order as long as there are vacant pipelines. This solution has no register renaming, but each pipeline will watch all result buses for operands that they are waiting for.
 \vspace{2mm}
 
-The ForwardCom design allows large microprocessors with very long vector registers. This requires special design considerations. The chip layout of vector processors is typically divided into ``data lanes'' so that the vertical transfer of data from a vector element to the corresponding 
-vector element in another vector (i. e. same lane) is faster than the horizontal transfer of data from one vector element to another element at another position of the same vector (i. e. different lane). This means that instructions that transfer data horizontally across a vector, such as broadcast and permute instructions, may have longer latencies than other vector instructions. The scheduler needs to know the instruction latency, and this can be a problem if the latency depends on the distance of data transfer on very long vectors. This problem is addressed by indicating the vector length or the distance of data transfer for such instructions in a separate operand, which always uses the RS register field. This information may be redundant because the vector length is stored in the vector register operands, but the scheduler needs this information as early as possible. The other register operands are typically not ready until the clock cycle where they go to the execution unit, while the vector length is typically known earlier. The microprocessor can read the RS register at the address calculation stage in the pipeline, where it also reads any pointer, index register and vector length for memory operands. This allows the scheduler to predict the latency a few clock cycles in advance. The instruction set provides the extra information about vector length or data transfer length in RS for all instructions that involve horizontal data transfer, including memory broadcast, permute, insert, extract and shift instructions, but not broadcasting of immediate constants. 
+
+\section{Vector design}\label{vectorDesign}
+The chip layout of a vector processor is typically divided into ``data lanes''. 
+An efficient design may divide the vector processing into multiple lanes of 64 (or 128) bits each. Each lane would have its own register file containing a 64-bit slice of each vector register. There would be very little necessary communication between the lanes as long as the output data stay in the same lane as the input data. 
 \vspace{2mm}
 
-The data path to the data cache and memory should be quite wide, possibly matching the maximum vector length, because cache access and memory access are typical bottlenecks.
+The ForwardCom design allows large vector processors with very long vector registers. The priority of a particular design may be either to have one vector pipeline with very large vectors, or multiple pipelines with a smaller maximum vector lenght.
+\vspace{2mm}
+
+A consequence of this lane layout is that transfer of data between the lanes is likely to be slower. We may have one or more data buses connecting the lanes, but long distance connections is often a limited resource.
+This means that instructions that transfer data horizontally across a vector, such as permute instructions, may have longer latencies than other vector instructions. 
+\vspace{2mm}
+
+The scheduler needs to know the instruction latency, and this can be a problem if the latency depends on the distance of data transfer on very long vectors. This problem is addressed by indicating the vector length or the distance of data transfer for such instructions in a separate operand, which always uses the RS register field. This information may be redundant because the vector length is stored in the vector register operands, but the scheduler may need this information as early as possible. The other register operands are typically not ready until the clock cycle where they go to the execution unit, while the vector length is typically known earlier. The microprocessor can read the RS register at the address calculation stage in the pipeline, where it also reads any pointer, index register and vector length for memory operands. This allows the scheduler to predict the latency a few clock cycles earlier. The instruction set provides the extra information about vector length or data transfer length in the RS register for all instructions that involve horizontal data transfer, including memory broadcast, permute, insert, extract, and shift instructions, but not broadcasting of immediate constants. 
+\vspace{2mm}
+
+Each vector lane might have its own data cache. This may be easier to implement than one big data cache with a data bus as wide as the maximum vector length. This solution will be efficient as long as large data arrays are aligned to addresses divisible by the maximum vector length, but it will be less efficient if data arrays are misaligned. 
+The data traffic to cache and memory is often the limiting bottleneck in modern computer systems. A system with a separate data cache for each vector lane will make it feasible to have a larger total cache size. This may be a useful alternative to having multiple CPU cores. Data transfer between the lanes will be slower than if we have one cache servicing all lanes, but faster than data transfer between different CPU cores. Whether this is an efficient solution depends on the amount of data permutation needed in a specific application.
+\vspace{2mm}
 
 
-\section{Proposal for reducing branch misprediction delay}
+\section{Proposals for reducing branch misprediction delay}\label{branchProposal}
 Modern superscalar processors often have quite long pipelines. This gives a long branch misprediction delay. The branch misprediction delay is normally equal to the number of pipeline stages from a branch instruction is fetched until it is executed.
 \vspace{2mm}
 
-It may be possible to reduce this delay by executing branch instructions as early as possible in the pipeline. Any preceding instructions that a branch instruction depends on may also be executed early. It is proposed to execute all control transfer instructions (branch, jump, call, and return) in the front end of the pipeline, before the register renaming and scheduler. Any preceding instruction that a branch depends on, could likewise be executed in the front end. This idea is somewhat similar to the principle described in the article:
+It may be possible to reduce this delay by executing branch instructions as early as possible in the pipeline. Any preceding instructions that a branch instruction depends on may also be executed early. It is proposed to execute all control transfer instructions (branch, jump, call, and return) in the front end of the pipeline, before any register renaming and scheduler. Any preceding instruction that a branch depends on, could likewise be executed in the front end. This idea is somewhat similar to the principle described in the article:
 
 Sheikh, Rami, James Tuck, and Eric Rotenberg. “Control-Flow Decoupling.” In Proceedings of the 2012 45th Annual IEEE/ACM International Symposium on Microarchitecture, 329–340. IEEE Computer Society, 2012.
 \url{http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.952.6936&rep=rep1&type=pdf}
 \vspace{2mm}
 
-The vision is this: There are two sets of ALU's, one in the front end used for control flow and other simple instructions, and one in the back end used for all other calculations. The front end does not use register renaming, but relies on the permanent register file.
+The vision is this: There are two sets of ALU's, one in the front end used for control flow and simple integer instructions, and one in the back end used for all other calculations. The front end does not use register renaming, but relies on the permanent register file.
 \vspace{2mm}
 
-In most cases, the control flow depends only on simple integer operations such as incrementing a loop counter. The front end ALU's should be able to handle simple integer operations on general purpose registers. The front end may handle all simple integer instructions on general purpose registers if the operands are available in the permanent register file. If the capacity of the front end ALU's is insufficient then it may prioritize instructions on those registers that have recently been used as loop counters or branch conditions, but it may be cheaper to implement a few extra ALU's to increase the front end capacity than to implement such a mechanism for prioritization.
+In most cases, the control flow depends only on simple integer operations such as incrementing a loop counter. The front end ALU's should be able to handle simple integer operations on general purpose registers. The front end may handle all simple integer instructions on general purpose registers if the operands are available. If the capacity of the front end ALU's is insufficient then it may prioritize instructions on those registers that have recently been used as loop counters or branch conditions, but it may be cheaper to implement a few extra ALU's to increase the front end capacity than to implement such a mechanism for prioritization.
 \vspace{2mm}
 
 Instructions that are executed in the front end use the permanent register file for both input and output.  
-The remaining instructions are sent to the out-of-order back end. 
-All general purpose register operands are replaced by their value if the value is available in the permanent register file before the instruction is sent to the back end.
+The remaining instructions are sent to the out-of-order back end that may use register renaming. 
+All general purpose register operands are replaced by their value if the value is available before the instruction is sent to the back end.
 Instructions that execute in the front end may write their result not only to the permanent register file but also to any pending instruction that needs it.
 \vspace{2mm}
 
 The result of this mechanism is that a loop that is controlled only by simple instructions on general purpose registers
-will be unrolled in the front end. The instructions in the loop body may be passed on to the back end with the loop counter replaced by its value. The back end has register renaming so that it can execute the body of the second iteration before it has finished the body of the first iteration, etc.
+will be unrolled in the front end. The instructions in the loop body may be passed on to the back end with the loop counter replaced by its value. The back end may have register renaming so that it can execute the body of the second iteration before it has finished the body of the first iteration, etc.
 \vspace{2mm}
 
 All other control flow, such as branches, jumps, calls, returns, etc., will be unrolled in the front end as well so that control flow is effectively resolved before execution as far as it does not depend on delayed data.
 \vspace{2mm}
 
-The front end may support a minimum of out-of-order execution in the sense that an instruction that is waiting for an operand should not delay any independent subsequent instructions. But the front end does not need a complicated structure with a long queue and scheduler.
+The front end may support a minimum of out-of-order execution in the sense that an instruction that is waiting for an operand should not delay any independent subsequent instructions. But the front end does not need a complicated structure with a long queue, register renaming, and scheduler.
 \vspace{2mm}
 
-
-The front end should have access to the permanent register file, while the back end uses temporary registers with register renaming. The renamed registers will be written to the permanent register file when they retire. We have to keep track of whether the permanent registers are up to date. When the decoder sees an instruction that writes to a register, it will mark this register as invalid in the permanent register file and remember which instruction it belongs to. When this instruction is executed (whether in the front end or the back end), the register entry is marked as valid, unless another instruction writing to the same register has been seen in the meantime.
+The front end should have access to the permanent register file, while the back end may use temporary registers with register renaming. The renamed registers will be written to the permanent register file when they retire. We have to keep track of whether the permanent registers are up to date. When the decoder sees an instruction that writes to a register, it will mark this register as invalid in the permanent register file and add a tag to tell which instruction it belongs to. When this instruction is executed (whether in the front end or the back end), the register entry is marked as valid if the tag is matching the instruction that delivered the result.
 \vspace{2mm}
 
-The front end may fetch and decode speculatively, but not execute speculatively. It may even fetch both sides of a branch that it expects to have poor prediction. Fetching both sides of a branch becomes cheaper here than with a traditional superscalar design because it only needs to duplicate two pipeline stages (fetch and decode) in order to minimize branch misprediction bubbles.
+The front end may fetch and decode speculatively, but not execute speculatively. It may even fetch both sides of a branch that it expects to have poor prediction. Fetching both sides of a branch becomes cheaper here than with a traditional superscalar design because it only needs to duplicate two pipeline stages (fetch and decode) in order to minimize branch misprediction delays.
 \vspace{2mm}
 
-The fetch and decode stages should have higher throughput than the rest of the pipeline so that it can catch up and fill the pipeline after a branch bubble. The fetch stage should be able to fetch a large block of code in one clock cycle, possibly crossing a cache line boundary. The decoder should be able to decode the first one or two instructions in a fecthed code block in the first clock cycle, and determine the starting points of the remaining instructions. This will allow it to decode maybe four or more instructions in the second clock cycle after fetching a block of code. The aim of this is to keep the branch misprediction delay as low as possible. This delay will be 3 clock cycles if there are three stages in the front end path: fetch, decode, and execute. This requires that the two decode stages are joined into one.
+The fetch and decode stages should have higher throughput than the rest of the pipeline so that it can catch up and fill the pipeline after a branch delay. The fetch stage should be able to fetch a large block of code in one clock cycle. The decoder should be able to decode the first one or two instructions in a fetched code block in the first clock cycle, and determine the starting points of the remaining instructions. This will allow it to decode maybe four or more instructions in the second clock cycle after fetching a block of code. The aim of this is to keep the branch misprediction delay as low as possible. 
 \vspace{2mm}
 
-Multi-way branches with a jump table are particularly critical here because they have a memory operand that may be delayed due to cache miss. Implementing memory access in the front end may be too complicated. Therefore, such instructions probably have to go to the back end. The out-of-order mechanism may give high priority to these instructions and execute them as soon as the register operand is available. Jump tables are normally placed in the read-only memory block (see page \pageref{memoryModel}). The speed of access to jump tables may be increased by having a separate cache for read-only memory.
-\vspace{2mm}
-
-The demand for advanced branch prediction is somewhat relaxed if we can drastically reduce the branch misprediction delay with the measures described here. The branch prediction machinery in modern processors is very complicated and requires a lot of silicon space for branch target buffers and pattern/history tables. We can cut down on this and use a simpler branch prediction scheme if branches are resolved in the front end. A few extra ALU's in the front end will use less silicon space than an advanced branch prediction mechanism. 
+Multi-way branches with a jump table are particularly critical here because they have a memory operand that may be delayed due to a cache miss. Implementing memory access in the front end may be too complicated. Therefore, such instructions probably have to go to the back end. The out-of-order mechanism may give high priority to these instructions and execute them as soon as the register operands are available. Jump tables are normally placed in the read-only memory block (see page \pageref{memoryModel}). The speed of access to jump tables may be increased by having a separate cache for read-only memory.
 \vspace{2mm}
 
 An extra advantage of this design is that the registers used in memory operands for pointer, index, and vector length are likely to be available early so that memory operands can be fetched before they are needed.
+\vspace{2mm}
+
+
+The demand for advanced branch prediction is somewhat relaxed if we can drastically reduce the branch misprediction delay with the measures described here. The branch prediction machinery in modern processors is very complicated and requires a lot of chip space for branch target buffers and pattern/history tables. We can cut down on this and use a simpler branch prediction scheme if branches are resolved in the front end. A few extra ALU's in the front end will use much less chip space than an advanced branch prediction mechanism. 
+\vspace{2mm}
+
+The early processing of jumps and branches is also possible with a simpler design without register renaming and out-of-order processing. We may have a fast-track in-order pipeline for branches and simple integer instructions without memory operands. Branches often depend only on loop counters and other simple calculations in general purpose registers. These instructions can be executed in the fast-track pipeline in most cases, while the more complicated loop body instructions go to a longer full-featured pipeline. Direct call and return instructions can be executed very early in the pipeline if we have an on-chip call stack because the call stack pointer is independent of the other instructions and registers.
 \vspace{2mm}
 
 \end{document}

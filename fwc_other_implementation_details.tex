@@ -35,7 +35,7 @@ There are various methods for saving the return addresses for function calls: a 
 Some systems use a link register to hold the return address. The advantage of a link register is that a leaf function can be called without storing anything on the stack. This saves cache bandwidth in programs with many leaf function calls. The disadvantage is that every non-leaf function needs to save the link register on a stack before calling another function, and restore the leaf register before returning.
 \vspace{2mm}
 
-If we decide to have a link register then it should be a special register, not one of the general purpose registers. A link register does not need to support all the things that a general purpose register can do. If the link register is included as one of the general purpose registers then it will be tempting for a programmer to save it to another register rather than on the stack, and then end the function by jumping to that other register. This will work, of course, but it will interfere with the way returns are predicted. The branch predictor uses a special mechanism for predicting returns, which is different from the mechanism used for predicting other jumps and branches. This mechanism, which is called a return stack buffer, is a small rolling cache that remembers the addresses of the last calls. If a function returns by a jump to another register than the link register then it will use the wrong prediction mechanism, and this will cause severe delays due to misprediction of the subsequent series of returns. The return stack buffer will also be messed up if the link register is used for indirect jumps or other purposes.
+If we decide to have a link register then it should be a special register, not one of the general purpose registers. A link register does not need to support all the things that a general purpose register can do. If the link register is included as one of the general purpose registers then it will be tempting for a programmer to save it to another register rather than on the stack, and then end the function by jumping to that other register. This will work, of course, but it will interfere with the way returns are predicted. A branch predictor is typically using a special mechanism for predicting returns, which is different from the mechanism used for predicting other jumps and branches. This mechanism, which is called a return stack buffer, is a small rolling cache that remembers the addresses of the last calls. If a function returns by a jump to another register than the link register then it will use the wrong prediction mechanism, and this will cause severe delays due to misprediction of the subsequent series of returns. The return stack buffer will also be messed up if the link register is used for indirect jumps or other purposes.
 \vspace{2mm}
 
 The only instructions that are needed for the link register other than call and return, are push and pop. We can reduce the number of instructions in non-leaf functions by making a combined instruction for ``push link register and then call a function'' which can be used for the first function call in a non-leaf function, and another instruction for ``pop link register and then return'' to end a non-leaf function. However, this will violate the principle that we want to avoid complex instructions in order to simplify the pipeline design.
@@ -51,10 +51,11 @@ Therefore, we will not use a link register in the ForwardCom architecture.
 
 \subsubsection{Separate call stack} \label{dualStack}
 We may have two stacks: 
-a call stack for return addresses and a data stack for the local data of each function. A program without recursive functions will usually have a quite limited call depth so that the entire call stack, or at least the ``hot'' part of it, can be stored on the chip. This will improve the performance because no memory or cache operations are needed for call and return operations -- at least not in the critical innermost loops of the program. It will also simplify prediction of return addresses because the on-chip rolling stack and the return stack buffer will be one and the same structure.
+a call stack for return addresses and a data stack for the local data of each function. Most programs have a quite limited call depth so that the entire call stack, or at least the ``hot'' part of it, can be stored on the chip. This will improve the performance because no memory or cache operations are needed for call and return operations -- at least not in the critical innermost loops of the program. It will also simplify prediction of return addresses because the on-chip rolling stack and the return stack buffer will be one and the same structure.
 \vspace{2mm}
 
-The call stack can be implemented as a rolling register stack on the chip. The call stack is spilled to memory if it overflows. A return instruction after such a spilling event will use the on-chip value rather than the value in memory as long as the on-chip value has not been overwritten by new calls. Therefore, the spilling event is unlikely to occur more than once in the innermost part of a program.
+The call stack can be implemented as a rolling register stack on the chip. The call stack is spilled to memory if it overflows. A return instruction after such a spilling event will use the on-chip value rather than the value in memory as long as the on-chip value has not been overwritten by new calls. Therefore, the spilling event is unlikely to occur more than once in the innermost part of a program. 
+Spilling of the call stack will be extremely rare, even for programs with recursive functions, if the on-chip call stack has a reasonable size.
 \vspace{2mm}
 
 The pointer for the call stack should not be a general purpose register because the programmer will rarely need to access it directly. Direct manipulation of the call stack is only needed in a stack unroll event (after an exception or long jump) or a task switch.
@@ -63,19 +64,23 @@ The pointer for the call stack should not be a general purpose register because 
 A function does not have easy access to the return address that it was called from. Information about the caller may be supplied explicitly as a function parameter in the rare case that it is needed. There is a security advantage in hiding the return address inside the chip. This prevents overwriting return addresses in case of program errors or malicious buffer overflow attacks.
 \vspace{2mm}
 
-The disadvantage of having a separate call stack is that it makes memory management more complicated because there are two stacks that can potentially overflow. The size of the call stack can be predicted accurately for programs without recursive functions by using the method described on page \pageref{predictingStackSize}.
+A further advantage of a separate call stack is that call and return instructions can be executed at a very early stage in the pipeline because there is no dependence on other instructions that may modify the stack pointer. This avoids delays or bubbles in the pipeline that may otherwise occur when a return address is only available at a late stage in the pipeline.
 \vspace{2mm}
 
-A separate call stack may be implemented with the ForwardCom architecture. The size of the on-chip stack buffer and other details will be implementation-dependent.
+The disadvantage of having a separate call stack is that it makes memory management more complicated if there are two stacks that can potentially overflow. The size of the call stack can be predicted accurately for programs without recursive functions by using the method described on page \pageref{predictingStackSize}.
+\vspace{2mm}
 
 \subsubsection{Unified stack for return addresses and local data} \label{singleStack}
-Many current systems use the same stack for return addresses and local data. This method may be used with the ForwardCom architecture because it is simple to implement. 
+Many current systems use the same stack for return addresses and local data. 
+Corruption of the stack is an error that often occurs with a unified stack, resulting in a wrong return address.
 \vspace{2mm}
 
 \subsubsection{Conclusion for ForwardCom}
-A ForwardCom system may use a separate call stack or a unified stack, but not a link register. The hardware implementation of call and return instructions depends on whether there is one or two stacks. The dual stack system will be used for large processors where performance or security is important, while the unified stack system may be used in small processors where simplicity is preferred. A ForwardCom microprocessor does not have to support both systems, but the software does. 
-The calling conventions defined in chapter \ref{chap:functionCallingConventions} will make the software compatible with both single stack and dual stack processors.
-Tail calls can be implemented efficiently with a simple jump instruction regardless of the stack type.
+It is decided to use a separate call stack for ForwardCom because of the security advantage and the more efficient hardware implementation. \\
+\vspace{2mm}
+
+The calling conventions defined in chapter \ref{chap:functionCallingConventions} will 
+work with a separate stack as well as a with unified stack.
 \vspace{2mm}
 
 

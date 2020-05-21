@@ -4,6 +4,21 @@
 \RaggedRight
 
 \chapter{Revision history}
+
+\subsubsection{Version 1.10, 2020-05-21.}
+
+\begin{itemize}
+\item Tiny instructions are dropped. Earlier versions defined a compact instruction format that allowed two tiny instructions to be packed into a single 32-bit code word. However, it was found that most tiny instructions go unpaired so that they use 32 bits anyway. The limited advantage of tiny instructions did not justify the extra complexity. The code space that was reserved for tiny instruction pairs can be reused for other purposes.
+
+\item Single-word jump instructions are moved from format 1.4 and 1.5 to format 1.6 and 1.7, formerly used for tiny instructions. Format 1.3B and 1.3C is split into 1.3B and 1.4C. Format 1.5 is now vacant for application specific vector instructions.
+
+\item New push, pop, and clear instructions to replace the former tiny instruction pairs with the same functionality. These instructions may generate multiple micro-operations.
+
+\item New instruction: vectors\_used.
+
+\end{itemize}
+
+
 \subsubsection{Version 1.09, 2020-04-14.}
 
 \begin{itemize}

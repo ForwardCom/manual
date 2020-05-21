@@ -20,14 +20,15 @@ The support for immediate constants of all types is an improvement over current 
 
 \section{Instruction size}
 The ForwardCom instruction set uses a 32-bit word size for code. 
-An instruction can consist of one, two, or optionally three 32-bit words. The code density can be increased by using tiny instructions of half the size, but the 32-bit unit size is preserved by pairing tiny instructions two-by-two. It is not possible to jump to the second tiny instruction in such a pair of tiny instructions. It is possible to add future extensions with instruction sizes of four or more words.
+An instruction can consist of one, two, or three 32-bit words. 
+It is possible to add future extensions with instruction sizes of four or more words.
 
 \subsubsection{Rationale}
 A CISC architecture with many different instruction sizes is inefficient in superscalar processors where we want to execute several instructions per clock cycle. The decoding front end is often a bottleneck, especially in the x86 architecture. The decoder has to determine the length of the first instruction before it knows where the next instruction begins. The ``instruction length decoding'' is a fundamentally serial process which makes it difficult to decode multiple instructions per clock cycle. Some microprocessors have an extra ``micro-operations cache'' after the decoder in order to circumvent this bottleneck.
 \vspace{2mm}
 
-Here, it is desired to have as few different instruction lengths as possible and to make it easy to determine the length of each instruction. We want a small instruction size for the most common simple instructions, but we also need a larger instruction size in order to accommodate things like a larger register set, instructions with multiple operands, vector operations with advanced features, 32-bit address offsets, and large immediate constants. This proposal is a compromise between code compactness, easy decoding, and space for advanced features.
-The instruction length is indicated by only two bits. A decoder can find the instruction boundaries in n words by means of a simple Boolean function of 2n inputs.
+Here, it is desired to have as few different instruction sizes as possible and to make it easy to determine the length of each instruction. We want a small instruction size for the most common simple instructions, but we also need a larger instruction size in order to accommodate things like a larger register set, instructions with multiple operands, vector operations with advanced features, 32-bit address offsets, and large immediate constants. This proposal is a compromise between code compactness, easy decoding, and space for advanced features.
+The instruction size is indicated by only two bits. A decoder can find the instruction boundaries in n words by means of a simple Boolean function of 2n inputs.
 
 \section{Register set}
 There are 32 general purpose registers (r0--r31) of 64 bits each, and 32 vector registers (v0--v31) of variable length. The maximum vector length is different for different hardware implementations. The general purpose registers can be used for integers of up to 64 bits as well as for pointers. The vector registers can be used for scalars or vectors of integers and floating point numbers. 

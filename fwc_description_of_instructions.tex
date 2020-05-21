@@ -49,20 +49,6 @@ Broadcast a small constant to all elements of a vector with maximum length.
 \vspace{2mm}
 
 
-\subsubsection{clear}
-\label{table:clearInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
-\hline
-\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-Tiny & 16 & vectors \\ \hline
-\end{tabular}
-\vspace{2mm}
-
-v0 = clear()
-\vspace{2mm}
-
-Clear vector register RD by setting the length to zero. All data are discarded. A cleared register is treated as unused. 
-
 \subsubsection{compress}
 \label{table:compressInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
@@ -466,19 +452,13 @@ Make vector of two elements. dest[0] = 0, dest[1] = IM2.
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 2 & all types \\ \hline
-tiny  & 1 & g.p. register = 4-bit zero-extended constant \\ \hline
-tiny  & 8 & two g.p. registers \\ \hline
-tiny  & 14 & g.p. register = memory operand with pointer \\ \hline
-tiny  & 17 & single prec. float scalar = 4 bit unsigned integer constant \\ \hline
-tiny  & 18 & double prec. float scalar = 4 bit unsigned integer constant \\ \hline
-tiny  & 19 & two vector registers \\ \hline
 1.1 C &  0 & g.p. register = 16-bit sign extended constant \\ \hline
 1.1 C & 16 & g.p. register = 8-bit sign extended constant with left shift \\ \hline
-1.3 C & 32 & vector register 16-bit scalar = 16-bit constant. Optional  \\ \hline
-1.3 C & 40 & vector register 32-bit scalar = 8-bit sign extended constant with left shift. Optional \\ \hline
-1.3 C & 41 & vector register 64-bit scalar = 8-bit sign extended constant with left shift. Optional \\ \hline
-1.3 C & 56 & vector register single precision scalar = half precision immediate constant. Optional \\ \hline
-1.3 C & 57 & vector register double precision scalar = half precision immediate constant. Optional \\ \hline
+1.4 C &  0 & vector register 16-bit scalar = 16-bit constant. Optional  \\ \hline
+1.4 C &  8 & vector register 32-bit scalar = 8-bit sign extended constant with left shift. Optional \\ \hline
+1.4 C &  9 & vector register 64-bit scalar = 8-bit sign extended constant with left shift. Optional \\ \hline
+1.4 C & 32 & vector register single precision scalar = half precision immediate constant. Optional \\ \hline
+1.4 C & 33 & vector register double precision scalar = half precision immediate constant. Optional \\ \hline
 \end{tabular}
 \vspace{2mm}
 
@@ -850,28 +830,47 @@ int64 r0 = vec2gp(v1)
 \vspace{2mm}
 
 Copy value of first element of vector register RS to general purpose register RD. Integers are sign-extended. Single precision floating point values are zero-extended.
-
 \vspace{2mm}
+
+
 \subsection{Data read and write instructions}
 
-\subsubsection{add\_cps}
-\label{table:addCpsInstruction}
+
+\subsubsection{address}
+\label{table:addressInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-tiny & 28 & vector and g.p. register \\ \hline
+2.9 A & 32 & general purpose register \\ \hline
 \end{tabular}
 \vspace{2mm}
 
-Add compressed size.
+int64 r1 = address([mydata])
 \vspace{2mm}
 
-This instruction gets the size of the compressed image for vector RD and adds it to general purpose register RS.
-This is used for updating the stack pointer or any other pointer
-after restoring a vector from a compressed memory image.
+Gives the address of a data object in static memory or a function.
 \vspace{2mm}
 
-See save\_cp page \pageref{table:saveCpInstruction} for details.
+
+\subsubsection{clear}
+\label{table:clearInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.3 B & 58 & vector. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+clear(v5)      // clear one vector register \\
+clear(v5, 8)   // clear vector registers v5 - v8
+\vspace{2mm}
+
+Clear one or more vector registers by setting the length to zero. A cleared register is regarded as unused.
+\vspace{2mm}
+
+It may be advantageous to clear vector registers after use. This will mean that there is less data to save during a task switch.
+\vspace{2mm}
+
 
 \subsubsection{extract\_store}
 \label{table:extractStoreInstruction}
@@ -922,6 +921,40 @@ Options indicated by IM1:
 The move instruction, described at page \pageref{table:moveInstruction}
 can read a register from a memory operand.
 
+\subsubsection{pop}
+\label{table:popInstruction}
+\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.8 B & 57 & general purpose registers. Optional \\ 
+1.3 B & 57 & vector registers. Optional \\ \hline
+\end{tabular}
+\vspace{2mm}
+
+\begin{lstlisting}[frame=none]
+pop(r5)         // pop 64-bit register r5 off the stack
+pop(r1, r2, 6)  // pop registers r2-r6 from stack pointed to by r1
+pop(v5)         // pop vector register v5 off the stack
+pop(v5, 9)      // pop vector registers v5-v9 off the stack
+\end{lstlisting}
+\vspace{2mm}
+
+The pop instruction can pop one or more registers from a stack. The registers are popped in reverse order.
+\vspace{2mm}
+
+An optional first register (RD) indicates a stack pointer. The default stack pointer (SP) is used if not specified. An optional last operand is an index of the last register to pop. The syntax for the POP instruction has no equal sign. The operand size is 64 bits by default. A different operand type is allowed only for general purpose registers.
+\vspace{2mm}
+
+The stack is growing backwards by default. The last register is read from the address pointed to by the stack pointer. Then the stack pointer is incremented by the amount that was occupied by the register. This is 8 bytes by default for a general purpose register or a variable amount for a vector register. This process is repeated if multiple registers are popped. Registers are pushed in forward order and popped in reverse order.
+\vspace{2mm}
+
+It is possible to make a forward-growing stack for general purpose registers by adding 0x80 to the last operand. A stack containing vector registers cannot grow forwards because the pop instruction needs to read the vector length stored at the beginning of each field before it can read the rest of the vector.
+\vspace{2mm}
+
+See the push instruction on page \pageref{table:pushInstruction} for more details.
+\vspace{2mm}
+
+
 \subsubsection{prefetch}
 \label{table:prefetchInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
@@ -933,72 +966,45 @@ multi & 3 & memory operand. Optional \\ \hline
 
 Prefetch memory operand into cache for later read or write.
 Different variants (not yet defined) can be specified by IM3 for format with E template.
+\vspace{2mm}
 
-\subsubsection{restore\_cp}
-\label{table:restoreCpInstruction}
+
+\subsubsection{push}
+\label{table:pushInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-tiny & 30 & vector and memory operand \\ \hline
+1.8 B & 56 & general purpose register. Optional \\ 
+1.3 B & 56 & vector register. Optional \\ \hline
 \end{tabular}
 \vspace{2mm}
 
-Restore compressed image.
-\vspace{2mm}
-
-This will restore vector register RD from a compressed memory image pointed to by general purpose register RS.
-The memory image must have been written previously with the save\_cp instruction. See save\_cp for details.
-
-\subsubsection{save\_cp}
-\label{table:saveCpInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
-\hline
-\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-tiny & 31 & memory operand and vector \\ \hline
-\end{tabular}
-\vspace{2mm}
-
-Save compressed image.
-\vspace{2mm}
-
-This will save vector register RD to a compressed memory image pointed to by general purpose register RS.
-\vspace{2mm}
-
-This instruction is used for saving a vector register to the stack or to any other memory position in an efficient way that includes information about the vector length. When saving a vector register with variable length, we do not want to save the maximum length when only part of the register is used. Instead, we are using the save\_cp and restore\_cp instructions which are intended for saving and restoring a vector register without using more memory than necessary.
-
-\vspace{2mm}
-
-The format of the compressed memory image is implementation-dependent. Typically, it will contain an integer to indicate the vector length, followed by as many bytes of data as the length indicates. Any additional compression is allowed if it can be done sufficiently fast. It is recommended to include a 
-checksum or hash of the data in order to check if the stack has been corrupted. The restore\_cp instruction may generate a trap when attempting to restore a vector where the checksum does not match the data. The compressed image of an empty vector will normally use only a single stack entry (8 bytes).
-\vspace{2mm}
-
-The size of the compressed image must be a multiple of the stack word size if the pointer register is the stack pointer.
-\vspace{2mm}
-
-The software should never use the saved image for anything else than restoring a vector register on the same microprocessor model that saved it, because the image format is not compatible across microprocessors.
-\vspace{2mm}
-
-The size of the saved image can be added to a pointer with the add\_cps instruction or subtracted from a pointer with the sub\_cps instruction. RS indicates the pointer, which can be r0-14 or r31 (stack pointer).
-\vspace{2mm}
-
-A vector register V can be saved (pushed) on the stack with the following pair of tiny instructions:
-
 \begin{lstlisting}[frame=none]
-   sp = sub_cps(sp,V)
-   [sp] = save_cp(V)
+push(r5)           // push 64-bit register r5 on the stack
+push(r1, r2, 6)    // push registers r2-r6 on stack pointed to by r1
+push(r1, r2, 0x86) // push registers r2-r6 on forward growing stack r1
+push(v5, 9)        // push vector registers v5-v9 on the stack
 \end{lstlisting}
-
-A vector register V can be restored (popped) from the stack with the following pair of tiny instructions:
-
-\begin{lstlisting}[frame=none]
-   V = restore_cp([sp])
-   sp = add_cps(sp,V)
-\end{lstlisting}
-
-The same instructions can be used for saving vector registers during a task switch. Unused vector registers will only use very little space when saved in this way.
 \vspace{2mm}
 
-The restore\_cp instruction is allowed to read more bytes than necessary, up to the maximum vector length plus 8 bytes, and discard any superfluous bytes afterwards when the actual length is known.
+The push instruction can push one or more registers on a stack. 
+\vspace{2mm}
+
+An optional first register (RD) indicates a stack pointer. The default stack pointer (SP) is used if not specified. An optional last operand is an index of the last register to push. The syntax for the PUSH instruction has no equal sign. The operand size is 64 bits by default. A different operand type is allowed only for general purpose registers.
+\vspace{2mm}
+
+The stack is growing backwards by default. 
+The stack pointer is decremented by the amount that will be occupied by the register. The first register is then stored to the address pointed to by the stack pointer. This size is 8 bytes for a full general purpose register or a variable amount for a vector register. This process is repeated if multiple registers are pushed.
+\vspace{2mm}
+
+It is possible to make a forward-growing stack for general purpose registers by adding 0x80 to the last operand. This may be used as an increment-pointer-and-store instruction. A stack containing vector registers cannot grow forwards because a later pop instruction needs to read the vector length stored at the beginning of each field before it can read the rest of the vector.
+\vspace{2mm}
+
+Note that vector registers are stored in an implementation-dependent way by the push instruction. The microprocessor may compress the data or it may insert extra space for optimal alignment of memory access. The programmer should make no assumption about how the vector elements are stored. A pushed vector register can only be restored by a pop instruction on the same or an identical microprocessor that pushed it. If the memory image is moved before restoring, it must be moved by a multiple of the maximum vector lenth. The maximum amount of memory occupied by a pushed vector register is 8 bytes plus the maximum vector length.
+\vspace{2mm}
+
+See also the pop instruction on page \pageref{table:popInstruction} for more details.
+\vspace{2mm}
 
 
 \subsubsection{store}
@@ -1007,7 +1013,6 @@ The restore\_cp instruction is allowed to read more bytes than necessary, up to 
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi &  1 & memory operand and g.p. or vector register \\ \hline
-tiny  & 15 & memory operand and g.p. register \\ \hline
 2.5 B &  8 & memory operand and 32-bit constant. Optional \\ \hline
 \end{tabular}
 \vspace{2mm}
@@ -1031,25 +1036,23 @@ It is allowed for the hardware to write the operand in a piecemeal fashion.
 \vspace{2mm}
 
 Masked operation with a mask of zero will store a fallback value or zero. Masking cannot leave a memory element untouched.
+\vspace{2mm}
 
-\subsubsection{sub\_cps}
-\label{table:subCpsInstruction}
+\subsubsection{vectors\_used}
+\label{table:vectorsUusedInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-tiny & 29 & vector and g.p. register \\ \hline
+1.8 B & 59 & g.p. register result. Optional \\ \hline
 \end{tabular}
 \vspace{2mm}
 
-Subtract compressed size.
+int32 r1 = vectors\_used()
 \vspace{2mm}
 
-This instruction gets the size of the compressed image for vector RD and subtracts it from general purpose register RS.
-This is used for adjusting the stack pointer or any other pointer
-before saving a vector to a compressed memory image.
+This instruction returns a 32-bit integer in a general purpose register indicating which vector registers are used. A bit is 1 if the corresponding vector register has a non-zero length.
 \vspace{2mm}
 
-See save\_cp page \pageref{table:saveCpInstruction} for details.
 
 \subsection{General arithmetic instructions}
 
@@ -1092,20 +1095,17 @@ The handling of overflow for signed integers is controlled by the constant IM1 a
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi &  8 & all standard types \\ \hline
 multi & 44 & float16. Optional \\ \hline
-tiny  &  2 & g.p. register and 4-bit zero-extended constant \\ \hline
-tiny  &  9 & two g.p. registers \\ \hline
-tiny  & 20 & two vector registers, single precision float \\ \hline
-tiny  & 21 & two vector registers, double precision float \\ \hline
 1.1 C &  2 & g.p. register and 16-bit sign-extended constant \\ \hline
 1.1 C &  7 & g.p. register and 16-bit sign-extended constant shifted left by 16 \\ \hline
 1.1 C & 17 & g.p. register and 8-bit sign-extended constant shifted left by another constant \\ \hline
 2.9   &  2 & g.p. register and 32-bit zero-extended constant \\ \hline
 2.9   &  4 & g.p. register and 32-bit constant shifted left by 32 \\ \hline
-1.3 C & 33 & vector of 16-bit integer elements and broadcast 16 bit integer constant. Optional \\ \hline
-1.3 C & 42 & vector of 32-bit integer elements and broadcast 8-bit sign-extended constant shifted left by another constant. Optional \\ \hline
-1.3 C & 43 & vector of 64-bit integer elements and broadcast 8-bit sign-extended constant shifted left by another constant. Optional \\ \hline
-1.3 C & 58 & single precision floating point vector and broadcast half precision floating point constant. Optional \\ \hline
-1.3 C & 59 & double precision floating point vector and broadcast half precision floating point constant. Optional \\ \hline
+1.4 C &  1 & vector of 16-bit integer elements and broadcast 16 bit integer constant. Optional \\ \hline
+1.4 C & 10 & vector of 32-bit integer elements and broadcast 8-bit sign-extended constant shifted left by another constant. Optional \\ \hline
+1.4 C & 11 & vector of 64-bit integer elements and broadcast 8-bit sign-extended constant shifted left by another constant. Optional \\ \hline
+1.4 C & 34 & single precision floating point vector and broadcast half precision floating point constant. Optional \\ \hline
+1.4 C & 35 & double precision floating point vector and broadcast half precision floating point constant. Optional \\ \hline
+1.4 C & 40 & half precision floating point vector and broadcast half precision floating point constant. Optional \\ \hline
 \end{tabular}
 \vspace{2mm}
 
@@ -1492,11 +1492,10 @@ min\_u(src1,src2) = src1 \textless{} src2 ? src1 : src2
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 11 & all standard types \\ \hline
 multi & 46 & float16. Optional \\ \hline
-tiny  & 24 & two single precision float vectors \\ \hline
-tiny  & 25 & two double precision float vectors \\ \hline
 1.1 C &  5 & general purpose register and 16-bit sign-extended constant \\ \hline
-1.3 C & 60 & single precision floating point vector and broadcast half-precision floating point constant. Optional \\ \hline
-1.3 C & 61 & double precision floating point vector and broadcast half-precision floating point constant. Optional \\ \hline
+1.4 C & 36 & single precision floating point vector and broadcast half-precision floating point constant. Optional \\ \hline
+1.4 C & 37 & double precision floating point vector and broadcast half-precision floating point constant. Optional \\ \hline
+1.4 C & 41 & half precision floating point vector and broadcast half-precision floating point constant. Optional \\ \hline
 \end{tabular}
 \vspace{2mm}
 
@@ -1861,10 +1860,6 @@ The square root of a negative number gives NAN.
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi &  9 & all standard types \\ \hline
 multi & 45 & float16. Optional \\ \hline
-tiny  &  3 & g.p. register and 4-bit zero-extended constant \\ \hline
-tiny  & 10 & two g.p. registers \\ \hline
-tiny  & 22 & two vector registers, single precision float \\ \hline
-tiny  & 23 & two vector registers, double precision float \\ \hline
 2.9   &  3 & g.p. register and 32-bit zero-extended constant \\ \hline
 \end{tabular}
 \vspace{2mm}
@@ -2130,12 +2125,11 @@ Overflow and underflow produces UINT\_MAX and 0.
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 28 & all types \\ \hline
-tiny  & 11 & two g.p. registers \\ \hline
 1.1 C & 18 & g.p. register and 8-bit signed constant shifted left by another constant \\ \hline
 2.9   &  5 & g.p. register and 32-bit constant shifted left by 32 \\ \hline
-1.3 C & 34 & vector of 16-bit integers, and broadcast 16-bit constant. Optional \\ \hline
-1.3 C & 44 & vector of 32-bit integers, and broadcast sign-extended 8-bit constant shifted left by another constant. Optional \\ \hline
-1.3 C & 45 & vector of 64-bit integers, and broadcast sign-extended 8-bit constant shifted left by another constant. Optional \\ \hline
+1.4 C &  2 & vector of 16-bit integers, and broadcast 16-bit constant. Optional \\ \hline
+1.4 C & 12 & vector of 32-bit integers, and broadcast sign-extended 8-bit constant shifted left by another constant. Optional \\ \hline
+1.4 C & 13 & vector of 64-bit integers, and broadcast sign-extended 8-bit constant shifted left by another constant. Optional \\ \hline
 \end{tabular}
 \vspace{2mm}
 
@@ -2482,12 +2476,11 @@ dest = (src1 \& \~{}(m$<<$b)) $|$ ((src2 $>>$ a) \& m) $<<$ b
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 30 & all types \\ \hline
-tiny  & 12 & two g.p. registers \\ \hline
 1.1 C & 19 & g.p. register and 8-bit signed constant shifted left by another constant \\ \hline
 2.9   &  6 & g.p. register and 32-bit constant shifted left by 32 \\ \hline
-1.3 C & 35 & vector of 16-bit integers, and broadcast 16-bit constant. Optional \\ \hline
-1.3 C & 46 & vector of 32-bit integers, and broadcast sign-extended 8-bit constant shifted left by another constant. Optional \\ \hline
-1.3 C & 47 & vector of 64-bit integers, and broadcast sign-extended 8-bit constant shifted left by another constant. Optional \\ \hline
+1.4 C &  3 & vector of 16-bit integers, and broadcast 16-bit constant. Optional \\ \hline
+1.4 C & 14 & vector of 32-bit integers, and broadcast sign-extended 8-bit constant shifted left by another constant. Optional \\ \hline
+1.4 C & 15 & vector of 64-bit integers, and broadcast sign-extended 8-bit constant shifted left by another constant. Optional \\ \hline
 \end{tabular}
 \vspace{2mm}
 
@@ -2774,12 +2767,11 @@ If multiple options are specified, the results will be OR'ed.
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 31 & all types \\ \hline
-tiny  & 13 & two g.p. registers \\ \hline
 1.1 C & 20 & g.p. register and 8-bit signed constant shifted left by another constant \\ \hline
 2.9   &  7 & g.p. register and 32-bit constant shifted left by 32 \\ \hline
-1.3 C & 36 & vector of 16-bit integers, and broadcast 16-bit constant. Optional \\ \hline
-1.3 C & 48 & vector of 32-bit integers, and broadcast sign-extended 8-bit constant shifted left by another constant. Optional \\ \hline
-1.3 C & 49 & vector of 64-bit integers, and broadcast sign-extended 8-bit constant shifted left by another constant. Optional \\ \hline
+1.4 C &  4 & vector of 16-bit integers, and broadcast 16-bit constant. Optional \\ \hline
+1.4 C & 16 & vector of 32-bit integers, and broadcast sign-extended 8-bit constant shifted left by another constant. Optional \\ \hline
+1.4 C & 17 & vector of 64-bit integers, and broadcast sign-extended 8-bit constant shifted left by another constant. Optional \\ \hline
 \end{tabular}
 \vspace{2mm}
 
@@ -3472,7 +3464,7 @@ Further atomic instructions can be implemented if needed, preferably with the sa
 This instruction is used for filling unused code memory. It will generate a trap (interrupt) if executed.
 \vspace{2mm}
 
-All fields are filled with ones. The complete instruction code word is 0x6FFFFFFF.
+All fields are filled with ones. The complete instruction code word is 0x7FFFFFFF.
 
 \subsubsection{nop}
 \label{table:nopInstruction}
@@ -3480,7 +3472,6 @@ All fields are filled with ones. The complete instruction code word is 0x6FFFFFF
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi &  0 & \\ \hline
-tiny  &  0 & \\ \hline
 3.0   &  0 & \\ \hline
 \end{tabular}
 \vspace{2mm}
@@ -3488,10 +3479,9 @@ tiny  &  0 & \\ \hline
 No operation. Used as a filler to replace removed code or to align code entries.
 \vspace{2mm}
 
-The processor is allowed to skip NOPs as fast as it can at an early stage in the pipeline. A pair of tiny instructions where the second instruction is a NOP can be treated as a single instruction.
+The processor is allowed to skip NOPs as fast as it can at an early stage in the pipeline. These NOPs cannot be used as timing delays, only as fillers.
 \vspace{2mm}
 
-These NOPs cannot be used as timing delays, only as fillers.
 
 \subsubsection{undef}
 \label{table:undefInstruction}
@@ -3824,7 +3814,7 @@ Return from system call.
 Traps work like interrupts. The unconditional trap has an 8-bit interrupt number in IM1. This is an index into the interrupt vector table, which initially starts at absolute address zero. The unconditional trap instruction may use IM2 for additional information.  
 \vspace{2mm}
 
-A trap instruction with all 1's in all fields (opcode 0x6FFFFFFF) can be used as filler in unused parts of code memory.
+A trap instruction with all 1's in all fields (opcode 0x7FFFFFFF) can be used as filler in unused parts of code memory.
 
 \subsubsection{conditional trap}
 \label{table:conditionalTrapInstructions}
@@ -3919,40 +3909,6 @@ To invert all bits in an integer, do an XOR with -1. To invert a Boolean, do an 
 
 \subsubsection{Rotate through carry}
 Rotates through carry are rarely used, and common implementations can be very inefficient. A left rotate through carry can be replaced by an add\_c with the same register in both source operands.
-
-\subsubsection{Push and pop registers}
-\label{pushPop}
-There are no push and pop instructions, but pseudo-instructions named push and pop are available
-for saving and restoring registers on the stack. For example, pushing and popping a general purpose register r1 is implemented as follows.
-
-\begin{lstlisting}[frame=single]
-   // push (r1)
-   int64 sp -= 8
-   int64 [sp] = r1
-   // pop (r1)
-   int64 r1 = [sp]
-   int64 sp += 8
-\end{lstlisting}
-
-Vector registers can be saved with the sub\_cps and save\_cp instructions and restored with 
-the restore\_cp and add\_cps instructions. For example, pushing and popping a vector register v1 is implemented as follows.
-
-\begin{lstlisting}[frame=single]
-   // push (v1)
-   int64 sp = sub_cps(sp, v1)
-   [sp] = save_cp(v1)
-   // pop (v1)      
-   v1 = restore_cp([sp])
-   int64 sp = add_cps(sp, v1)
-\end{lstlisting} 
-
-See page \pageref{table:saveCpInstruction} for details about these instructions
-\vspace{2mm}
-
-
-\subsubsection{Save and restore all registers}
-The registers need to be saved and restored at task switches. There are no instructions to save all registers because we do not want complex instructions. The saving and restoring of registers is described under push and pop on page \pageref{pushPop}.
-\vspace{2mm}
 
 \subsubsection{Horizontal vector add} \label{horizontalVectorAdd}
 See example \ref{exampleHorizontalAdd}.

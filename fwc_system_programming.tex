@@ -68,10 +68,9 @@ The methods described on page \pageref{memoryManagement} for avoiding memory fra
 Task switches will be very fast because we have replaced the large page tables and translation-lookaside-buffer (TLB) of traditional systems with a small on-chip memory map. This makes the system suitable for real-time operating systems.
 
 \section{Call stack}
-It is possible to have either a unified stack for function data and return addresses or two separate stacks. See page \pageref{callStackAlternatives}. ForwardCom currently supports both systems. The two-stack system is safer and more efficient, while the single-stack system may be used for small processors where the simpler single-stack system is preferred.
-\vspace{2mm}
+It is preferred to have a separate call stack as discussed on page \pageref{callStackAlternatives}. \vspace{2mm}
 
-The two-stack system has the call stack stored inside the CPU rather than in RAM memory. A method is required for saving this stack to memory when it is full. This method may use vector-size memory access. It should be possible to manipulate the call stack for task switches and for stack unrolling in the exception handler.
+The two-stack system has the call stack stored inside the CPU rather than in RAM memory. A method may be required for saving this stack to memory when it is full. This method may use vector-size memory access. It should be possible to manipulate the call stack for task switches and for stack unrolling in the exception handler.
 
 \section{System calls and system functions} \label{systemCallIDSystem}
 Calls to system functions are made with a system call instruction (sys\_call). The system functions are identified by ID numbers rather than addresses. Each ID number consists of a function ID in the lower half and a module ID in the upper half. The module ID identifies a system module or device driver. The system core has ID = 0 and basic system functions have ID = 1. Each part of the ID can be either 16 bits or 32 bits so that the combined ID is 32, 48, or 64 bits. 
