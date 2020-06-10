@@ -3381,7 +3381,10 @@ The table-based indirect jump and call instructions are intended to facilitate m
 The table of jump or call addresses is stored in memory as signed offsets relative to an arbitrary reference point, which may be the table address, the ip\_base, or any other reference point. The operand type specifies the size of the table entries. The use of relative addresses makes the table more compact than if 64-bit absolute addresses were used.
 \vspace{2mm}
 
-This instruction works as follows. Calculate the address of a table entry as the base pointer (RT) plus the offset (unscaled) or the index (RS) multiplied by the operand size. Read a signed value from this address, sign-extend to 64 bits, and scale by 4. Then add the reference point (RD). Jump or call to the calculated address. The array index (RS) is scaled by the operand size, while the table entries are scaled by the instruction word size (4). The reference point must be aligned by 4.
+This instruction works as follows. Calculate the address of a table entry as the base pointer plus the offset (unscaled) or the index (RS) multiplied by the operand size. Read a signed value from this address, sign-extend to 64 bits, and scale by 4. Then add the reference point (RD). Jump or call to the calculated address. The array index (RS) is scaled by the operand size, while the table entries are scaled by the instruction word size (4). The reference point must be aligned by 4.
+\vspace{2mm}
+
+This instruction in format 1.6A has base pointer in RT, scaled index in RS, and reference point in RD. Format 2.5.0B has base pointer in RS, unscaled index in IM2 and reference point in RD.
 \vspace{2mm}
 
 The table used by the table-based jump and call instructions is preferably placed in the constant data section (CONST). This makes it possible to use the table base as reference point. This also improves security by giving read-only access to the table.
@@ -3389,6 +3392,7 @@ The table used by the table-based jump and call instructions is preferably place
 
 This instruction cannot have a mask and it will not generate overflow traps in case of overflow in the address calculation, but you will get access violation traps when attempting to access an illegal memory address.
 \vspace{2mm}
+
 
 \subsubsection{return}
 \label{table:returnInstruction}
