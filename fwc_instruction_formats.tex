@@ -354,68 +354,95 @@ RD = f2(RS, IM1). RD = f3(RD, RS, IM1).\\
 1.9 &  &  &  & There is no format 1.9 because 1.1 has no M bit.\\
 
 \hline
-2.0.0 & 2 & 0.0  & E2 & Three general purpose registers and a memory operand with base  and 16 bit offset.\newline 
-RD = f2(RS, [RT+IM2]). RD = f3(RU, RS, [RT+IM2]).\\
+2.0.0 & 2 & 0.0  & E2 & Three general purpose registers and a memory operand with base and 16 bit offset.\newline 
+RD = f2(RS, [RT+IM2]). \newline 
+RD = f3(RU, RS, [RT+IM2]).\\
 
 \hline
-2.0.1 & 2 & 0.1  & E2 & Two general purpose registers and a memory operand with base and index, no scale. Optional support for a 16 bit offset.\newline 
-RD = f2(RU, [RT+RS+IM2]). RD = f3(RD, RU, [RT+RS+IM2]). IM2 must be zero if offset not supported.\\
+2.0.1 & 2 & 0.1  & E2 & Two general purpose registers and a memory operand with base, index and optional 16 bit offset, no scale.\newline  
+RD = f2(RU, [RT+RS+IM2]).\newline  
+RD = f3(RD, RU, [RT+RS+IM2]). \newline  
+Support for offset is optional. \newline 
+Support for 3-operand instructions is optional. \\
 
 \hline
-2.0.2 & 2 & 0.2  & E2 & Two general purpose registers and a memory operand with base and scaled index. Optional support for a 16 bit offset.\newline 
-RD = f2(RU, [RT+RS*OS+IM2]). RD = f3(RD, RU, [RT+RS*OS+IM2]). IM2 must be zero if offset not supported.\\
+2.0.2 & 2 & 0.2  & E2 & Two general purpose registers and a memory operand with base,  scaled index, and optional 16 bit offset.\newline   
+RD = f2(RU, [RT+RS*OS+IM2]). \newline 
+RD = f3(RD, RU, [RT+RS*OS+IM2]). \newline  
+Support for offset is optional. \newline 
+Support for 3-operand instructions is optional. \\
 
 \hline
 2.0.3 & 2 & 0.3  & E2 & Two general purpose registers and a memory operand with base, scaled index, and 16-bit limit. Optional. \newline 
-RD = f2(RU, [RT+RS*OS]). RD = f3(RD, RU, [RT+RS*OS]). Limit RS $\leq$ IM2 (unsigned).\\
+RD = f2(RU, [RT+RS*OS]). \newline 
+RD = f3(RD, RU, [RT+RS*OS]). \newline
+Limit RS $\leq$ IM2 (unsigned).\newline 
+Support for this format is optional. \newline 
+Support for 3-operand instructions is optional. \\
 
 \hline
 2.0.6 & 2 & 0.6  & E2 & Four general purpose registers.\newline 
-RD = f2(RS, RT). RD = f3(RU, RS, RT).\\
+RD = f2(RS, RT). \newline 
+RD = f3(RU, RS, RT).\\
 
 \hline
 2.0.7 & 2 & 0.7  & E2 & Three general purpose registers and a 16-bit integer with left shift.\newline 
-RD = f2(RT, IM2). RD = f3(RS, RT, IM2). 
+RD = f2(RT, IM2). \newline 
+RD = f3(RS, RT, IM2).\newline 
 IM2 (signed) is shifted left by the 6-bit unsigned value of IM3, or whithout shift if IM3 is used for other purposes. \\
 
 \hline
 2.1 & 2 & 1 & A2 & Two general purpose registers and a memory operand with base and 32 bit offset (IM2). \newline 
-RD = f2(RS, [RT+IM2]). RD = f3(RD, RS, [RT+IM2]).\\
+RD = f2(RS, [RT+IM2]). \newline 
+RD = f3(RD, RS, [RT+IM2]).\\
 
 \hline
 2.2.0 & 2 & 2.0 & E2 & Two vector registers and a broadcast scalar memory operand with base  and 16 bit offset.\newline 
-RD = f2(RU, [RT+IM2]). RD = f3(RD, RU, [RT+IM2]). Broadcast to length RS.\\
+RD = f2(RU, [RT+IM2]). \newline 
+RD = f3(RD, RU, [RT+IM2]). \newline
+Broadcast to length RS.\\
 
 \hline
 2.2.1 & 2 & 2.1 & E2 & Two vector registers and a memory operand with base and 16 bit offset.\newline 
-RD = f2(RU, [RT+IM2]). RD = f3(RD, RU, [RT+IM2]). Length=RS.\\
+RD = f2(RU, [RT+IM2]). \newline 
+RD = f3(RD, RU, [RT+IM2]).\newline
+Length=RS.\\
 
 \hline
 2.2.2 & 2 & 2.2 & E2 & Two vector registers and a scalar memory operand with base and scaled
 index. Optional support for a 16-bit offset.\newline 
-RD = f2(RU, [RT+RS*OS+IM2]). RD = f3(RD, RU, [RT+RS*OS+IM2]). IM2 must be zero if offset not supported.\\
+RD = f2(RU, [RT+RS*OS+IM2]). \newline 
+RD = f3(RD, RU, [RT+RS*OS+IM2]). IM2 must be zero if offset not supported.\\
 
 \hline
 2.2.3 & 2 & 2.3 & E2 & Two vector registers and a scalar memory operand with base, scaled index, and 16-bit limit. Optional. \newline 
-RD = f2(RU, [RT+RS*OS]). RD = f3(RD, RU, [RT+RS*OS]). Limit RS $\leq$ IM2 (unsigned).\\
+RD = f2(RU, [RT+RS*OS]). \newline 
+RD = f3(RD, RU, [RT+RS*OS]).\newline
+Limit RS $\leq$ IM2 (unsigned).\\
 
 \hline
 2.2.4 & 2 & 2.4 & E2 & Two vector registers and a memory operand with base and negative index. Optional support for a 16-bit offset.\newline 
-RD = f2(RU, [RT-RS+IM2]). RD = f3(RD, RU, [RT-RS+IM2]). Length=RS. IM2 must be zero if offset not supported.\\
+RD = f2(RU, [RT-RS+IM2]). \newline 
+RD = f3(RD, RU, [RT-RS+IM2]). \newline 
+Length=RS.\newline
+IM2 must be zero if offset not supported.\\
 
 \hline
 2.2.6 & 2 & 2.6 & E2 & Four vector registers.\newline 
-RD = f2(RS, RT). RD = f3(RU, RS, RT).\\
+RD = f2(RS, RT). \newline 
+RD = f3(RU, RS, RT).\\
 
 \hline
 2.2.7 & 2 & 2.7 & E2 & Three vector registers and a broadcast immediate half-precision float or 16-bit integer with left shift.\newline 
-RD = f2(RT, IM2). RD = f3(RS, RT, IM2).\newline
+RD = f2(RT, IM2). \newline 
+RD = f3(RS, RT, IM2).\newline
 Floating point operands: IM2 is half precision.
 Integer operands: IM2 (signed) is shifted left by the 6-bit unsigned value of IM3, or whithout shift if IM3 is used for other purposes. \\
 
 \hline
 2.3 & 2 & 3 & A2 & Three vector registers and a broadcast 32-bit immediate operand.\newline 
-RD = f2(RT, IM2). RD = f3(RS, RT, IM2).\\
+RD = f2(RT, IM2). \newline 
+RD = f3(RS, RT, IM2).\\
 
 \hline
 2.4 & 2 & 4 & A2 & One vector register and a memory operand with base and 32 bit offset.\newline
@@ -426,36 +453,46 @@ RD = f2(RD, [RT+IM2]). length=RS.\\
 
 \hline
 2.6 & 2 & 6 & A2 & Single-format instructions. Three vector registers and a 32-bit immediate operand.\newline 
-RD = f2(RT, IM2). RD = f3(RS, RT, IM2).\\
+RD = f2(RT, IM2). \newline 
+RD = f3(RS, RT, IM2).\\
 
 \hline
 2.7 & 2 & 7 &  & Currently unused.\\
 
 \hline
 2.8 & 2 & 0 M=1 & A2 & Three general purpose registers and a 32-bit immediate operand.\newline 
-RD = f2(RT, IM2). RD = f3(RS, RT, IM2).\\
+RD = f2(RT, IM2). \newline 
+RD = f3(RS, RT, IM2).\\
 
 \hline
 2.9 & 2 & 1 M=1 & A2 & Single-format instructions. Three general purpose registers and a 32-bit immediate operand.\newline 
-RD = f2(RT, IM2). RD = f3(RS, RT, IM2).\\
+RD = f2(RT, IM2). \newline 
+RD = f3(RS, RT, IM2).\\
 
 
 \hline
 3.0.0 & 3 & 0.0  & E3 & Three general purpose registers and a memory operand with base and 32 bit offset.\newline 
-RD = f2(RS, [RT+IM4]). RD = f3(RU, RS, [RT+IM4]).\\
+RD = f2(RS, [RT+IM4]). \newline 
+RD = f3(RU, RS, [RT+IM4]).\\
 
 \hline
 3.0.2 & 3 & 0.2  & E3 & Two general purpose registers and a memory operand w. base, scaled index, and 32 bit offset.\newline 
-RD = f2(RU, [RT+RS*OS+IM4]). RD = f3(RD, RU, [RT+RS*OS+IM4]). Optional.\\
+RD = f2(RU, [RT+RS*OS+IM4]). \newline 
+RD = f3(RD, RU, [RT+RS*OS+IM4]).\newline
+Support for 3-operand instructions is optional.\\
 
 
 \hline
 3.0.3 & 3 & 0.3  & E3 & Two general purpose registers and a memory operand with base, scaled index, and 32-bit limit. Optional. \newline 
-RD = f2(RU, [RT+RS*OS]). RD = f3(RD, RU, [RT+RS*OS]). Limit RS $\leq$ IM4 (unsigned).\\
+RD = f2(RU, [RT+RS*OS]). \newline 
+RD = f3(RD, RU, [RT+RS*OS]). \newline 
+Limit RS $\leq$ IM4 (unsigned).\newline
+Support for 3-operand instructions is optional.\\
 
 \hline
 3.0.7 & 3 & 0.7  & E3 & Three general purpose registers and a 32-bit integer with left shift.\newline 
-RD = f2(RS, IM4 $<<$ IM2). RD = f3(RS, RT, IM4 $<<$ IM2). 
+RD = f2(RS, IM4 $<<$ IM2). \newline 
+RD = f3(RS, RT, IM4 $<<$ IM2). \newline 
 IM4 (signed) is shifted left by the unsigned value of IM2. \\
 
 \hline
@@ -463,33 +500,43 @@ IM4 (signed) is shifted left by the unsigned value of IM2. \\
 
 \hline
 3.2.0 & 3 & 2.0 & E3 & Two vector registers and a broadcast scalar memory operand with base and 32 bit offset.\newline 
-RD = f2(RU, [RT+IM4]). RD = f3(RD, RU, [RT+IM4]). Broadcast to length RS.\\
+RD = f2(RU, [RT+IM4]). \newline 
+RD = f3(RD, RU, [RT+IM4]). \newline 
+Broadcast to length RS.\\
 
 \hline
 3.2.1 & 3 & 2.1 & E3 & Two vector registers and a memory operand with base and 32 bit offset.\newline 
-RD = f2(RU, [RT+IM4]). RD = f3(RD, RU, [RT+IM4]). Length=RS.\\
+RD = f2(RU, [RT+IM4]). \newline 
+RD = f3(RD, RU, [RT+IM4]). \newline 
+Length=RS.\\
 
 \hline
-3.2.2 & 3 & 2.2 & E3 & Two vector registers and a scalar memory operand w. base, scaled index, and 32-bit offset.\newline 
-RD = f2(RU, [RT+RS*OS+IM4]). RD = f3(RD, RU, [RT+RS*OS+IM4]). Optional.\\
+3.2.2 & 3 & 2.2 & E3 & Two vector registers and a scalar memory operand w. base, scaled index, and 32-bit offset. Optional. \newline 
+RD = f2(RU, [RT+RS*OS+IM4]). \newline 
+RD = f3(RD, RU, [RT+RS*OS+IM4]).\\
 
 \hline
 3.2.3 & 3 & 2.3 & E3 & Two vector registers and a scalar memory operand with base, scaled index, and 32-bit limit. Optional. \newline 
-RD = f2(RU, [RT+RS*OS]). RD = f3(RD, RU, [RT+RS*OS]). Limit RS $\leq$ IM4 (unsigned).\\
+RD = f2(RU, [RT+RS*OS]). \newline 
+RD = f3(RD, RU, [RT+RS*OS]). \newline 
+Limit RS $\leq$ IM4 (unsigned).\\
 
 \hline
 3.2.7 & 3 & 2.7 & E3 & Three vector registers and a broadcast single precision float or 32-bit integer with left shift.\newline 
-RD = f2(RT, IM4). RD = f3(RS, RT, IM4).\newline
+RD = f2(RT, IM4). \newline 
+RD = f3(RS, RT, IM4).\newline
 Floating point operands: IM4 is single precision.
 Integer operands: IM4 (signed) is shifted left by the unsigned value of IM2. \\
 
 \hline
 3.3 & 3 & 3 & A3 & Three vector registers and a broadcast 64-bit immediate operand.\newline 
-RD = f2(RT, IM2-3). RD = f3(RS, RT, IM2-3).\\
+RD = f2(RT, IM2-3). \newline 
+RD = f3(RS, RT, IM2-3).\\
 
 \hline
 3.8 & 3 & 0 M=1 & A3 & Three general purpose registers and a 64-bit immediate operand. \newline 
-RD = f2(RT, IM2-3). RD = f3(RS, RT, IM2-3).\\
+RD = f2(RT, IM2-3). \newline 
+RD = f3(RS, RT, IM2-3).\\
 
 \hline
 3.9 &  &  &  & There is no format 3.9 because 3.1 uses the M bit.\\
@@ -692,17 +739,17 @@ Format & IL & Mode & OP1 & Tem-plate & Description \\
 \hline
 1.7 D & 1 & 5 & 0-15 & D & Jump or call with 24-bit offset. \\
 \hline
-2.5.0 & 2 & 5 & 0 & B2 & Double size jump with two register operands and 32 bit offset  (IM2). IM1 = OPJ. \\
+2.5.0 & 2 & 5 & 0 & B2 & Double size jump with two register operands and 32 bit offset (IM2). OPJ in IM1. \\
 \hline
-2.5.1 & 2 & 5 & 1 & B2 & Double size jump with a register destination operand, a register source operand, a 16-bit offset (IM2 lower half) and a 16-bit immediate operand (IM2 upper half).  \\
+2.5.1 & 2 & 5 & 1 & B2 & Double size jump with a register destination operand, a register source operand, a 16-bit offset (IM2 lower half) and a 16-bit immediate operand (IM2 upper half). OPJ in IM1. \\
 \hline
-2.5.2 & 2 & 5 & 2 & C2 & Double size jump with one register operand (RD), one 8-bit immediate constant (IM2) and 32 bit offset (IM3). \\
+2.5.2 & 2 & 5 & 2 & C2 & Double size jump with one register operand (RD), one 8-bit immediate constant (IM2) and 32 bit offset (IM3). OPJ in IM1. \\
 \hline
-2.5.3 & 2 & 5 & 3 & C2 & Double size jump with one register operand (RD), an 8-bit offset (IM2) and a 32-bit immediate constant (IM3).  \\
+2.5.3 & 2 & 5 & 3 & C2 & Double size jump with one register operand (RD), an 8-bit offset (IM2) and a 32-bit immediate constant (IM3).  OPJ in IM1. \\
 \hline
-2.5.4 & 2 & 5 & 4 & C2 & Double size system call, no OPJ, 16 bit constant (IM1,IM2) and 32-bit constant (IM3). \\
+2.5.4 & 2 & 5 & 4 & C2 & Double size system call, 16 bit constant (IM1,IM2) and 32-bit constant (IM3). No OPJ. \\
 \hline
-3.1.0 & 3 & 1 & 0 & B3 & Triple size jump with a register destination operand, a register source operand, a 32-bit immediate operand (IM2) and a 32-bit offset (IM3). Optional.  \\
+3.1.0 & 3 & 1 & 0 & B3 & Triple size jump with a register destination operand, a register source operand, a 32-bit immediate operand (IM2) and a 32-bit offset (IM3). Optional. OPJ in IM1. \\
 \hline
 \end{longtable}
 

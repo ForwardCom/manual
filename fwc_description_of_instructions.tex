@@ -1127,7 +1127,7 @@ If you want to add a 64-bit constant to a general purpose register, and triple s
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-multi & 50 & all types. Optional \\ \hline
+multi & 51 & all types. Optional \\ \hline
 \end{tabular}
 \vspace{3mm}
 
@@ -1513,9 +1513,9 @@ The same instruction can be used for signed and unsigned integers.
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-multi & 48 & mul\_add: dest = $\pm$ src1 $\pm$ (src2 $\cdot$ src3). All types. Optional \\ 
-multi & 49 & mul\_add2: dest = $\pm$ (src1 $\cdot$ src2) $\pm$ src3 . All types. Optional \\
-multi & 47 & mul\_add. float16. Optional \\ \hline
+multi & 49 & mul\_add: dest = $\pm$ src1 $\pm$ (src2 $\cdot$ src3). All types. Optional \\ 
+multi & 50 & mul\_add2: dest = $\pm$ (src1 $\cdot$ src2) $\pm$ src3 . All types. Optional \\
+multi & 48 & mul\_add. float16. Optional \\ \hline
 \hline
 \end{tabular}
 \vspace{2mm}
@@ -1752,7 +1752,7 @@ dest = src1 * $2^{src2}$
 src1 and dest are floating point vectors, while src2 is interpreted as a signed integer vector with the same element size as src1 and dest.
 \vspace{2mm}
 
-This instruction can have a memory operand and an immediate operand, using an E template format and IM3  as the immediate operand. It is not possible to have both a register operand and a memory operand with these formats.
+This instruction can have a memory operand and an immediate operand, using an E template format and IM3 as the immediate operand. It is not possible to have both a register operand and a memory operand with other formats.
 \vspace{2mm}
 
 Overflow will produce infinity. The result will be zero rather than a subnormal number in case of underflow, regardless of control bits in the mask or numeric control register. 
@@ -1778,7 +1778,7 @@ dest = src1 $<<$ src2
 The result is zero if src2 is out of range.
 \vspace{2mm}
 
-This instruction can have a memory operand and an immediate operand, using an E template format and IM3  as the immediate operand. It is not possible to have both a register operand and a memory operand with these formats.
+This instruction can have a memory operand and an immediate operand, using an E template format and IM3 as the immediate operand. It is not possible to have both a register operand and a memory operand with other formats.
 \vspace{2mm}
 
 \subsubsection{shift\_right\_s}
@@ -1798,7 +1798,7 @@ dest = src1 $>>$ src2
 The result is 0 or -1 if src2 is out of range.
 \vspace{2mm}
 
-This instruction can have a memory operand and an immediate operand, using an E template format and IM3  as the immediate operand. It is not possible to have both a register operand and a memory operand with these formats.
+This instruction can have a memory operand and an immediate operand, using an E template format and IM3 as the immediate operand. It is not possible to have both a register operand and a memory operand with other formats.
 \vspace{2mm}
 
 \subsubsection{shift\_right\_u}
@@ -1818,7 +1818,7 @@ dest = src1 $>>$ src2
 The result is zero if src2 is out of range.
 \vspace{2mm}
 
-This instruction can have a memory operand and an immediate operand, using an E template format and IM3  as the immediate operand. It is not possible to have both a register operand and a memory operand with these formats.
+This instruction can have a memory operand and an immediate operand, using an E template format and IM3 as the immediate operand. It is not possible to have both a register operand and a memory operand with other formats.
 \vspace{2mm}
 
 \subsubsection{shift\_add}
@@ -2162,7 +2162,7 @@ dest = src1 \& (1 $<<$ src2).
 Floating point operands are treated as integers.
 
 \vspace{2mm}
-This instruction can have a memory operand and an immediate operand, using an E template format and IM3  as the immediate operand. It is not possible to have both a register operand and a memory operand with these formats.
+This instruction can have a memory operand and an immediate operand, using an E template format and IM3 as the immediate operand. It is not possible to have both a register operand and a memory operand with other formats.
 \vspace{2mm}
 
 \subsubsection{and\_not}
@@ -2341,7 +2341,7 @@ dest = src1 \& \~{}(1 $<<$ src2).
 Floating point operands are treated as integers.
 
 \vspace{2mm}
-This instruction can have a memory operand and an immediate operand, using an E template format and IM3  as the immediate operand. It is not possible to have both a register operand and a memory operand with these formats.
+This instruction can have a memory operand and an immediate operand, using an E template format and IM3 as the immediate operand. It is not possible to have both a register operand and a memory operand with other formats.
 \vspace{2mm}
 
 \subsubsection{compare}
@@ -2554,7 +2554,7 @@ multi & 33 & all integer types \\ \hline
 Rotate the bits of src1 left if src2 is positive, or right if src2 is negative.
 
 \vspace{2mm}
-This instruction can have a memory operand and an immediate operand, using an E template format and IM3  as the immediate operand. It is not possible to have both a register operand and a memory operand with these formats.
+This instruction can have a memory operand and an immediate operand, using an E template format and IM3 as the immediate operand. It is not possible to have both a register operand and a memory operand with other formats.
 \vspace{2mm}
 
 \subsubsection{set\_bit}
@@ -2572,7 +2572,7 @@ Set bit number src2 in src1 to one.
 dest = src1 $|$ (1 $<<$ src2)
 
 \vspace{2mm}
-This instruction can have a memory operand and an immediate operand, using an E template format and IM3  as the immediate operand. It is not possible to have both a register operand and a memory operand with these formats.
+This instruction can have a memory operand and an immediate operand, using an E template format and IM3 as the immediate operand. It is not possible to have both a register operand and a memory operand with other formats.
 \vspace{2mm}
 
 
@@ -2594,7 +2594,7 @@ result = (src1 $>>$ src2) \& 1.
 The remaining bits of the output are taken from a mask or from the numeric control register if there is no mask. 
 
 \vspace{2mm}
-This instruction can have a memory operand and an immediate operand, using an E template format and IM3  as the immediate operand. It is not possible to have both a register operand and a memory operand with these formats.
+This instruction can have a memory operand and an immediate operand, using an E template format and IM3 as the immediate operand. It is not possible to have both a register operand and a memory operand with other formats.
 
 \vspace{2mm}
 Masking and fallback is possible. Alternative use of the mask register and the fallback register as extra boolean operands is supported with E template formats with no memory operand. These options are controlled by bit 0-1 of the constant IM3 in the same way as for the compare instruction (see page \pageref{table:AlternativeFallbackForCompare}). Bit 2 inverts the result, bit 3 inverts the fallback, and bit 4 inverts the mask. These options are summarized in the following table, giving the value of bit 0 of the destination register. These options cannot be used if there is a memory operand.
@@ -2698,7 +2698,7 @@ Change the value of bit number src2 in src1 to its opposite.
 dest = src1 \^{} (1 $<<$ src2)
 
 \vspace{2mm}
-This instruction can have a memory operand and an immediate operand, using an E template format and IM3  as the immediate operand. It is not possible to have both a register operand and a memory operand with these formats.
+This instruction can have a memory operand and an immediate operand, using an E template format and IM3 as the immediate operand. It is not possible to have both a register operand and a memory operand with other formats.
 \vspace{2mm}
 
 
@@ -2894,11 +2894,11 @@ This instruction will not generate traps in case of signed or unsigned overflow,
 \begin{tabular}{|p{16mm}|p{12mm}|p{60mm}|p{50mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
-all & 55 & add/jump & integer \\ \hline
+all & 55 & add/jump & integer. Optional. \\ \hline
 \end{tabular}
 \vspace{2mm}
 
-Add two integer operands and jump unconditionally.
+Add two integer operands and jump unconditionally. This instruction is currently not implemented.
 
 \subsubsection{increment\_compare/jump\_above}
 \label{table:addJumpInstruction}
@@ -2932,8 +2932,8 @@ Note that a ``for'' loop using this instruction will stop at n, where n = src2. 
 \begin{tabular}{|p{20mm}|p{12mm}|p{56mm}|p{50mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
-1.4 B, 2.5.0 &  0 & sub/jump\_zero & integer \\ \hline
-1.4 B, 2.5.0 &  1 & sub/jump\_nzero  & integer\\ \hline
+1.6 B, 2.5.0 &  0 & sub/jump\_zero & integer \\ \hline
+1.6 B, 2.5.0 &  1 & sub/jump\_nzero  & integer\\ \hline
 \end{tabular}
 \vspace{2mm}
 
@@ -2948,8 +2948,8 @@ If a constant operand is needed then change the sign of the operand and use add/
 \begin{tabular}{|p{20mm}|p{12mm}|p{56mm}|p{50mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
-1.4 B, 2.5.0 &  2 & sub/jump\_neg & integer \\ \hline
-1.4 B, 2.5.0 &  3 & sub/jump\_nneg & integer\\ \hline
+1.6 B, 2.5.0 &  2 & sub/jump\_neg & integer \\ \hline
+1.6 B, 2.5.0 &  3 & sub/jump\_nneg & integer\\ \hline
 \end{tabular}
 \vspace{2mm}
 
@@ -2966,8 +2966,8 @@ If a constant operand is needed then change the sign of the operand and use add/
 \begin{tabular}{|p{20mm}|p{12mm}|p{56mm}|p{50mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
-1.4 B, 2.5.0 &  4 & sub/jump\_pos & integer \\ \hline
-1.4 B, 2.5.0 &  5 & sub/jump\_npos & integer\\ \hline
+1.6 B, 2.5.0 &  4 & sub/jump\_pos & integer \\ \hline
+1.6 B, 2.5.0 &  5 & sub/jump\_npos & integer\\ \hline
 \end{tabular}
 \vspace{2mm}
 
@@ -2984,8 +2984,8 @@ If a constant operand is needed then change the sign of the operand and use add/
 \begin{tabular}{|p{20mm}|p{12mm}|p{56mm}|p{50mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
-1.4 B, 2.5.0 &  6 & sub/jump\_overfl & integer \\ \hline
-1.4 B, 2.5.0 &  7 & sub/jump\_noverfl & integer\\ \hline
+1.6 B, 2.5.0 &  6 & sub/jump\_overfl & integer \\ \hline
+1.6 B, 2.5.0 &  7 & sub/jump\_noverfl & integer\\ \hline
 \end{tabular}
 \vspace{2mm}
 
@@ -3004,8 +3004,8 @@ This instruction will not generate traps in case of signed or unsigned overflow,
 \begin{tabular}{|p{20mm}|p{12mm}|p{56mm}|p{50mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
-1.4 B, 2.5.0 &  8 & sub/jump\_borrow & integer \\ \hline
-1.4 B, 2.5.0 &  9 & sub/jump\_nborrow & integer\\ \hline
+1.6 B, 2.5.0 &  8 & sub/jump\_borrow & integer \\ \hline
+1.6 B, 2.5.0 &  9 & sub/jump\_nborrow & integer\\ \hline
 \end{tabular}
 \vspace{2mm}
 
@@ -3024,20 +3024,20 @@ This instruction will not generate traps in case of signed or unsigned overflow,
 \begin{tabular}{|p{16mm}|p{12mm}|p{60mm}|p{50mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
-all & 54 & sub/jump & integer \\ \hline
+all & 54 & sub/jump & integer. Optional. \\ \hline
 \end{tabular}
 \vspace{2mm}
 
-Subtract two integer operands and jump unconditionally.
-
+Subtract two integer operands and jump unconditionally. This instruction is currently not implemented.
+\vspace{2mm}
 
 \subsubsection{sub\_maxlen/jump\_pos}
 \label{table:subMaxlenJumpPosInstruction}
 \begin{tabular}{|p{16mm}|p{12mm}|p{60mm}|p{50mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
-1.5 2.5.2 & 52 & sub\_maxlen/jump\_pos & int64 in g. p. register \\ \hline
-1.5 2.5.2 & 53 & sub\_maxlen/jump\_npos & int64 in g. p. register \\ \hline
+1.7, 2.5.2 & 52 & sub\_maxlen/jump\_pos & int64 in g. p. register \\ \hline
+1.7, 2.5.2 & 53 & sub\_maxlen/jump\_npos & int64 in g. p. register \\ \hline
 \end{tabular}
 \vspace{2mm}
 
@@ -3126,8 +3126,8 @@ Floating point operands are treated as unsigned integer scalars in vector regist
 \begin{tabular}{|p{16mm}|p{12mm}|p{60mm}|p{50mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
-not 1.5 & 10 & shift\_left/jump\_zero & all \\ \hline
-not 1.5 & 11 & shift\_left/jump\_nzero & all \\ \hline
+not 1.7 & 10 & shift\_left/jump\_zero & all \\ \hline
+not 1.7 & 11 & shift\_left/jump\_nzero & all \\ \hline
 \end{tabular}
 \vspace{2mm}
 
@@ -3147,8 +3147,8 @@ Support for vector registers is optional.
 \begin{tabular}{|p{16mm}|p{12mm}|p{60mm}|p{50mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
-not 1.5 & 12 & shift\_right\_u/jump\_zero & all \\ \hline
-not 1.5 & 13 & shift\_right\_u/jump\_nzero & all \\ \hline
+not 1.7 & 12 & shift\_right\_u/jump\_zero & all \\ \hline
+not 1.7 & 13 & shift\_right\_u/jump\_nzero & all \\ \hline
 \end{tabular}
 \vspace{2mm}
 
@@ -3168,8 +3168,8 @@ Support for vector registers is optional.
 \begin{tabular}{|p{16mm}|p{12mm}|p{60mm}|p{50mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
-not 1.5 & 14 & rotate/jump\_carry & all \\ \hline
-not 1.5 & 15 & rotate/jump\_ncarry & all \\ \hline
+not 1.7 & 14 & rotate/jump\_carry & all \\ \hline
+not 1.7 & 15 & rotate/jump\_ncarry & all \\ \hline
 \end{tabular}
 \vspace{2mm}
 
@@ -3303,11 +3303,11 @@ page \pageref{table:jumpInstructionFormats}.
 
 \subsubsection{Direct jump}
 \label{table:jumpInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{14mm}|p{12mm}|p{110mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-1.5 C & 58 & jump with 16 bit relative address \\ \hline
-1.5 D &  0 & jump with 24 bit relative address \\ \hline
+1.7 C & 58 & jump with 16 bit relative address \\ \hline
+1.7 D &  0 & jump with 24 bit relative address \\ \hline
 2.5.2 C & 58 & jump with 32 bit relative address \\ \hline
 3.1.0 B & 58 & jump with 64 bit absolute address \\ \hline
 \end{tabular}
@@ -3318,11 +3318,11 @@ Unconditional jump.
 
 \subsubsection{Direct function call}
 \label{table:callInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{14mm}|p{12mm}|p{110mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-1.5 C & 59 & call with 16 bit relative address \\ \hline
-1.5 D &  8 & call with 24 bit relative address \\ \hline
+1.7 C & 59 & call with 16 bit relative address \\ \hline
+1.7 D &  8 & call with 24 bit relative address \\ \hline
 2.5.2 C & 59 & call with 32 bit relative address \\ \hline
 3.1.0 B & 59 & call with 64 bit absolute address \\ \hline
 \end{tabular}
@@ -3337,38 +3337,38 @@ The return address is stored on the call stack. The calling conventions are desc
 \subsubsection{Indirect jump}
 
 \label{table:indirectJumpInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{14mm}|p{12mm}|p{110mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-1.4 B & 58 & 64 bit absolute address in memory operand with 8 bit offset \\ \hline
+1.6 B & 58 & 64 bit absolute address in memory operand with 8 bit offset \\ \hline
 2.5.0 B & 58 & 64 bit absolute address in memory operand with 32 bit offset \\ \hline
-1.5 C & 60 & 64 bit absolute address in register \\ \hline
-1.4 A & 60 & Multi-way jump with table of relative addresses (see below) \\ \hline
+1.7 C & 60 & 64 bit absolute address in register \\ \hline
+1.6 A & 60 & Multi-way jump with table of relative addresses (see below) \\ \hline
 \end{tabular}
 \vspace{2mm}
 
 
 \subsubsection{Indirect call}
 \label{table:IndirectCallInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{14mm}|p{12mm}|p{110mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-1.4 B & 59 & 64 bit absolute address in memory operand with 8 bit offset \\ \hline
+1.6 B & 59 & 64 bit absolute address in memory operand with 8 bit offset \\ \hline
 2.5.0 B & 59 & 64 bit absolute address in memory operand with 32 bit offset \\ \hline
-1.5 C & 61 & 64 bit absolute address in register \\ \hline
-1.4 A & 61 & Multi-way call with table of relative addresses (see below) \\ \hline\end{tabular}
+1.7 C & 61 & 64 bit absolute address in register \\ \hline
+1.6 A & 61 & Multi-way call with table of relative addresses (see below) \\ \hline\end{tabular}
 \vspace{2mm}
 
 
 
 \subsubsection{Multi-way jump and call}
 \label{table:multiwayJumpCallInstructions}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{14mm}|p{12mm}|p{110mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-1.4 A   & 60 & Jump with table of relative addresses. \linebreak Has reference point, base and scaled index  \\ \hline
+1.6 A   & 60 & Jump with table of relative addresses. \linebreak Has reference point, base and scaled index  \\ \hline
 2.5.0 B & 60 & Jump with table of relative addresses. \linebreak Has reference point, base and offset  \\ \hline
-1.4 A   & 61 & Call with table of relative addresses. \linebreak Has reference point, base and scaled index    \\ \hline
+1.6 A   & 61 & Call with table of relative addresses. \linebreak Has reference point, base and scaled index    \\ \hline
 2.5.0 B & 61 & Call with table of relative addresses. \linebreak Has reference point, base and offset \\ \hline
 \end{tabular}
 \vspace{2mm}
@@ -3392,10 +3392,10 @@ This instruction cannot have a mask and it will not generate overflow traps in c
 
 \subsubsection{return}
 \label{table:returnInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{14mm}|p{12mm}|p{110mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-1.4 B & 62 & \\ \hline
+1.6 B & 62 & \\ \hline
 \end{tabular}
 \vspace{2mm}
 
@@ -3432,7 +3432,7 @@ Calculate an address relative to a pointer by adding a 32-bit sign-extended cons
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-2.5 B & 18 & g. p. registers and memory operand with 32 bit offset. Optional \\ \hline
+2.5 A & 18 & g. p. registers and memory operand with 32 bit offset. Optional \\ \hline
 \end{tabular}
 \vspace{2mm}
 
@@ -3771,9 +3771,9 @@ The sys\_call instruction has the following variants:
 \hline
 Format & Operand type & Register operands & Module ID & Function ID \\
 \hline
-1.4 A & 32 bit & 3 & RT bit 16-31 & RT bit 0-15 \\
+1.6 A & 32 bit & 3 & RT bit 16-31 & RT bit 0-15 \\
 \hline
-1.4 A & 64 bit & 3 & RT bit 32-63 & RT bit 0-31 \\
+1.6 A & 64 bit & 3 & RT bit 32-63 & RT bit 0-31 \\
 \hline
 2.5.1 B & 32 bit & 2 & IM2 bit 16-31 & IM2 bit 0-15\\
 \hline
@@ -3794,7 +3794,7 @@ Parameters for system functions are transferred in registers, following the same
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-1.5 C & 62 & \\ \hline
+1.7 C & 62 & \\ \hline
 \end{tabular}
 \vspace{2mm}
 
@@ -3806,8 +3806,8 @@ Return from system call.
 \begin{tabular}{|p{12mm}|p{12mm}|p{30mm}|p{80mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries instruction & \bfseries immediate operand \\ \hline
-1.5 C & 63 & trap & 0-254 \\ \hline
-1.5 C & 63 & filler & 255 \\ \hline
+1.7 C & 63 & trap & 0-254 \\ \hline
+1.7 C & 63 & filler & 255 \\ \hline
 \end{tabular}
 \vspace{2mm}
 
@@ -3831,7 +3831,10 @@ IM1 contains the interrupt number. \\
 IM2 contains the condition code OPJ, specified in table  \ref{table:controlTransferInstructions}.
 \vspace{2mm}
 
-Currently, only the condition code 40 is supported, corresponding to compare unsigned and jump if above. This will generate a trap if RD $>$ IM3. This is useful for checking if an array index exceeds the upper bound. The lower bound does not have to be checked because we use unsigned compare. 
+Conditional traps are currently not supported.
+\vspace{2mm}
+
+The condition code 40 may be supported in some implementations. This code corresponds  to compare unsigned and jump if above. This will generate a trap if RD $>$ IM3. This is useful for checking if an array index exceeds the upper bound. The lower bound does not have to be checked because we use unsigned compare. 
 
 
 \subsubsection{write\_capabilities}
