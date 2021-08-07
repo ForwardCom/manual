@@ -5,14 +5,14 @@
 
 \chapter{Introduction}
 ForwardCom stands for Forward Compatible Computer system.
-\vspace{2mm}
+\vv
 
-This document proposes a new open instruction set architecture designed for optimal performance, flexibility and scalability. The ForwardCom project includes both a new instruction set architecture and the corresponding ecosystem of software standards, application binary interface (ABI), memory management, development tools, library formats, and system functions. This project illustrates the improvements that can be obtained by a complete vertical redesign of hardware and software based on an open, collaborative process.
-\vspace{2mm}
+This document describes a new open instruction set architecture designed for optimal performance, flexibility and scalability. The ForwardCom project includes both a new instruction set architecture and the corresponding ecosystem of software standards, application binary interface (ABI), memory management, development tools, library formats, and system functions. This project illustrates the improvements that can be obtained by a complete vertical redesign of hardware and software based on an open, collaborative process.
+\vv
 
 A short introduction to ForwardCom is provided at 
 \href{http://www.forwardcom.info}{http://www.forwardcom.info}.
-\vspace{2mm}
+\vv
 
 This manual and all associated code is maintained at 
 \href{https://github.com/ForwardCom/}{https://github.com/ForwardCom}.
@@ -20,7 +20,9 @@ This manual and all associated code is maintained at
  
 \section{Highlights}
 \begin{itemize}
-\item The ForwardCom instruction set is neither RISC nor CISC, but a new paradigm with the advantages of both. ForwardCom has few instructions, but many variants of each instruction. A consistent template system with few instruction sizes combines the fast and streamlined decoding and pipeline design of RISC systems with the compactness and more work-done-per-instruction of CISC systems. 
+\item The ForwardCom instruction set is neither RISC nor CISC, but a new paradigm combining the advantages of both. ForwardCom has few instructions, but many variants of each instruction. A consistent template system with few instruction sizes combines the fast and streamlined decoding and pipeline design of RISC systems with the compactness and more work done per instruction of CISC systems. 
+
+\item The instruction formats are fully orthogonal. The same instruction can be coded with different operand types, different types of register operands, memory operands, or immediate constant operands. Instructions can be coded in a compact form where the destination register is the same as the first source register, or in a non-destructive form with three or four registers. Immediate constants are compressed, if possible, to save code space.
 
 \item The ForwardCom design is scalable to support small embedded systems as well as large supercomputers and vector processors without losing binary compatibility.
 
@@ -28,47 +30,53 @@ This manual and all associated code is maintained at
 
 \item Array loops are implemented  in a new flexible way that automatically uses the maximum vector length supported by the microprocessor in all but the last iteration of a loop. The last iteration automatically uses a vector length that fits the remaining number of elements. No extra code is needed to deal with remaining data and special cases. There is no need to compile the code separately for different microprocessor versions with different vector lengths.
 
-\item No recompilation or update of software is needed when a new microprocessor with a different vector register length becomes available. The software is guaranteed to be forward compatible and take advantage of the longer vectors
-of new microprocessor models.
-
-\item Strong security features are fundamental parts of the hardware and software design.
+\item No recompilation or update of software is needed when a new microprocessor with a different vector register length becomes available. The software is guaranteed to be forward compatible and take advantage of the longer vectors of new microprocessor models without recompilation.
 
 \item Memory management is simpler and more efficient than in traditional systems. Various techniques are used for avoiding memory fragmentation. 
-It is possible to avoid memory paging and use a memory map with a limited number of sections with variable size instead of a translation lookaside buffer (TLB).
+It is possible to avoid memory paging and use a memory map with a limited number of sections with variable size instead of a translation lookaside buffer (TLB) with a large number of fixed-size pages.
 
 \item There are no dynamic link libraries (DLLs) or shared objects. Instead, there is only one type of function libraries 
 that can be used for both static and dynamic linking. Only the part of the library that is actually used is loaded and linked. The library code is kept contiguous with the main program code to improve caching and reduce memory fragmentation. 
 Executable files can be re-linked to replace or update library functions and plug-ins and to support multiple user interface frameworks.
 
-\item A mechanism for calculating the required stack size is provided. This can prevent stack overflow in most cases without making the stack bigger than necessary.
+\item A mechanism for calculating the required stack size is provided. This can prevent stack overflow in most cases without making the data stack bigger than necessary.
 
 \item A mechanism for optimal register allocation across program modules and function libraries is provided. This makes it possible to keep most variables in registers without spilling to memory. Vector registers can be saved in an efficient way that stores only the part of the register that is actually used.
-\end{itemize}
-\vspace{2mm}
 
-This can be useful as a sandbox for experiments aiming at improving many different aspects of computer design, as discussed at \href{http://www.forwardcom.info}{http://www.forwardcom.info}.
+\item Strong security features are fundamental parts of the hardware and software design.
+
+\item Standards for software tools, ABI, file formats, system libraries, etc. are defined in order to establish compatibility between different programming languages and different platforms. It is possible to code different parts of a program in different programming languages.
+
+\end{itemize}
+\vv
+
+The ForwardCom design can be useful for many purposes where performance is important, where large vectors are desired, where security is important, or where the copyright and license restrictions of proprietary microprocessor systems is an obstacle. 
+
+\vv
+The ForwardCom design is also useful as a sandbox for university projects and experiments aiming at improving many different aspects of computer design, as discussed at \\
+\href{http://www.forwardcom.info}{http://www.forwardcom.info}.
 
 \section{Background}
 An instruction set architecture is a standardized set of machine instructions that a computer can run. There are many instruction set architectures in use.
-\vspace{2mm}
+\vv
 
 Some commonly used instruction sets are poorly designed from the beginning. These systems have been augmented many times with extensions and patches. One of the worst cases is the widely used x86 instruction set and its many extensions. The x86 instruction set is the result of a long history of short-sighted extensions and patches. The result of this development history is a very complicated architecture with thousands of different instruction codes, which is very difficult and costly to decode in a microprocessor. We need to learn from past mistakes in order to make better choices when designing a new instruction set architecture and the software that supports it.
-\vspace{2mm}
+\vv
 
-The design should be based on an open process. Krste Asanović and David Patterson have presented compelling arguments for why an open instruction set should be preferred. Openness can be crucial for the success of a technical design. For example, the original IBM PC in the early 1980's had an advantage over competing computers because the open architecture allowed other hardware and software producers to make compatible equipment. IBM lost their market dominance when they switched to the proprietary Micro Channel Architecture in 1987. The successes of open source software are well known and need no further discussion here. The only thing that is missing for a complete computer ecosystem based on open standards is an open microprocessor architecture. This will open the market also for smaller microprocessor producers and niche products.
-\vspace{2mm}
+The design should be based on an open process. Krste Asanović and David Patterson (2014) have presented compelling arguments for why an open instruction set should be preferred. Openness can be crucial for the success of a technical design. For example, the original IBM PC in the early 1980's had an advantage over competing computers because the open architecture allowed other hardware and software producers to make compatible equipment. IBM lost their market dominance when they switched to the proprietary Micro Channel Architecture in 1987. The successes of open source software are well known and need no further discussion here. The only thing that is missing for a complete computer ecosystem based on open standards is an open microprocessor architecture. This will open the market also for smaller microprocessor producers and niche products.
+\vv
 
 This project is based on discussions in various Internet forums. The specifications are preliminary. The development of a new standard should benefit from a long experimental phase, and it would be unwise to make it a fixed standard at this initial stage.
 
 
 \section{Design goals}
-Previously published open instruction sets are suitable for small, cheap microprocessors for embedded systems, system-on-a-chip designs, FPGA implementations for scientific experiments, etc. The proposed ForwardCom architecture takes the idea further and aims at a design that can outperform existing high-end processors.
-\vspace{2mm}
+Previously published open instruction sets are suitable for small, cheap microprocessors for embedded systems, system-on-a-chip designs, FPGA implementations for scientific experiments, etc. The proposed ForwardCom architecture takes the idea further and aims at a design that can outperform common high-end processors.
+\vv
 
 The ForwardCom instruction set architecture is based on the following priorities:
 \begin{itemize}
 \item The instruction set should have a simple and consistent modular design.
-\item The instruction set should represent a suitable compromise between the RISC principle that enables fast decoding, and the CISC principle that makes it possible to do more work per instruction and to use the code cache more efficiently.
+\item The instruction set represents a suitable compromise between the RISC principle that enables fast decoding, and the CISC principle that makes it possible to do more work per instruction and to use the code cache more efficiently.
 \item The design should be extensible so that new instructions and extensions can be added in a consistent and predictable way.
 \item The design should be scalable so that it is suitable for both small computers with on-chip RAM and large supercomputers with very long vectors.
 \item The design should be competitive over current commercial designs with a focus on the high-end applications of tomorrow rather than the low-end applications of yesterday.
@@ -76,26 +84,26 @@ The ForwardCom instruction set architecture is based on the following priorities
 \item Security should be a fundamental part of the design, not patches added ad hoc.
 \item The instruction set should be designed through an open process with the participation of the international hardware and software community, similar to the standardization work in other technical areas.
 \item The entire vertical design should be non-proprietary and allow anybody to make compatible software, hardware, and equipment for test, debugging and emulation.
-\item Decisions about instructions and extensions should not be determined by the short term marketing considerations of an oligopolistic microprocessor industry but by the long term needs of the entire hardware and software community and organizations.
+\item Decisions about instructions and extensions should not be determined by the short term marketing considerations of an oligopolistic microprocessor industry but by the long term needs of the entire hardware and software community.
 \item The design should allow the construction of forward compatible software that will run optimally without recompilation on future processors with larger vector registers.
 \item The design should allow application-specific extensions.
 \item The basic aspects of the entire ecosystem of ABI standard, assembler, compilers, function libraries, system functions, user interface framework, etc. should also be standardized for maximum compatibility.
 \end{itemize}
 
-A new instruction set will not easily get success on a commercial market, even if it is better than legacy systems, because the market prefers backward compatibility with existing software and hardware. It is unlikely that the ForwardCom instruction set will make a successful commercial product within a short time frame, but the discussion about what an ideal instruction set, microprocessor design, and software ecosystem might look like is still useful. The ForwardCom project has already generated so many important new ideas that it is worth pursuing further, even if we don't know where this process will end. The present work can be useful if the need for introducing a new instruction set architecture should arise for other reasons. It will be particularly useful for large vector processors, for applications where security is important, for real-time operating systems, for FPGA soft cores, as well as for projects where the patent and license restrictions of other architectures would be an obstacle.
-\vspace{2mm}
+A new instruction set will not easily get success on a commercial market, even if it is better than legacy systems, because the market prefers backward compatibility with existing software and hardware. It is unlikely that the ForwardCom instruction set will make a successful commercial product within a short time frame, but the discussion about what an ideal instruction set, microprocessor design, and software ecosystem might look like is always useful. The ForwardCom project has already generated so many important new ideas that it is worth pursuing further, even if we do not know where this process will end. The present work can be useful if the need for introducing a new instruction set architecture should arise for other reasons. It will be particularly useful for large vector processors, for applications where security is important, for real-time operating systems, for FPGA soft cores, as well as for projects where the patent and license restrictions of other architectures would be an obstacle.
+\vv
 
-The proposals in this document will also be useful as a source of inspiration and for scientific experiments. Many of the ideas are independent of the design details and may be implemented in existing systems.
-\vspace{2mm}
+The ideas in this document will also be useful as a source of inspiration and for scientific experiments. Many of the ideas are independent of the design details and may be implemented in other systems.
+\vv
 
 \section{Problems addressed by ForwardCom}
 The design of ForwardCom was prompted by many years of frustration with existing systems. The design is trying to address and solve a lot of problems with existing CPU designs as well as the surrounding ecosystems of development tools, ABI standard, and operating systems. This list provides an overview of problems that the ForwardCom design is trying to solve:
-\vspace{2mm}
+\vv
 
 \begin{itemize}
-\item RISC vs. CISC. The consistent template design of ForwardCom instructions aims at obtaining the efficient instruction decoding and smooth pipeline design of RISC systems combined with the more work done per instruction of CISC systems.
+\item RISC vs. CISC. The consistent template design of ForwardCom instructions aims at obtaining the efficient instruction decoding and smooth pipeline design of RISC systems combined with the more work done per instruction of CISC systems. RISC systems typically have a fixed instruction size of 32 bits that makes it impossible to include larger addresses, constants, and option bits in a single instruction. ForwardCom allows instructions to have a size of one, two, or three 32-bit words. This provides space for larger addresses, constants, and option bits to allow each instruction to contain more information and to have many different variants. Common CISC systems such as x86, on the other hand, have a variable instruction size that is so difficult to decode that decoding has become a serious bottleneck. ForwardCom avoids this problem by indicating the instruction size with just two bits.
 
-\item Forward compatibility. Current SIMD designs have been made with little foresight of future extensions with larger vectors. It is impossible in existing systems to save and restore a vector register in a way that can accommodate future extensions to the vector length. This has caused a lot of problems and awkward patches in current systems. Software has to be recompiled for every new extension. The ForwardCom design with variable vector lengths makes the software automatically use the maximum vector length of the CPU it is running on with no need for recompilation.
+\item Forward compatibility. Current SIMD designs have been made with little foresight of future extensions with larger vectors. It is impossible in most  other systems to save and restore a vector register in a way that can accommodate future extensions to the vector length. This has caused a lot of problems and awkward patches in current systems. Software has to be recompiled for every new extension. The ForwardCom design with variable vector lengths makes the software automatically use the maximum vector length of the CPU it is running on with no need for recompilation.
 
 \item Vector loops. Current SIMD designs have a problem with vector loops when the loop count is not certain to be a multiple of the vector length. The new design with variable vector lengths solves this problem in an elegant and very efficient way.
 
@@ -103,39 +111,41 @@ The design of ForwardCom was prompted by many years of frustration with existing
 
 \item Data coherency. The ForwardCom design makes it possible to store constant data in instruction codes instead of constants scattered in static data memory. This reduces cache misses.
 
-\item Partial register access. The efficiency of out-of-order scheduling is improved by avoiding instructions that modify a partial register and leave the rest of the register unchanged.
+\item Suitable for out-of-order execution. ForwardCom has no global status flags or status register that would complicate parallel and out-of-order execution. The efficiency of out-of-order scheduling is also improved by avoiding instructions that modify a partial register and leave the rest of the register unchanged.
 
 \item No microcode. Complex instructions in x86 and other architectures use microcode. This makes decoding inefficient. ForwardCom avoids microcode by using only instructions that fit into the pipeline design. A few more complex instructions can be implemented with state machines or application-specific FPGA modules.
 
-\item Function libraries. There is only one kind of function library which serves the purposes of both static libraries, dynamic libraries, shared objects, and program plug-in modules. The library code is linked in a way that makes it contiguous with the program code it serves. Executable program files can be relinked to update or replace a linked library.
+\item Function libraries. There is only one kind of function library which serves the purposes of both static libraries, dynamic libraries, shared objects, and program plug-in modules. The library code is linked in a way that makes it contiguous with the program code it serves. Executable program files can be relinked to update or replace a linked library. Problems with missing or incompatible library versions are avoided.
 
 \item Stack size calculation. Stack overflow can be prevented by calculation of the maximum stack size during the link process if the program has no recursive functions.
 
-\item Avoid memory fragmentation. The design of function libraries, stack size calculation, position independent code, and other efforts are able to reduce memory fragmentation to a level where the TLB (translation lookaside buffer) can be replaced by a memory map with a limited number of variable-size memory blocks in many cases.
+\item Avoid memory fragmentation. The design of function libraries, stack size calculation, position independent code, and other efforts are able to reduce memory fragmentation to a level where the TLB (translation lookaside buffer) can be replaced by a memory map with a limited number of variable-size memory blocks in most cases.
 
 \item Error tracking and exception handling. The design has no traps for numerical exceptions and no status register. Instead, floating point errors are indicated in propagating NAN payloads. Integer overflow can be indicated in propagating extra vector elements if needed. This makes out-of-order parallelism and SIMD parallelism simpler and more efficient.
 
 \item Avoid register spilling. Object files contain information about which registers each function is using. This makes it possible to keep most or all variables in registers without ever spilling to memory.
 
-\item Function calling convention. The function calling convention is safe and efficient. Function parameters are not transferred on the stack. Tail calls are always possible.
+\item Function calling convention. Call stack and data stack are separate. The function calling convention is safe and efficient. Function parameters are transferred in registers, not on the stack. Tail calls are always possible.
 
 \item User friendly assembly syntax. The ForwardCom assembler gets out of the habitual thinking that assembly syntax must be obscure and complicated. Adding two registers is as simple as {\ttfamily int32 r1 = add(r2, r3)}, or even {\ttfamily int r1 = r2 + r3}. This is easily intelligible to high-level language programmers and leaves no doubt about which operands are source and destination. 
 Branches and loops can be coded with C-style syntax such as \\
-{\ttfamily for (int64 r1 = 0; r1 < r2; r1++) \{  \} }
+{\ttfamily for (int r1 = 0; r1 < r2; r1++) \{  \} }
 
 \item Security. A lot of security features are part of the basic design. 
 See page \pageref{securityFeatures}
 
+\item Free and open. A noncommercial development process and a free license improves the possibilities for synergy between different hardware and software developers and university scientists. Commercial CPU vendors have often produced suboptimal designs due to the priority of short-term marketing goals. This is avoided with an open development process.
+
 \end{itemize}
-\vspace{2mm}
+\vv
 
 
 \section{Comparison with other open instruction sets}
-A few other open instruction sets have been proposed, most notably RISC-V and OpenRISC. Both are pure RISC designs with mostly fixed 32-bit instruction word sizes. These instruction sets are suitable for small systems where the use of silicon space is economized, but they are not designed for high performance superscalar processors and they do not focus on details that are critical for achieving maximum performance in bigger systems. The present proposal is thought as the next step towards making an open instruction set that is actually more efficient than the best commercial instruction sets today.
-\vspace{2mm}
+A few other open instruction sets have been proposed, most notably RISC-V and OpenRISC. Both are pure RISC designs with mostly fixed 32-bit instruction word sizes. These instruction sets are suitable for small systems where the use of silicon space is economized, but they are not designed for high performance superscalar processors and they do not focus on details that are critical for achieving maximum performance in bigger systems. The ForwardCom system is thought as the next step towards making an open instruction set that is actually more efficient than the best commercial instruction sets today.
+\vv
 
-A typical RISC design with the instruction size limited to 32 bits leaves only limited space for immediate constants and addresses of memory operands. A medium size program will need 32-bit relative addresses of static memory operands to avoid overflow during the relocation process in the linker. A 32-bit relative address requires several instructions in the pure RISC designs. For example, to add a memory operand to the value of a register, you need five instructions in a RISC design with only 32-bit instruction words: (1) load the lower part of the 32-bit address offset, (2) add the upper part of the 32-bit address offset, (3) add the reference pointer or instruction pointer to this value, (4) read the memory operand from the calculated address, (5) do the desired addition. The ForwardCom design does all this in a single instruction with double word size. The speed advantage is obvious. The address calculation, load, and execution are done at each their stage in the pipeline in order to achieve a smooth throughput of one instruction per clock cycle in each pipeline lane.
-\vspace{2mm}
+A typical RISC design with the instruction size limited to 32 bits leaves only limited space for immediate constants and addresses of memory operands. A medium-size program will need 32-bit relative addresses of static memory operands to avoid overflow during the relocation process in the linker. A 32-bit relative address requires several instructions in the pure RISC designs. For example, to add a memory operand to the value of a register, you typically need five instructions in a RISC design with only 32-bit instruction words: (1) load the lower part of the 32-bit address offset, (2) add the upper part of the 32-bit address offset, (3) add the reference pointer or instruction pointer to this value, (4) read the memory operand from the calculated address, (5) do the desired addition. The ForwardCom design does all this in a single instruction with double word size. The speed advantage is obvious. The address calculation, load, and execution are done at each their stage in the pipeline in order to achieve a smooth throughput of one instruction per clock cycle in each pipeline.
+\vv
 
 Another important difference is that the previous RISC designs have limited support for vector operations. The ForwardCom design introduces a new system of variable-length vector registers that is more efficient and flexible than the best current commercial designs. Efficient vector operations are essential for obtaining maximum performance, and this has been an important priority in the design of the ForwardCom architecture proposed here.
 
@@ -145,32 +155,37 @@ Another important difference is that the previous RISC designs have limited supp
 \item
 Krste Asanovi\'{c} and David Patterson: ``The Case for Open Instruction Sets. Open ISA Would Enable Free 
 Competition in Processor Design''. Microprocessor Report, August 18, 2014. \\
-\href{http://www.linleygroup.com/mpr/article.php?id=11267}{www.linleygroup.com/mpr/article.php?id=11267}
+\href{https://www.linleygroup.com/newsletters/newsletter_detail.php?num=5210}{www.linleygroup.com/newsletters/newsletter\_detail.php?num=5210}
 
 \item
 RISC-V: The Free and Open RISC Instruction Set Architecture
-\href{http://riscv.org}{riscv.org}
+\href{https://riscv.org}{riscv.org}
 
 \item
 OpenRISC: 
-\href{http://openrisc.io}{openrisc.io}
+\href{https://openrisc.io}{openrisc.io}
 
 \item
 Open Cores: 
-\href{http://opencores.org}{opencores.org}
+\href{https://opencores.org}{opencores.org}
 
 \item
 Agner Fog: Proposal for an ideal extensible instruction set, 2015. A blog discussion thread that initiated the ForwardCom project. \\
-\href{http://www.agner.org/optimize/blog/read.php?i=421}{www.agner.org/optimize/blog/read.php?i=421}
+\href{https://www.agner.org/optimize/blog/read.php?i=421}{www.agner.org/optimize/blog/read.php?i=421}
 
 \item
 Agner Fog: Stop the instruction set war, 2009. Blog post about the problems with the x86 instruction set. \\
-\href{http://www.agner.org/optimize/blog/read.php?i=25}{www.agner.org/optimize/blog/read.php?i=25}
+\href{https://www.agner.org/optimize/blog/read.php?i=25}{www.agner.org/optimize/blog/read.php?i=25}
 
 \item
 Darek Mihocka: Standard Need To Be Forward Looking, 2007. Blog post criticizing the x86 instruction set standard. \\
-\href{http://www.emulators.com/docs/nx02_standards.htm}{www.emulators.com/docs/nx02\_standards.htm}.
-See also the following pages.
+\href{http://www.emulators.com/docs/nx02_standards.htm}{www.emulators.com/docs/nx02\_standards.htm}. See also the following pages.
+
+\item
+Agner Fog: Floating point exception tracking and NAN propagation, 2020. 
+\href{https://www.agner.org/optimize/nan_propagation.pdf}{www.agner.org/optimize/nan\_propagation.pdf}
+
+
 \end{itemize}
 
 \end{document}

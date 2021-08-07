@@ -9,10 +9,10 @@
 
 \chapter{Binary tools} \label{chap:binTools}
 All the basic development tools for ForwardCom except compilers are combined into a single executable file named \textbf{forw} or \textbf{forw.exe}.
-\vspace{2mm}
+\vv
 
 The tools can be run using the following command lines:
-\vspace{2mm}
+\vv
 
 %\begin{table}[]
 %\left
@@ -47,874 +47,61 @@ The following options can be used with most or all of the commands listed above:
 -ewNNN & treat Error number NNN as Warning.\\
 \hline
 \end{tabular}
-\vspace{2mm}
+\vv
 
-The list of instructions is stored separately in a comma-separated file named \textbf{instruction\_list.csv}. This file must be present when running the assembler, disassembler, or debugger. The format for the instruction list is defined in table \ref{table:fieldsInInstructionListFile}.
-\vspace{2mm}
+A list of instructions is stored separately in a comma-separated file named \textbf{instruction\_list.csv}. This file must be present when running the assembler, disassembler, or debugger. The format for the instruction list is defined in table \ref{table:fieldsInInstructionListFile}.
+\vv
 
+The tools are running in console mode and returning a status value which is nonzero in case of error. This is useful when running the tools from a makefile, shell script, or Windows .bat file.
+\vv
 
 \section{Assembler}\label{chap:assembler}
 \subsection{Introduction} \label{assemblerIntroduction}
-The assembler is using a syntax similar to C and Java in order to make the code intelligible to 
-high-level language programmers. The basic syntax of an instruction looks like this:
-\vspace{2mm}
-
-\begin{lstlisting}
-    datatype destination_operand = instruction(source_operands)
-\end{lstlisting}
-\vspace{2mm}
-
-This syntax leaves no doubt about which operands are source and destination. 
-You can also use common operators, such as + - * / etc. instead of instructions that correspond
-to these operators.
-\vspace{2mm}
-
-Branches and loops can use conditional jump instructions or the high-level language keywords:
-if, else, for, do, while, break, continue.
-\vspace{2mm}
-
-Before defining the syntax details we will look at a few examples.
-\vspace{2mm}
-
-The following example shows a function that calculates the factorial of an integer:
-
-
-\begin{example}
-\label{exampleFactorial}
-\end{example} % frame disappears if I put this after end lstlisting
-\begin{lstlisting}[frame=single]
-code section execute        // define executable code section
-
-// factorial function calculates n!
-// input: r0, output: r0
-_factorial function public
-if (uint64 r0 <= 20) {      // check for overflow, 64 bit unsigned
-   uint64 r1 = 1            // start with 1
-   while (uint64 r0 > 1) {  // loop through r0 values
-      uint64 r1 *= r0       // multiply all values
-      uint64 r0--           // count down to 1
-   }
-   uint64 r0 = r1           // put result in r0
-   return                   // normal return from function
-}
-int64 r0 = -1               // overflow. return max unsigned value
-return                      // error return
-_factorial end              // end of function
-
-code end                    // end of code section
-\end{lstlisting}
-\vspace{4mm}
-
-The next example illustrates the use of the efficient vector loop described on page \pageref{vectorLoops}. 
-It calculates the polynomial $y = 0.5 x^2 - 4 x + 1$ for all elements of an array $x$
-and stores the results in an array $y$.
-
-\begin{example}
-\label{examplePolyn}
-\end{example} % frame disappears if I put this after end lstlisting
-\begin{lstlisting}[frame=single]
-data section read write datap       // define data section
-% arraysize = 100                   // define constant
-float x[arraysize], y[arraysize]    // define arrays
-data end                            // end of data section
-
-code section execute                // define code section
-
-// This function calculates a polynomial on all elements of an
-// array x and stores the results in an array y
-_polyn function public
-int64 r1 = address([x+arraysize*4]) // end of array x
-int64 r2 = address([y+arraysize*4]) // end of array y
-int64 r0 = arraysize*4              // array size in bytes = 400
-
-for (float v0 in [r1-r0]) {         // vector loop
-   float v0 = [r1-r0, length=r0]    // read x vector
-   float v1 = v0 * 0.5              // 0.5 * x
-   float v1 -= 4                    // 0.5 * x - 4
-   float v0 = v0 * v1 + 1           // (0.5 * x - 4) * x + 1
-   float [r2-r0, length=r0] = v0    // save y vector
-}
-return                              // return from function
-_polyn end                          // end of function
-
-code end                            // end of code section
-\end{lstlisting}
-\vspace{2mm}
-
-While this looks very much like high-level language code, you have to explicitly specify which register to use for each variable, and you cannot put more code on one line than fits into a single instruction.
-In example \ref{examplePolyn}, the line {\ttfamily float v0 = v0 * v1 + 1 } is allowed because it fits the {\ttfamily mul\_add2} instruction, but we cannot write {\ttfamily float v1 = v0 * 0.5 - 4 } because an instruction cannot have two immediate constants.
-The line {\ttfamily int64 r1 = address([x+arraysize*4])} also fits a single instruction because 
-{\ttfamily arraysize*4} can be calculated at assembly time (it involves only constants) and the result can be added to the relative address of {\ttfamily x} by the linker. The only thing the {\ttfamily address} instruction has to do at runtime is to add a constant to the {\ttfamily datap} pointer.
-\vspace{2mm}
-
-More code examples are given in chapter \ref{chap:codeExamples}
-\vspace{2mm}
+The assembler is using a syntax similar to C and Java in order to make the code intelligible to high-level language programmers. 
+The details are described in the programming manual in chapter 
+\ref{chap:programmingManual}, page \pageref{chap:programmingManual}.
+\vv
 
 \subsection{Command line} \label{assemblerCommandLine}
 The command line for the assembler has the following format:
 
-\vspace{2mm}
-\hspace{5mm} {\ttfamily forw -ass assemblyfile objectfile [options]}
+\vv
+\hspace{5mm} {\ttfamily forw -ass [options] assemblyfile objectfile}
 
-\vspace{2mm}
+\vv
 The following options are supported:\\
 \begin{tabular}{|p{25mm}p{135mm}|}
 \hline
 -list=name & Make output list file. This is useful for checking the generated code.\\
+-ilist=name & Specify alternative instruction list name.\\
 -b         & Make binary listing in -list file. \\
 -O0 & Optimization level 0: The assembler finds the smallest possible instruction that fits the specified operands. \\
--O1 & Optimization level 1 (default): An instruction may be replaced by another instruction that does the same thing more efficiently. For example, {\ttfamily float v1 *= 4} can be replaced by
- {\ttfamily float v1 = mul\_2pow(v1, 2)}. 
- A conditional jump statement is merged with a preceding arithmetic instruction when possible.
+-O1 & Optimization level 1 (default): An instruction may be replaced by another instruction that does the same thing more efficiently. For example, \linebreak
+{\ttfamily float v1 *= 4} can be replaced by
+ {\ttfamily float v1 = mul\_2pow(v1, 2)}. \linebreak
+A conditional jump statement is merged with a preceding arithmetic instruction when possible.
  An {\ttfamily if} statement immediately followed by an
  unconditional jump is converted to a single conditional jump.\\
 -O3 & Optimization level 3. Enable optimizations that ignore subnormal numbers. For example, {\ttfamily float v1 *= 0.25} can be replaced by {\ttfamily float v1 = mul\_2pow(v1, -2)}.\\
+-debug=1  & Include debug information in object file. Currently, debug information includes only label names.\\
 -maxerrors=n & Specify maximum number of error messages from the assembler.\\
--datasize=n & Specify maximum combined size of writeable static data sections. Static data can be accessed with 16 bit relative addresses if datasize $\leq$ 32000. \\
+-datasize=n & Specify maximum combined size of writeable static data sections. Static data can be accessed with 16 bit relative addresses if datasize $\leq$ 32000. 
+This makes the code more compact. See page \pageref{SpecifyDataSize}.\\
 -codesize=n & Specify maximum combined size of code and read-only sections. \\
            & Inter-module jumps and call tables can use 16 bit relative addresses when codesize $\leq$ 131000, and 24 bit relative addresses when codesize $\leq$ 33000000. \\
-           & Read-only static data can be accessed with 16 bit relative addresses if codesize $\leq$ 32000. \\
--ilist=name & Specify alternative instruction list name.\\
+           & Read-only static data can be accessed with 16 bit relative addresses if codesize $\leq$ 32000. See page \pageref{SpecifyDataSize}.\\
 \hline
 \end{tabular}
 %\end{table}
-\vspace{2mm}
+\vv
 
 The preferred extension for file names in ForwardCom are .as for assembly files and .ob for object files.
-\vspace{2mm}
+\vv
 
 
-\subsection{File format} \label{assemblyFileFormat}
-An assembly file can be in ASCII or UTF-8 format. An UTF-8 byte order mark is allowed at the beginning of the file, but not required.
-\vspace{2mm}
 
-Whitespace can be spaces or tabs. The use of tabs is discouraged because different editors may have different tabstops.
-\vspace{2mm}
 
-Linefeeds can be UNIX style (\textbackslash n), Mac style (\textbackslash r), or Windows style (\textbackslash r\textbackslash n). There is no limit to the line length.
-\vspace{2mm}
-
-Comments are C style:  /* */ or // \\
-Nested comments are allowed. This makes it possible to comment out a piece of code that already contains comments.
-\vspace{2mm}
-
-
-\subsection{Names of symbols} \label{assemblerNames}
-The names of data symbols, code labels, functions, etc. are case sensitive. 
-A name can consist of letters a-z, A-Z, numbers 0-9, the special characters \_ \$ @, 
-and unicode letters. A name cannot begin with a number. There is no limit to the length of a name.
-\vspace{2mm}
-
-All names are prefixed with an underscore or mangled in some other way when compiling high-level language code. This is to prevent high-level language names from clashing with assembly keywords, register names, etc.
-\vspace{2mm}
-
-The names of keywords and instructions are not case sensitive.
-The following are reserved keywords:
-\begin{lstlisting}[frame=single]
-align 
-break broadcast
-capab0-capab31 case comment_info communal constant continue
-datap debug_info do double 
-else end event_hand exception_hand execute extern 
-fallback float float16 float32 float64 float128 for function 
-if in int8 int16 int32 int64 int128 ip 
-length limit
-mask
-options
-perf0-perf31 pop public push
-r0-r31 read
-scalar section sp spec0-spec31 string switch sys0-sys31
-threadp 
-uint8 uint16 uint32 uint64 uint128 uninitialized
-v0-v31 
-weak while write
-\end{lstlisting}
-\vspace{2mm}
-
-\subsection{Sections} \label{assemblySections}
-A section containing code or data is defined as follows:
-\begin{lstlisting}[frame=single]
-name section options
-...
-name end
-\end{lstlisting}
-\vspace{2mm}
-
-The following options can be defined for a section. Multiple options are separated by space or comma.
-
-\begin{tabular}{|p{22mm}p{150mm}|}
-\hline
-read & Readable data section. \\
-write & Writeable data section. \\
-execute & Executable code section. This does not imply read access. Write access is not allowed for executable sections. \\
-ip & Addressed relative to the instruction pointer. This is the default for executable and read-only sections. \\
-datap & Addressed relative to the data pointer. This is the default for writeable data sections. \\
-threadp & Addressed relative to the thread data pointer. The section will have one instance for each thread. \\
-\label{communal}
-communal & Communal section. Allows identical sections in different modules, where only one of the
-communal sections with the same name is included by the linker. 
-Unreferenced communal sections may be removed.
-Public symbols in communal sections must be weak. \\
-uninitialized & Data section containing only zeroes. The data of this section does not take up space in object files and executable files.\\
-exception\_hand & Exception handler and stack unroll information.\\
-event\_hand & Event handler information, including static constructors and destructors.\\
-debug\_info & Debug information.\\
-comment\_info & Comments, including copyright and required library names.\\
-align=n & Align the beginning of the section to an address divisible by n, which must be a power of 2.
-The default alignment for executable sections is 4. The default alignment for a data section is the size of the biggest data type in the section. A higher alignment can be specified with the align directive.\\
-\hline
-\end{tabular}
-%\end{table}
-\vspace{2mm}
-
-Sections with the same name are placed consecutively in the executable file. They must have the same attributes, except for alignment.
-\vspace{2mm}
-
-Sections with different names but the same attributes (except for alignment) are placed in alphabetical order in the executable file.
-\vspace{2mm}
-
-
-\subsection{Constant expressions} \label{assemblyConstantExpressions}
-Integer constants can be expressed in the following ways:
-
-\begin{tabular}{|p{47mm}p{115mm}|}
-\hline
-decimal numbers & contains only digits 0-9 \newline Numbers beginning with 0 are interpreted as decimal, not octal. \\
-binary numbers & 0b followed by digits 0-1\\
-octal numbers & 0O followed by digits 0-7\\
-hexadecimal numbers & 0x followed by digits 0-9, a-f\\
-character constants & 1-8 ASCII characters enclosed in single quotes '{ }'. The first character will be contained in the lowest byte of a 64 bit integer. For example 'AB' = 0x4241 \\
-imported constant & extern name: constant \\
-difference between addresses & symbol1 - symbol2. The two symbols must have the same base pointer, either ip, datap, threadp, or none. \\
-\hline
-\end{tabular}
-%\end{table}
-\vspace{2mm}
-
-Integer constants can be combined with all common operators: \\
-+ \hspace{2mm} - \hspace{2mm} * \hspace{2mm} / \hspace{2mm} \% \hspace{2mm} \& \hspace{2mm} $\vert$ \hspace{2mm} \^{} \hspace{2mm} \textasciitilde \hspace{2mm}
- \&\& \hspace{2mm} $\vert\vert$ \hspace{2mm} ! \hspace{2mm}
-\textless\textless \hspace{2mm} \textgreater\textgreater \hspace{2mm} 
-\textgreater\textgreater\textgreater \hspace{2mm} 
-\textless \hspace{2mm} \textless= \hspace{2mm} \textgreater \hspace{2mm} \textgreater= \hspace{2mm} 
- == \hspace{2mm} != \hspace{2mm} ?: 
-\vspace{2mm}
-
-The operators have the same order of precedence as in C.
-The result is calculated as signed 64-bit integers, except for \textgreater\textgreater\textgreater \hspace{0.5mm} which is an unsigned (logical) shift right.
-\vspace{2mm}
-
-Imported constants and differences between addresses cannot be allowed in general calculations. 
-The only operations allowed for these are addition of a local constant, and division by a power of 2.
-These calculations are done by the linker except for a difference between two local symbols in the same section.
-\vspace{2mm}
-
-Floating point constants must contain a dot or an E and at least one digit, for example 1.23E-4
-\vspace{2mm}
-
-Floating point expressions are calculated with double precision. The following operators can be used: \\
-+ \hspace{2mm} - \hspace{2mm} * \hspace{2mm} / \hspace{2mm} 
-\textless \hspace{2mm} \textless= \hspace{2mm} \textgreater \hspace{2mm} \textgreater= \hspace{2mm} 
- == \hspace{2mm} != \hspace{2mm} ?: 
-\vspace{2mm}
-
-String constants are sequences of ASCII or UTF-8 characters enclosed in " ".\\
-The following escape sequences are recognized: \textbackslash\textbackslash \hspace{1mm}
-\textbackslash n \textbackslash r  \textbackslash t  \textbackslash " \\
-String constants can be concatenated with the + operator like in Java.
-\vspace{2mm}
-
-\subsection{Data types} \label{assemblyDataTypes}
-The following data types are used in data definitions and instructions:
-
-\begin{tabular}{|p{15mm}p{125mm}|}
-\hline
-int8    & 8 bit signed integer\\
-uint8   & 8 bit unsigned integer\\
-int16   & 16 bit signed integer\\
-uint16  & 16 bit unsigned integer\\
-int32   & 32 bit signed integer\\
-uint32  & 32 bit unsigned integer\\
-int64   & 64 bit signed integer\\
-uint64  & 64 bit unsigned integer\\
-int128  & 128 bit signed integer (optional)\\
-uint128 & 128 bit unsigned integer (optional)\\
-float16 & half precision floating point (limited support)\\
-float   & single precision floating point\\
-float32 & single precision floating point\\
-double  & double precision floating point\\
-float64 & double precision floating point\\
-float128 & quadruple precision floating point (optional)\\
-\hline
-\end{tabular}
-\vspace{2mm}
-
-A '+' after an integer type indicates that the assembler can use a bigger type if this makes
-the instruction smaller or more efficient, for example int16+.
-\vspace{2mm}
-
-
-\subsection{Data definitions} \label{assemblyDataDefinitions}
-Static data can be defined inside a section. Several different forms are allowed:
-\vspace{2mm}
-
-\begin{tabular}{|p{140mm}|}
-\hline
-Assembly style data definition:\\
-\hspace{4mm} label : datatype value, value, ...\\
-C style data definition:\\
-\hspace{4mm} datatype name = value, name = value, ...\\
-C style array definition, uninitialized:\\
-\hspace{4mm} datatype name[number]\\
-C style array definition, initialized:\\
-\hspace{4mm} datatype name[number] = \{value, value, ...\}\\
-Assembly style string definition:\\
-\hspace{4mm} label : int8 "string", "string", ...\\
-C style string definition:\\
-\hspace{4mm} int8 name = "string" \\
-\hline
-\end{tabular}
-\vspace{2mm}
-
-A terminating zero after a string must be added explicitly if needed.
-\vspace{2mm}
-
-Examples:
-\vspace{1mm}
-
-\begin{lstlisting}[frame=single, showstringspaces=false]
-mydata section read write datap
-alpha: float 0.1, 0.2, 0.3
-int16 beta = 4, gamma = 5
-int8 delta[25]
-align (8)
-int8 epsilon[] = {6, 7, 8, 9}
-zeta: int8 "Dear reader", 0
-int8 eta = "Nice to meet you", 0
-mydata end
-\end{lstlisting}
-\vspace{2mm}
-
-
-\subsection{Function definitions and labels} \label{assemblyFunctionDef}
-A function can be defined inside an executable section. It is defined like this:
-\vspace{1mm}
-
-\begin{tabular}{|p{140mm}|}
-\hline
-\hspace{4mm} name function attributes\\
-\hspace{4mm} ...\\
-\hspace{4mm} name end\\
-\hline
-\end{tabular}
-\vspace{4mm}
-
-Attributes can be 'public', 'weak', and 'reguse=value,value'. 
-The function will be local if no attributes are specified and 
-the name does not appear in a public declaration.
-\vspace{2mm}
-
-Example:
-\vspace{1mm}
-
-\begin{lstlisting}[frame=single]
-mycode section execute
-// this function calculates the square of a double
-_square function public, reguse = 0, 1
-double v0 *= v0
-return
-_square end
-mycode end
-\end{lstlisting}
-\vspace{2mm}
-
-The calling conventions for functions are defined in chapter \ref{chap:functionCallingConventions}.
-\vspace{2mm}
-
-
-\subsection{Instructions} \label{assemblyInstructions}
-It is convenient to have only one instruction per line. Multiple instructions on the same line must be separated by semicolon.
-\vspace{2mm}
-
-Instructions can be defined inside an executable section. The general form looks like this:
-
-\begin{tabular}{|p{130mm}|}
-\hline
-\hspace{4mm} label : datatype destination = instruction(source\_operands), options \\
-\hline
-\end{tabular}
-%\end{table}
-\vspace{4mm}
-
-The destination is a register in most cases. A few instructions allow a memory operand as destination.
-
-The source operands can be registers, memory operands, or immediate constants. 
-No instruction can have more than one memory operand. Only a few instructions can have multiple immediate constants or both a memory operand and an immediate constant.
-\vspace{2mm}
-
-The following options are possible:\\
-\begin{tabular}{|p{140mm}|}
-\hline
-options = integer constant\\
-mask = register\\
-fallback = register\\
-fallback = 0\\
-\hline
-\end{tabular}
-\vspace{2mm}
-
-Only certain instructions can have options=constant.
-\vspace{2mm}
-
-All multi-format instructions can have a mask. Single-format instructions with A or E templates can also have a mask. Jump instructions cannot have a mask.
-\vspace{2mm}
-
-The mask register can be r0-r6 or v0-v6. The fallback register can be r0-r30 or v0-v30.
-The mask and fallback registers must be the same type of register as the destination (general purpose or vector register). The fallback specifies the result when bit 0 of the mask is zero.
-\vspace{2mm}
-
-The default fallback register is the same as the first source register. A different fallback register is  possible only if there is a vacant register field in the code template. 
-The fallback register cannot be different from the first source register in the following cases:
-\begin{itemize}
-\item the instruction has three source operands
-\item the instruction needs 64 bits for an immediate constant
-\item the instruction has a memory operand with index
-\item the instruction has vector registers and a memory operand
-\end{itemize}
-\vspace{2mm}
-
-Instructions can be written simply with an operator instead of the instruction name if the instruction does the same as the operator. The general form is:
-\vspace{2mm}
-
-\begin{tabular}{|p{140mm}|}
-\hline
-\hspace{4mm} label : datatype destination = operand1 operator operand2 \\
-\hline
-\end{tabular}
-%\end{table}
-\vspace{4mm}
-
-In this case, you can specify mask and fallback with the ?: operator:
-\vspace{2mm}
-
-\begin{tabular}{|p{140mm}|}
-\hline
-\hspace{4mm} datatype destination = mask ? operand1 operator operand2 : fallback\\
-\hline
-\end{tabular}
-\vspace{4mm}
-
-A memory operand must be enclosed in square brackets. Memory references are always relative to a base pointer. A memory operand can contain:
-\vspace{2mm}
-
-\begin{tabular}{|p{150mm}|}
-\hline
-A base pointer. This is a general purpose register or a special pointer (ip, datap, threadp, sp).\\
-A scaled index. This is a general purpose register multiplied by a scale factor. The scale factor is the same as the operand size in most cases. Instructions with a general purpose register destination can also have a scale factor of 1. Instructions with a vector register destination can also have a scale factor of -1. \\
-An offset. This is an integer constant.\\
-The name of a data definition. The base pointer is implicit when there is a data name.\\
-A limit for the index: limit=constant.\\
-Memory operands in vector instructions must have one of the following options:\\
-scalar\\
-length=register\\
-broadcast=register\\
-\hline
-\end{tabular}
-
-\vspace{4mm}
-
-Examples:
-\vspace{2mm}
-
-\begin{lstlisting}[frame=single]
-LABEL1:
-int32 r1 = add(r2, r3)
-int32 r1 = r2 + r3            // same
-int32 r1 = r1 + 1
-int32 r1 += 1                 // same
-int32 r1 ++                   // same
-int32 r1 = add(r2, r3), mask = r4, fallback = r5
-int32 r1 = r4 ? r2 + r3 : r5  // same
-int32 r1 = r2 + [r3 + 0x10]
-int32 r1 = r2 + [r3 + 4*r4, limit = 100]
-int32 v1 = v2 + [r3 - r4, length = r4]
-float v1 = v2 + [alpha, scalar]
-float v1 = v2 + [alpha, broadcast=r3]
-float v1 = -v2
-double v1 = mul_add(v2, v3, 1.5), options=0xC
-double v1 = v2 - v3 * 1.5     // same
-\end{lstlisting}
-\vspace{2mm}
-
-The details for each instruction are described in chapter \ref{chap:DescriptionOfInstructions}.
-\vspace{2mm}
-
-
-\subsection{Unconditional and indirect jumps, calls, and returns} \label{assemblyJumps}
-Direct jumps, calls, and  returns:
-\vspace{2mm}
-
-\begin{tabular}{|p{140mm}|}
-\hline
-\hspace{4mm} jump target\\
-\hspace{4mm} call target\\
-\hspace{4mm} return\\
-\hline
-\end{tabular}
-\vspace{4mm}
-
-Indirect jumps and calls to a register or memory operand containing an absolute 64-bit address:
-
-\begin{tabular}{|p{140mm}|}
-\hline
-\hspace{4mm} jump (register)\\
-\hspace{4mm} call (register)\\
-\hspace{4mm} jump ([base\_register+offset])\\
-\hspace{4mm} call ([base\_register+offset])\\
-\hline
-\end{tabular}
-\vspace{4mm}
-
-Indirect jumps and calls to a pointer relative to an arbitrary reference point:
-
-\begin{tabular}{|p{140mm}|}
-\hline
-\hspace{4mm} datatype jump (reference\_register, [base\_register+offset])\\
-\hspace{4mm} datatype call (reference\_register, [base\_register+offset])\\
-\hspace{4mm} datatype jump (reference\_register, [base\_register+index\_register*scale])\\
-\hspace{4mm} datatype call (reference\_register, [base\_register+index\_register*scale])\\
-\hline
-\end{tabular}
-\vspace{4mm}
-
-The datatype specifies the size of the relative pointer stored in memory. This must be a signed integer type. The reference point must be contained in a 64-bit register.
-\vspace{2mm}
-
-Examples:
-\vspace{2mm}
-
-\begin{lstlisting}[frame=single]
-extern function1: function, function2: function
-
-rodata section read ip  // read-only data section, ip based
-// table of addresses relative to the table itself:
-align (4)
-calltable:                       
-int16 (function1-calltable) / 4  // relative address of function1
-int16 (function2-calltable) / 4  // relative address of function2
-rodata end
-
-code section execute ip
-function0 function
-  call function1              // calls function1
-  int64 r1 = address([function1])
-  call (r1)                   // calls function1
-  int64 r1 = address([calltable])
-  int16 call (r1, [r1+2])     // calls function2
-  int16 jump (r1, [r1+r0*2])  // jumps to function selected by r0
-  return
-function0 end
-code end
-
-\end{lstlisting}
-\vspace{2mm}
-
-
-\subsection{Conditional jumps and loops} \label{assemblyConditionalJumps}
-
-Conditional jumps always involve an arithmetic or logic operation and a jump conditional upon the result:
-
-\begin{tabular}{|p{150mm}|}
-\hline
-\hspace{4mm} datatype destination = instruction(source\_operands), jump\_condition target \\
-\hline
-\end{tabular}
-\vspace{4mm}
-
-Examples:
-\vspace{2mm}
-
-\begin{lstlisting}[frame=single]
-  int32+ r1 = add(r1, r2), jump_pos L1
-  uint64      compare(r2, 5), jump_pos L1
-  float       test_bit(v1, 31), jump_nzero L1
-  L1:
-\end{lstlisting}
-\vspace{2mm}
-
-If there are two source registers then the first source register must be the same as the destination register. Vector registers can be used only when the data type does not fit into a general purpose register. Floating point addition and subtraction cannot be used with conditional jumps.
-\vspace{2mm}
-
-The most common conditional jumps can be coded more conveniently using the high-level language keywords: if, else, for, do, while, break, continue.
-\vspace{2mm}
-
-An 'if' statement can have the form:
-\vspace{2mm}
-
-\begin{tabular}{|p{150mm}|}
-\hline
-\hspace{4mm} if (datatype register operator register\_or\_constant) \{...\} else \{...\}\\
-\hline
-\end{tabular}
-\vspace{2mm}
-
-Line breaks are allowed before and after \{ and \}. The curly brackets cannot be omitted.
-
-Comparing a register value with another register or a constant is done with one of the operators:\\
-\textless \hspace{2mm} \textless= \hspace{2mm} \textgreater \hspace{2mm} \textgreater= \hspace{2mm} 
- == \hspace{2mm} != \hspace{2mm} 
-\vspace{2mm}
-
-It is also possible to test a single bit in a register with the \& operator and a constant with only one bit set (in other words, a power of 2).
-\vspace{2mm}
-
-Examples:
-\vspace{2mm}
-
-\begin{lstlisting}[frame=single]
-  if (int32+ r1 >= r2) {
-    nop     // r1 >= r2
-  } else {  // r1 < r2
-    if (int64 !(r3 & (1 << 20))) {
-      nop   // bit 20 in r3 is not set
-    }
-  }  
-\end{lstlisting}
-\vspace{2mm}
-
-The conditions cannot be combined with \&\& $\vert$ $\vert$ etc. because the statement must fit into a single instruction.
-\vspace{2mm}
-
-The 'while', 'do-while', and 'for' loops are written in the same way as if statements:
-
-\begin{tabular}{|p{150mm}|}
-\hline
-\hspace{4mm} while (datatype condition) \{...\}\\
-\hspace{4mm} do \{...\} while (datatype condition) \\
-\hspace{4mm} for (datatype initialization; condition; increment) \{...\}\\
-\hline
-\end{tabular}
-\vspace{2mm}
-
-Examples:
-\vspace{2mm}
-
-\begin{lstlisting}[frame=single]
-  for (int32+ r1 = 1; r1 <= 100; r1++) {
-    int64 r2 = 4  // executed 100 times
-    while (int64 r2 > 0) {
-      int64 r2--  // executed 400 times
-    }
-  } 
-  do {
-    int32 r2 = r1 - 1     // executed once
-  } while (int32 r2 > r1) // never true
-\end{lstlisting}
-\vspace{2mm}
-
-The initialization and increment instructions in the 'for' loop can be anything that fits into a single instruction with the specified data type.
-\vspace{2mm}
-
-Vector loops are written in the following way:
-
-\begin{tabular}{|p{150mm}|}
-\hline
-\hspace{4mm} for (datatype vector\_register in [end\_pointer - index\_register]) \{...\}\\
-\hline
-\end{tabular}
-\vspace{4mm}
-
-Example:
-\vspace{2mm}
-
-\begin{lstlisting}[frame=single]
-  int64 r1 = address([my_array])      // address of my_array
-  int64 r2 = my_arraysize * 8         // size of my_array in bytes
-  int64 r1 += r2                      // point to end of my_array
-  for (float v1 in [r1 - r2]) {       // loop through my_array
-    float v1 = [r1 - r2, length = r2] // read vector
-    float v1 *= 2                     // multiply values by 2
-    float [r1 - r2, length = r2] = v1 // store results in my_array
-  }
-\end{lstlisting}
-\vspace{2mm}
-
-This loop will subtract the maximum vector length from r2 for each iteration and continue as long as r2 (interpreted as a signed 64 bit integer) is positive. It will use the maximum vector length as long as r2 is bigger than the maximum vector length.
-The maximum vector length may depend on the data type. The loop will use the maximum vector length for the data type specified in the for statement (float in this case). It is possible to use more vector registers and more end-of-array pointers than the ones specified in the 'for' statement.
-\vspace{2mm}
-
-It is recommended to use optimization level 1 or higher when assembling branches and loops.
-\vspace{2mm}
-
-
-\subsection{Imports and exports} \label{assemblyImportExport}
-A function, data symbol, or constant defined in one assembly module can be accessed from another module if it is exported from the first module and imported to the second module. The necessary cross references are calculated and inserted by the linker.
-\vspace{2mm}
-
-Symbols are imported as follows:
-\vspace{2mm}
-
-\begin{tabular}{|p{150mm}|}
-\hline
-\hspace{4mm} extern symbolname : attributes, symbolname : attributes, ...\\
-\hline
-\end{tabular}
-\vspace{2mm}
-
-The following attributes can be specified:
-\vspace{2mm}
-
-\begin{tabular}{|p{20mm}p{130mm}|}
-\hline
-function & the symbol is an executable function\\
-ip & the symbol is a data object addressed relative to the ip pointer\\
-datap & the symbol is a data object addressed relative to the datap pointer\\
-threadp & the symbol is a data object addressed relative to the threadp pointer\\
-constant & the symbol is a constant with no address\\
-read & the symbol is in a readable data section\\
-write & the symbol is in a writeable data section\\
-execute & the symbol is executable code\\
-data type & the data type for the data symbol\\
-weak & weak linking: the symbol will be resolved only if it exists\\
-reguse & register use, indicating which registers are modified by the function\\
-\hline
-\end{tabular}
-\vspace{2mm}
-
-An external symbol must have one, and only one, of the following attributes: function, ip, datap, threadp, constant.
-The other attributes are optional. Multiple attributes are separated by space or comma.
-\vspace{2mm}
-
-The reguse option indicates which registers are modified by the function. 
-It it followed by two numbers indicating the use of general purpose registers and vector registers, respectively. Bit number n indicates that register number n is used. For example: reguse=0x1F,1 indicates that general purpose registers r0-r4 and vector register v0 are modified by the function.
-\vspace{2mm}
-
-A weak external symbol will only be linked if it exists. The linker will not search function libraries to find the weak symbol, but the symbol will be resolved if it exists in a module that is linked in for other reasons.
-A weak external constant or data symbol that is not resolved will be zero. A weak function that has not  been resolved will return zero.
-\vspace{2mm}
-
-Symbols are exported as follows:
-\vspace{2mm}
-
-\begin{tabular}{|p{150mm}|}
-\hline
-\hspace{4mm} public symbolname : attributes, symbolname : attributes, ...\\
-\hline
-\end{tabular}
-\vspace{2mm}
-
-The possible attributes are the same as for external symbols. It may not be necessary to specify all the attributes because the attributes of locally defined symbols are already known. 
-\vspace{2mm}
-
-It is convenient to place extern and public declarations in the beginning of the assembly file. Forward references are allowed.
-\vspace{2mm}
-
-Weak public symbols work as follows. If more than one module contains a weak public symbol with the same name then the linker will not issue an error message but link the first symbol.
-It there is one occurrence of a non-weak symbol with this name then the non-weak symbol will be chosen. If there are more than one non-weak public symbol with the same name then the linker will issue an error message.
-
-
-\subsection{Other directives} \label{assemblyOtherDirectives}
-
-The 'align' directive can align data or code:
-\vspace{2mm}
-
-\begin{tabular}{|p{150mm}|}
-\hline
-\hspace{4mm} align (number)\\
-\hline
-\end{tabular}
-\vspace{2mm}
-
-The number must be a power of 2. The next data or code will be aligned to an address divisible by the specified number. The beginning of the section will automatically be aligned to at least the same size.
-\vspace{2mm}
-
-
-\subsection{Combining vectors of different lengths} \label{vectorsDifferentLengths}
-
-The length of the destination register is the same as the length of the first vector register source operand when vectors of different lengths are combined. For example:
-\vspace{2mm}
-
-\begin{lstlisting}[frame=single]
-float v1 = v2 - v3             // v1 has length of v2
-float v1 = -v3 + v2            // Same, but v1 has length of v3
-float v1 = v2 - [r3,length=r4] // Has length of v2, even if memory
-                               // operand has a different length
-\end{lstlisting}
-\vspace{4mm}
-
-
-\section{Metaprogramming} \label{assemblyMetaprogramming}
-Metaprogramming means variables and instructions that do not form part of the final executable code but 
-are useful for controlling the assembly process.
-\vspace{2mm}
-
-Traditional assemblers use macros for this purpose. The syntax for this is often confusing, especially when macros are nested.
-\vspace{2mm}
-
-Instead, the ForwardCom assembler will implement metaprogramming involving the following features:
-
-\begin{itemize}
-\item variables that are used only during the assembly process
-\item include files
-\item assembly-time branches and loops
-\item assembly-time functions
-\item generate a text string and emit this string as assembly code
-\end{itemize}
-
-Metaprogramming commands are indicated by a percent sign at the beginning of the line.
-At present, only variables are implemented. The other metaprogramming features will be added later.
-\vspace{2mm}
-
-
-\subsection{Metaprogramming variables} \label{MetaprogrammingVariables}
-
-Metaprogramming variables are defined and assigned on a separate line in the following way:
-\vspace{2mm}
-
-\begin{tabular}{|p{154mm}|}
-\hline
-\hspace{4mm} \% name = value\\
-\hline
-\end{tabular}
-\vspace{4mm}
-
-Meta-variables are weakly typed. They can have one of the following types:
-
-\begin{tabular}{|p{30mm}p{120mm}|}
-\hline
-integer & evaluated as signed 64-bit integer \\
-floating point & evaluated as double precision\\
-string & ASCII or UTF-8 text string\\
-register & the variable can be an alias for any register\\
-memory operand & the variable can be an alias for any memory operand\\
-type name & the variable can be an alias for a type\\
-\hline
-\end{tabular}
-\vspace{2mm}
-
-It makes no difference whether this meta-code is inside a section or not.
-\vspace{2mm}
-
-Meta-variables can be redefined or reassigned at any time. Meta-code is sequential so that the same variable can have different values at different places in the code.
-\vspace{2mm}
-
-An integer meta-variable can be exported as a constant with a public declaration if it has only one value. This is the only case where a forward reference to a meta-symbol is allowed.
-\vspace{2mm}
-
-While general assembly code allows forward references to data and code labels, meta-code cannot in general have forward references.
-\vspace{2mm}
-
-Example:
-\vspace{2mm}
-
-\begin{lstlisting}[frame=single]
-  % A = 5         // meta-variable integer A = 5
-  % R = r1        // alias for register r1
-  int32 R = A     // r1 = 5
-  % A++           // change value of A to 6
-  int32 R = A     // r1 = 6
-\end{lstlisting}
-\vspace{2mm}
+%%%%%%%%%%%%%%%%%%%
 
 
 \section{Disassembler} \label{disassembler}
@@ -922,27 +109,27 @@ Example:
 The disassembler can convert object files and executable files back to assembly language.
 The command line for the disassembler has the following format:
 
-\vspace{2mm}
+\vv
 \hspace{5mm} {\ttfamily forw -dis inputfile outputfile [options]}
 
-\vspace{2mm}
+\vv
 The following options are supported:\\
 \begin{tabular}{|p{22mm}p{140mm}|}
 \hline
 -ilist=name & specify alternative instruction list name.\\
 \hline
 \end{tabular}
-\vspace{2mm}
+\vv
 
 The disassembler produces output lines that may look like this example:
 
 \begin{lstlisting}
 float v1 = add(v2, 2.5) // 002C _ 227_E 08.0 5 01.02.02.02 _ 4100 00
 \end{lstlisting}
-\vspace{2mm}
+\vv
 
 The comment is interpreted as follows:\\
-\vspace{2mm}
+\vv
 
 \begin{tabular}{|p{22mm}p{140mm}|}
 \hline
@@ -958,8 +145,12 @@ The comment is interpreted as follows:\\
 \end{tabular}
 \vspace{4mm}
 
-The disassembler is used internally to generate a list output for the assembler. The only difference between a disassembly and an assembly listing is that the names of local labels are preserved in the assembly listing while these names may have been lost in a disassembly.
-\vspace{2mm}
+The addresses shown are byte-addresses for data sections, but word-addresses (i.e. divided by 4) for executable code sections.
+\vv
+
+The disassembler is used internally to generate a list output for the assembler. The  assembly listing and the disassembly are very similar. The names of local labels are lost in the disassembly unless the -debug option is used when assembling and linking.
+ The disassembler will assign label names of the form @\_001 where original label names are missing or lost.
+\vv
 
 
 \section{Linker} \label{linker}
@@ -967,23 +158,23 @@ The disassembler is used internally to generate a list output for the assembler.
 The linker joins object files and library files into an executable file.
 
 The command line for the linker has the following format:
-\vspace{2mm}
+\vv
 
 {\ttfamily 
 \hspace{5mm} forw -link   outputfile [options] objectfiles libraryfiles \\
 \hspace{5mm} forw -relink inputfile outputfile [options] objectfiles libraryfiles
 }
-\vspace{2mm}
+\vv
 
 The preferred extensions for file names in ForwardCom are .ob for object files, li. for library files, and .ex for executable files.
-\vspace{2mm}
+\vv
 
 \subsection{Linking an executable file} \label{linking}
 The link command will create an executable file and overwrite any existing file with the same name.
-\vspace{2mm}
+\vv
 
 The following options are supported:\\
-\begin{tabular}{|p{10mm}p{150mm}|}
+\begin{tabular}{|p{28mm}p{130mm}|}
 \hline
 -a & (Default) Add the following object files or library files to the executable.\\
 -r & The following object files or library files will be added as relinkable modules so that they can be replaced later. The executable file will be relinkable.\\
@@ -992,26 +183,29 @@ these modules are not needed for resolving external references.\\
 -d & Delete the following relinkable modules or libraries from the executable file (when relinking).\\
 -u & Allow the executable file to have unresolved external symbols. These symbols can be added later when relinking the incomplete executable file. The executable file will be relinkable.\\ 
 -x & Extract relinkable module from executable file. -xall = all relinkable modules.\\
+-map=filename & Make a link map showing addresses and sizes of sections.\\
+-debug & Add debugging information to the executable file. Currently, the only debugging information is label names and section names.\\
+-hex2  & Make a file containing the executable code section in hexadecimal format, with 2 32-bit words per line.\\
 \hline
 \end{tabular}
-\vspace{2mm}
+\vv
 
 This example will create an executable file from the modules file1.ob and file2.ob, and any members of the library library3.li that may be needed:
 \begin{lstlisting}[frame=single]
-forw -link myprogram.ex file1.ob file2.ob library3.li
+forw -link -debug myprogram.ex file1.ob file2.ob library3.li
 \end{lstlisting}
 \vspace{4mm}
 
-The linker has no option for making a map file. Use the dump or disassemble commands instead.
-\vspace{2mm}
+%The linker has no option for making a map file. Use the dump or disassemble commands instead.
+\vv
 
 
 \subsection{Making a relinkable executable file} \label{makingARelinkableExecutableFile}
 A relinkable executable file is a file where some or all of the object modules and libraries can be replaced later and new modules can be added. A relinkable executable file contains more information about symbol names and cross-references than a non-relinkable. This extra information is used only when relinking, it is not loaded into memory when the program is executed.
-\vspace{2mm}
+\vv
 
 Any of the modules that are included in a relinkable executable file can be relinkable or non-relinkable. The relinkable modules can be removed or replaced later. The non-relinkable modules are permanent. 
-\vspace{2mm}
+\vv
 
 This example produces a relinkable executable file where all of the modules are relinkable:
 \begin{lstlisting}[frame=single]
@@ -1047,7 +241,7 @@ forw -dump -m myprogram.ex
 
 \subsection{Relinking an executable file} \label{relinking}
 The relink command will modify an existing relinkable executable file and produce a new relinkable executable file with a different name. The options are the same as above. 
-\vspace{2mm}
+\vv
 
 This example will relink an executable file, replacing file2.ob by file2b.ob and replacing library3.li by a newer version of this library with the same name:
 \begin{lstlisting}[frame=single]
@@ -1057,13 +251,13 @@ forw -relink myprogram.ex myprogram2.ex -d file2.ob -r file2b.ob library3.li
 
 \subsection{Adding a plugin to a relinkable executable file} \label{AddingAPlugin}
 You can use the relinking feature to add a plugin to a relinkable executable file.
-\vspace{2mm}
+\vv
 
 There are two ways in which the program can access the plugin. The first method is to define a weak external function in the main program and make a public function with the same name in the plugin module. Calling this function will have no effect if the plugin module is not present.
-\vspace{2mm}
+\vv
 
 The other way is to define an event handler in the plugin module. This event handler will be called if the event occurs, for example when a menu item is clicked.
-\vspace{2mm}
+\vv
 
 This example will add a plugin module plugin4.li to a relinkable executable file. The member start.ob in plugin4.li is added explicitly. The remaining members of plugin4.li are added only if there is a reference to them.
 \begin{lstlisting}[frame=single]
@@ -1073,7 +267,7 @@ forw -relink myprogram.ex myprogram2.ex -r plugin4.li -m start.ob
 
 \subsection{Extracting a module from a relinkable executable file} \label{ExtractingFromRelinkable}
 You can extract modules from a relinkable executable file. This feature is used mainly for testing and debugging purposes. The extracted file is not guaranteed to be identical to the original object file.
-\vspace{2mm}
+\vv
 
 \begin{lstlisting}[frame=single]
 forw -relink myprogram.ex myprogram2.ex -x file1.ob
@@ -1083,23 +277,23 @@ forw -relink myprogram.ex myprogram2.ex -x file1.ob
 The output file will be written to the current directory and have a name with prefix ''x\_''.
 ''-xall'' will extract all relinkable modules.
 The output executable file (myprogram2.ex in the above example) is specified but not used.
-\vspace{2mm}
+\vv
 
 \subsection{Relinking and library functions} \label{relinkingAndLibraryFunctions}
 A library function is included in an executable file only if there is a reference to it. The library functions that are included in a relinkable executable file can be reused when relinking. 
 If a later addition or modification to the executable file needs a library function that was not included in the original executable then the library has to be added again during relinking.
-\vspace{2mm}
+\vv
 
 A relinkable library function in an executable file will be replaced during relinking if a new module or library contains a function with the same name. A library function that was included as non-relinkable in a relinkable executable file cannot be replaced later.
-\vspace{2mm}
+\vv
 
 
 \subsection{Relinking and communal sections} \label{relinkingAndCommunalSections}
 Communal sections are described on page \pageref{communal}. Communal sections have certain similarities with library functions.
-\vspace{2mm}
+\vv
 
 A communal section will not be included in the executable file if there is no reference to it.
-You will get a linking error if a later addition or modification to the executable file attempts to reference a symbol in this discarded communal section. There are three ways to fix this problem:
+You will get a linking error if a later addition or modification to the executable file attempts to reference a symbol in a discarded communal section. There are three ways to fix this problem:
 
 \begin{itemize}
 \item Make the section not communal
@@ -1109,19 +303,24 @@ You will get a linking error if a later addition or modification to the executab
 
 A communal section in a relinkable module will retain its properties. A communal section in a non-relinkable module will become non-communal, and any weak symbols in this section will become public and non-weak. If multiple communal sections with the same name are contained in both relinkable and non-relinkable modules then the linker will include only one.
 A bigger section is chosen before a smaller one. A section in an object file is chosen before a section in a library file. Finally, the one that comes first on the command line is preferred.
-\vspace{2mm}
+\vv
+
+\subsection{Making a hexadecimal file} \label{makingAHexadecimalFile}
+A hexadecimal file may be needed for coding a loader into ROM memory. The hexadecimal file is generated in the same way as an executable file, using the -hex option. 
+The output file will contain the executable code section in hexadecimal format. The number of 32-bits per line is specified as a suffix, e.g. -hex2 gives 2 words per line. Each line contains a hexadecimal number in big endian format.
+\vv
 
 
 \section{Library manager} \label{libraryManager}
 
 A function library is a collection of object files each defining one or more functions that can be called from other modules. The library manager can make a function library and add or remove modules in it.
-\vspace{2mm}
+\vv
 
 The command line for the library manager has the following format:
-\vspace{2mm}
+\vv
 
 \hspace{5mm} {\ttfamily forw -lib libraryfile [options] objectfiles}
-\vspace{2mm}
+\vv
 
 The following options are supported:\\
 \begin{tabular}{|p{10mm}p{150mm}|}
@@ -1135,35 +334,37 @@ The following options are supported:\\
 -xall & Extract all object files from the library. \\
 \hline
 \end{tabular}
-\vspace{2mm}
+\vv
 
 If a library with the specified name already exists, then it will be modified by adding, deleting, or replacing object files. The library will be created if it does not already exists.
-\vspace{2mm}
+\vv
 
 The preferred extension for file names in ForwardCom are .ob for object files and .li for library files.
-\vspace{2mm}
+\vv
 
-The names of the object files are stored in the library without the file path so that they can be extracted on another computer with a different file structure. The library cannot contain multiple object files with the same name.
-\vspace{2mm}
+The names of the object files are stored in the library without the file path so that they can be extracted on another computer with a different directory structure. The library cannot contain multiple object files with the same name.
+\vv
 
 The ForwardCom system has only one type of library files. The same library can be used for static and runtime linking and for relinking of an executable file.
-\vspace{2mm}
+\vv
 
-A standard C library is provided with the name libc.li.
-\vspace{2mm}
+A standard C library is provided with the name libc.li. 
+A library of mathematical functions is provided with the name math.li. 
+A lightweight version of libc.li is provided with the name libc-light.li for the small softcore with limited capabilities and no system calls.
+\vv
 
 \section{Emulator and debugger} \label{emulator}
 
 The emulator can execute a ForwardCom executable file on another platform. It is useful for testing and debugging.
-\vspace{2mm}
+\vv
 
 The command line for the emulator has the following format:
-\vspace{2mm}
+\vv
 
 \hspace{5mm} {\ttfamily forw -emu executable\_file [options]}
-\vspace{2mm}
+\vv
 
-\vspace{2mm}
+\vv
 The following options are supported:\\
 \begin{tabular}{|p{22mm}p{140mm}|}
 \hline
@@ -1172,55 +373,67 @@ The following options are supported:\\
 -ilist=name & Specify alternative instruction list name.\\
 \hline
 \end{tabular}
-\vspace{2mm}
+\vv
 
-The debug list output will show all executed instructions and their results.
-Interactive single-step debugging is currently not supported.
-\vspace{2mm}
+The debug list output will show all executed instructions and their results. 
+It is recommended to use the -debug option when assembling and linking in order to preserve label names in the debug output.
+\vv
+
+Interactive single-step debugging is currently not supported in the emulator.
+\vv
 
 The current version of the emulator supports all general instructions but only few system instructions. Integers of 8, 16, 32, and 64 bits are supported. Floating point numbers with half, single, and double precision are supported. Quadruple precision is not supported. Only few instructions with 128 bit integers are supported. 
 Most optional features are supported by the emulator, including exception handling, rounding control, and subnormal numbers.
-\vspace{2mm}
+\vv
 
 \section{Dump utililty} \label{dumpUtililty}
 
 The dump utility can show metadata from object files and executable files.
-\vspace{2mm}
+\vv
 
 The command line for the dump utility has the following format:
-\vspace{2mm}
+\vv
 
 \hspace{5mm} {\ttfamily forw -dump-options object\_file }
-\vspace{2mm}
+\vv
 
 The following options are supported:\\
 \begin{tabular}{|p{10mm}p{150mm}|}
 \hline
 f & file header.\\
 h & section headers.\\
+l & link map.\\
 s & symbol table.\\
 n & string table.\\
 r & relocation records.\\
 m & relinkable modules.\\
 \hline
 \end{tabular}
-\vspace{2mm}
+\vv
 
 
 \section{Compiling the forw tools} \label{compilingForw}
 These tools can be compiled for Windows, Linux, MacOS, and other platforms. 
+\vv
+
+To compile for Windows using Visual Studio, use the project files forw.sln and  forw.vcxproj.
+\vv
+
+To compile for Linux or other platforms using a Gnu or Clang compiler, use Gnu make with the command make -f forw.make
+\vv
+
 See the file forwardcom\_sourcecode\_documentation for details.
-\vspace{2mm}
+\vv
 
 
 \section{Code examples} \label{codeExamples}
 A collection of code examples are provided in the examples folder. You can try an example by assembling, linking, and emulating it as follows:
-\vspace{2mm}
+\vv
 
 forw -ass hello.as \\
 forw -link hello.ex hello.ob libc.li \\
 forw -emu hello.ex
-\vspace{2mm}
+\vv
 
 
 \end{document}

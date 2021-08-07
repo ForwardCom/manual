@@ -1,0 +1,36 @@
+% chapter included in forwardcom.tex
+\documentclass[forwardcom.tex]{subfiles}
+\begin{document}
+\RaggedRight
+
+\chapter{Softcore}
+A hardware implementation of ForwardCom as an FPGA softcore is available at \\
+\href{https://github.com/ForwardCom/softcoreA}{github.com/ForwardCom/softcoreA}
+\vv
+
+\subsubsection{Features of softcore model A version 1.00}
+\begin{itemize}
+\item Runs on Nexys A7-100T FPGA board
+\item Maximum clock frequency 50 - 70 MHz, depending on configuration
+\item 32-bit or 64-bit registers
+\item Can execute one instruction per clock cycle
+\item Data memory 32 kB. Code memory 64 kB. Call stack 1023 entries.
+\item Implements all integer instructions, except multiplication, division, push, pop
+\item Implements all instruction formats and all addressing modes defined by the ForwardCom standard version 1.11.
+\item No vector registers yet. No floating point instructions
+\item No system calls, no memory protection. Useful for embedded designs
+\item Memory reads and writes must be aligned
+\item RS232 serial interface for standard input and output
+\item On-chip loader (uses 2 kB code memory)
+\item On-chip debug interface
+\item On-chip event counter
+\item Code examples and test suite provided
+\end{itemize}
+\vv
+
+Please see the 
+\href{https://github.com/ForwardCom/softcoreA/raw/main/softcore_A.pdf}{manual for the softcore} 
+for details and documentation.
+\vv
+
+\end{document}

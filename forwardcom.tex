@@ -1,7 +1,7 @@
+% Manual for ForwardCom
+% NOTE: compile this with LuaLatex, not PDFLatex
+
 \documentclass[11pt,a4paper,oneside,openright]{report}
-
-% compile with XeLatex or LuaLatex, not PDFLatex
-
 \usepackage[bindingoffset=5mm,left=20mm,right=20mm,top=20mm,bottom=20mm,footskip=10mm]{geometry}
 \usepackage[utf8x]{inputenc}
 \usepackage{hyperref}
@@ -11,13 +11,12 @@
 \usepackage{longtable}
 \usepackage{multirow}
 \usepackage{ragged2e} 
-\usepackage{cmap} % avoid fi ligatures in pdf file
 \usepackage{amsthm} % example numbering
 \usepackage{color}
 \usepackage[T1]{fontenc} % fix problem with underscore not searchable
 \usepackage{fontspec}
-\defaultfontfeatures{Mapping=tex-text}
-\setmainfont{Arial}
+\defaultfontfeatures{Mapping=tex-text, Ligatures=NoCommon}
+\setmainfont{Arial}[Ligatures=NoCommon]
 \setsansfont{Arial}
 \renewcommand{\familydefault}{\sfdefault}
 
@@ -27,6 +26,8 @@
 \lstset{basicstyle=\ttfamily,breaklines=true}
 \definecolor{darkGreen}{rgb}{0,0.4,0}
 \lstset{commentstyle=\color{darkGreen}}
+\newcommand{\vv}{ \vspace{2mm} }        % vertical space
+
 
 \begin{document}
 \title{ForwardCom: An open-standard instruction set for high-performance microprocessors}
@@ -133,6 +134,12 @@
 
 % Programming manual
 \subfile{fwc_programming_manual.tex}
+
+% Test suite
+\subfile{fwc_testsuite.tex}
+
+% Softcore
+\subfile{fwc_softcore.tex}
 
 % Conclusion
 \subfile{fwc_conclusion.tex}

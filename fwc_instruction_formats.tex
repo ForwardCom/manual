@@ -5,208 +5,162 @@
 
 \chapter{Instruction formats}
 \section{Formats and templates}
-All instructions use one of the general format templates shown below (the most significant bits are shown to the left). The basic layout of the 32-bit code word is shown in template A. Template B, C and D are derived from template A by replacing 8, 16 or 24 bits, respectively, with immediate data. Double-size and triple-size instructions can be constructed by adding one or two 32-bit words to one of these templates. For example, template A with an extra 32-bit word containing data is called A2. Template E2 is an extension to template A where the second code word contains an extra register field, extra opcode bits, mode bits, option bits, and data.
-\vspace{2mm}
+All instructions use one of the general format templates shown below (the most significant bits are shown to the left). The basic layout of the 32-bit code word is shown in template A. Template B, C and D are derived from template A by replacing 8, 16, or 24 bits, respectively, with immediate data. Double-size and triple-size instructions can be constructed by adding one or two 32-bit words to one of these templates. For example, template A with an extra 32-bit word containing data is called A2. Template E2 is an extension to template A where the second code word contains an extra register field, extra opcode bits, mode bits, option bits, and data.
+\vspace{4mm}
 
-
-\begin{longtable}[l]
-{|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|}
-% \caption{Template A. \\ Has three operand registers and a mask register.} 
-\endfirsthead
- \label{table:templateA} \\
-\endhead
-\hline
- Bits & 2 & 3 & 6 & 5 & 1 & 2 & 5 & 3 & 5 \\
-\hline
-Field & IL & Mode & OP1 & RD & M & OT & RS & Mask & RT \\
-\hline
+\begin{table}[h!] \label{table:templateA}
+\begin{tabular}{|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|} \hline
+ Bits & 2 & 3 & 6 & 5 & 1 & 2 & 5 & 3 & 5 \\ \hline
+Field & IL & Mode & OP1 & RD & M & OT & RS & Mask & RT  \\ \hline
 \multicolumn{10}{|l|}{
-Template A. Has three operand registers and a mask register.} \\
-\hline
-\end{longtable}
+\textbf{Template A}. Has three operand registers and a mask register.} \\ \hline
+\end{tabular}
+\end{table}
+\vv
 
-\begin{longtable}[l]{|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{16mm}|}
-\endfirsthead
-\label{table:templateB}
-\endhead
-\hline
-  Bits & 2 & 3 & 6 & 5 & 1 & 2 & 5 & 
-  \multicolumn{2}{|c|}{ 8 } \\
-\hline
-Field & IL & Mode & OP1 & RD & M & OT & RS & 
-  \multicolumn{2}{|c|}{ IM1 } \\
-\hline
-  \multicolumn{10}{|l|}{
-Template B. Has two operand registers and an 8-bit immediate constant.}  \\
-\hline
-\end{longtable}
+\begin{table}[h!] \label{table:templateB}
+\vv
+\begin{tabular}{|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{24mm}|} \hline
+ Bits & 2 & 3 & 6 & 5 & 1 & 2 & 5 & 8 \\ \hline
+Field & IL & Mode & OP1 & RD & M & OT & RS & IM1 \\ \hline
+\multicolumn{9}{|l|}{
+\textbf{Template B}. Has two operand registers and an 8-bit immediate constant.} \\ \hline
+\end{tabular}
+\end{table}
+\vv
 
-\begin{longtable}[l]{|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}p{8mm}p{8mm}|p{8mm}p{8mm}|}
-\endfirsthead
-\label{table:templateC}
-\endhead
-\hline
-% It was a real mess to make this look nice. I don't know what's happening here
- Bits & 2 & 3 & 6 & 5 & & \hspace{2mm} 8 & & \multicolumn{2}{|p{20mm}|}{ \hspace{8mm} 8 } \\
-\hline
-Field & IL & Mode & OP1 & RD & 
-\multicolumn{3}{|c|}{ IM2 } & \multicolumn{2}{|c|}{ IM1 } \\
-\hline
-\multicolumn{10}{|l|}{
-Template C. Has one operand register two 8-bit immediate constants.} \\
-\hline
-\end{longtable}
+\begin{table}[h!] \label{table:templateC}
+\vv
+\begin{tabular}{|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{38.5mm}|p{24mm}|} \hline
+ Bits & 2 & 3 & 6 & 5 & \hspace{15mm} 8 & \hspace{8mm} 8 \\ \hline
+Field & IL & Mode & OP1 & RD & \hspace{14mm} IM2 & \hspace{7mm} IM1 \\ \hline
+\multicolumn{7}{|l|}{
+\textbf{Template C}. Has one operand register two 8-bit immediate constants.} \\ \hline
+\end{tabular}
+\end{table}
+\vv
 
-\begin{longtable}[l]{|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{40mm}|}
-\endfirsthead
-\label{table:templateD}
-\endhead
-\hline
- Bits & 2 & 3 & 3 & 
-\multicolumn{1}{|p{69mm}|}{ \hspace{31mm} 24 } \\
-\hline
-Field & IL & Mode & OP1 & 
-\multicolumn{1}{|c|}{ IM2 } \\
-\hline
+\begin{table}[h!] \label{table:templateD}
+\vv
+\begin{tabular}{|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{81.5mm}|} \hline
+ Bits & 2 & 3 & 3 & \hspace{33mm} 24 \\ \hline
+Field & IL & Mode & OP1 & \hspace{32mm} IM2 \\ \hline
 \multicolumn{5}{|l|}{
-Template D. Has no register and a 24-bit immediate constant.} \\
-\hline
-\end{longtable}
+\textbf{Template D}. Has no register and a 24-bit immediate constant.
+} \\ \hline
+\end{tabular}
+\end{table}
+\vv
 
-\begin{longtable}[l]{|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|}
-\endfirsthead
-\label{table:templateE2}
-\endhead
-\hline
- Bits & 2 & 3 & 6 & 5 & 1 & 2 & 5 & 3 & 5 \\
-\hline
-Field & IL & Mode & OP1 & RD & M & OT & RS & Mask & RT \\
-\hline
-Field & OP2 & \small Mode2 & IM3 & RU & \multicolumn{5}{|c|}{ IM2 } \\
-\hline
-\multicolumn{10}{|p{108mm}|}{
-Template E2. Has 4 register operands, mask, a 16-bit immediate constant and extra bits for
-opcode, mode, and options.} \\
-\hline
-\end{longtable}
-
-
-\pagebreak
-\begin{longtable}[l]{|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|}
-\endfirsthead
-\label{table:templateA2}
-\endhead
-\hline
- Bits & 2 & 3 & 6 & 5 & 1 & 2 & 5 & 3 & 5 \\
-\hline
-Field & IL & Mode & OP1 & RD & M & OT & RS & Mask & RT \\
-\hline
-Field & \multicolumn{9}{|c|}{ IM2 } \\
-\hline
+\begin{table}[h!] \label{table:templateA2}
+\vv
+\begin{tabular}{|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|} \hline
+ Bits & 2 & 3 & 6 & 5 & 1 & 2 & 5 & 3 & 5 \\ \hline
+Field & IL & Mode & OP1 & RD & M & OT & RS & Mask & RT  \\ \hline
+Field & \multicolumn{9}{|c|}{ IM2 } \\ \hline
 \multicolumn{10}{|l|}{
-Template A2. 2 words. As A, with an extra 32-bit immediate constant.} \\
-\hline
-\end{longtable}
+\textbf{Template A2}. 2 words. As A, with an extra 32-bit immediate constant.
+} \\ \hline
+\end{tabular}
+\end{table}
+\vv
 
-\begin{longtable}[l]{|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|}
-\endfirsthead
-\label{table:templateA3}
-\endhead
-\hline
- Bits & 2 & 3 & 6 & 5 & 1 & 2 & 5 & 3 & 5 \\
-\hline
-Field & IL & Mode & OP1 & RD & M & OT & RS & Mask & RT \\
-\hline
-Field & \multicolumn{9}{|c|}{ IM2 } \\
-\hline
-Field & \multicolumn{9}{|c|}{ IM3 } \\
-\hline
+\begin{table}[h!] \label{table:templateB2}
+\vv
+\begin{tabular}{|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{24mm}|} \hline
+ Bits & 2 & 3 & 6 & 5 & 1 & 2 & 5 & 8 \\ \hline
+Field & IL & Mode & OP1 & RD & M & OT & RS & IM1 \\ \hline
+Field & \multicolumn{8}{|c|}{ IM2 } \\ \hline
+\multicolumn{9}{|l|}{
+\textbf{Template B2}. As B, with an extra 32-bit immediate constant.} \\ \hline
+\end{tabular}
+\end{table}
+\vv
+
+\begin{table}[h!] \label{table:templateC2}
+\vv 
+\begin{tabular}{|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{38.5mm}|p{24mm}|} \hline
+ Bits & 2 & 3 & 6 & 5 & \hspace{15mm} 8 & \hspace{8mm} 8 \\ \hline
+Field & IL & Mode & OP1 & RD & \hspace{14mm} IM2 & \hspace{7mm} IM1 \\ \hline
+Field & \multicolumn{6}{|c|}{ IM3 } \\ \hline
+\multicolumn{7}{|l|}{
+\textbf{Template C2}. As C, with an extra 32-bit immediate constant.} \\ \hline
+\end{tabular}
+\end{table}
+\vv
+
+\begin{table}[h!] \label{table:templateE2}
+\vv 
+\begin{tabular}{|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|} \hline
+Bits & 2 & 3 & 6 & 5 & 1 & 2 & 5 & 3 & 5 \\ \hline
+Field & IL & Mode & OP1 & RD & M & OT & RS & Mask & RT  \\ \hline
+Bits & 3 & 5 & 2 & 6 & \multicolumn{5}{l|}{ \hspace{29mm} 16  } \\ \hline
+Field  & Mode2 & RU & OP2 & IM3 & \multicolumn{5}{l|}{ \hspace{28mm} IM2 } \\ \hline
 \multicolumn{10}{|l|}{
-Template A3. 3 words. As A, with two extra 32-bit immediate constants.} \\
-\hline
-\end{longtable}
+\textbf{Template E2}. Has 4 register operands, mask, a 16-bit immediate constant, } \\
+\multicolumn{10}{|l|}{
+and extra bits for mode, opcode, and options. } \\ \hline
+\end{tabular}
+\end{table}
+\vv
 
-\begin{longtable}[l]{|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{16mm}|}
-\endfirsthead
-\label{table:templateB2}
-\endhead
-\hline
-  Bits & 2 & 3 & 6 & 5 & 1 & 2 & 5 & \multicolumn{2}{|c|}{ 8 } \\
-\hline
-Field & IL & Mode & OP1 & RD & M & OT & RS & \multicolumn{2}{|c|}{ IM1 } \\
-\hline
-Field & \multicolumn{9}{|c|}{ IM2 } \\   
-\hline
-\multicolumn{10}{|p{118mm}|}{
-Template B2. As B, with an extra 32-bit immediate constant.} \\
-\hline
-\end{longtable}
+\begin{table}[h!] \label{table:templateA3}
+\vv
+\begin{tabular}{|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|} \hline
+ Bits & 2 & 3 & 6 & 5 & 1 & 2 & 5 & 3 & 5 \\ \hline
+Field & IL & Mode & OP1 & RD & M & OT & RS & Mask & RT  \\ \hline
+Field & \multicolumn{9}{|c|}{ IM2 } \\ \hline
+Field & \multicolumn{9}{|c|}{ IM3 } \\ \hline
+\multicolumn{10}{|l|}{
+\textbf{Template A3}. 3 words. As A, with two extra 32-bit immediate constants.
+} \\ \hline
+\end{tabular}
+\end{table}
+\vv
 
-\begin{longtable}[l]{|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{16mm}|}
-\endfirsthead
-\label{table:templateB3}
-\endhead
-\hline
-  Bits & 2 & 3 & 6 & 5 & 1 & 2 & 5 & \multicolumn{2}{|c|}{ 8 } \\
-\hline
-Field & IL & Mode & OP1 & RD & M & OT & RS & \multicolumn{2}{|c|}{ IM1 } \\
-\hline
-Field & \multicolumn{9}{|c|}{ IM2 } \\   
-\hline
-Field & \multicolumn{9}{|c|}{ IM3 } \\   
-\hline
-  \multicolumn{10}{|p{118mm}|}{
-Template B3. As B, with two extra 32-bit immediate constants.} \\
-\hline
-\end{longtable}
+\begin{table}[h!] \label{table:templateB3}
+\vv
+\begin{tabular}{|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{24mm}|} \hline
+ Bits & 2 & 3 & 6 & 5 & 1 & 2 & 5 & 8 \\ \hline
+Field & IL & Mode & OP1 & RD & M & OT & RS & IM1 \\ \hline
+Field & \multicolumn{8}{|c|}{ IM2 } \\ \hline
+Field & \multicolumn{8}{|c|}{ IM3 } \\ \hline
+\multicolumn{9}{|l|}{
+\textbf{Template B3}. As B, with two extra 32-bit immediate constants.
+} \\ \hline
+\end{tabular}
+\end{table}
+\vspace{4mm}
 
-\begin{longtable}[l]{|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{20mm}|p{20mm}|}
-\endfirsthead
-\label{table:templateC2}
-\endhead
-\hline
- Bits & 2 & 3 & 6 & 5 & 8 & 8 \\
-\hline
-Field & IL & Mode & OP1 & RD & IM2 & IM1 \\
-\hline
-Field & \multicolumn{6}{|c|}{ IM3 } \\   
-\hline
-\multicolumn{7}{|p{118mm}|}{
-Template C2. As C, with an extra 32-bit immediate constant.} \\
-\hline
-\end{longtable}
-
-\begin{longtable}[l]{|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|}
-\endfirsthead
-\label{table:templateE3}
-\endhead
-\hline
- Bits & 2 & 3 & 6 & 5 & 1 & 2 & 5 & 3 & 5 \\
-\hline
-Field & IL & Mode & OP1 & RD & M & OT & RS & Mask & RT \\
-\hline
-Field & OP2 & \small Mode2 & IM3 & RU & \multicolumn{5}{|c|}{ IM2 } \\
-\hline
-Field & \multicolumn{9}{|c|}{ IM4 } \\   
-\hline
-\multicolumn{10}{|p{118mm}|}{
-Template E3. Has 4 register operands, mask, 16-bit and 32-bit immediate constants and extra bits for opcode, mode, and options.} \\
-\hline
-\end{longtable}
-\vspace{2mm}
+\begin{table}[h!] \label{table:templateE3}
+\vv
+\begin{tabular}{|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|p{10mm}|} \hline
+Bits & 2 & 3 & 6 & 5 & 1 & 2 & 5 & 3 & 5 \\ \hline
+Field & IL & Mode & OP1 & RD & M & OT & RS & Mask & RT  \\ \hline
+Bits & 3 & 5 & 2 & 6 & \multicolumn{5}{l|}{ \hspace{29mm} 16  } \\ \hline
+Field  & Mode2 & RU & OP2 & IM3 & \multicolumn{5}{l|}{ \hspace{28mm} IM2 } \\ \hline
+Field & \multicolumn{9}{|c|}{ IM4 } \\ \hline
+\multicolumn{10}{|l|}{
+\textbf{Template E3}. As E2, with an extra 32-bit immediate constant.
+} \\ \hline
+\end{tabular}
+\end{table}
+\vspace{4mm}
 
 The meaning of each field is described in the following table.
+
+\pagebreak
 
 \begin{longtable} {|p{16mm}|p{16mm}|p{85mm}|}
 \caption{Fields in instruction templates} \label{table:fieldsInTemplates} \\
 \endfirsthead
 \endhead
 \hline
-Field name & Meaning & Values  \\
+\bfseries Field name & \bfseries Meaning & \bfseries Values  \\
 \hline
 IL & Instruction length & 0 or 1: 1 word = 32 bits \newline
 2: 2 words = 64 bits \newline
-3: 3 or more words  \\
+3: 3 words (possibly more in future extensions if mode > 3)  \\
 \hline
 Mode & Format & Determines the format template and the use of each field. 
 Extended with the M bit when needed. \newline 
@@ -229,13 +183,14 @@ M & Operand type or mode & Extends the mode field when bit 1 and bit 2 of Mode a
 \hline
 OP1 & Opcode & Decides the operation, for example add or move.  \\
 \hline
-OP2 & Opcode & Opcode extension for single-format instructions. \\
+OP2 & Opcode & Opcode extension for single-format instructions. \newline
+               May also be used as an extension to IM3. \\
 \hline
 RD & Destination register & r0 – r31 or v0 – v31. Also used for first source operand and fallback if the instruction format does not specify enough operands. \\
 \hline
-RS & Source register & r0 – r31 or v0 – v31. Source register, pointer, index, fallback, or vector length register. \\
+RS & Source register & r0 – r31 or v0 – v31. Source register, pointer, or fallback. \\
 \hline
-RT & Source register & r0 – r31 or v0 – v31. Source register or pointer.  \\
+RT & Source register & r0 – r31 or v0 – v31. Source register, index, or vector length.  \\
 \hline
 RU & Source register & r0 – r31 or v0 – v31. Source register or fallback. \\
 \hline
@@ -244,25 +199,19 @@ Mask & mask register & 0-6 means that a general purpose register or vector regis
 IM1 IM2 IM3 IM4 & Immediate data & 8, 16, 24, or 32 bits immediate operand or address offset or option bits. Adjacent IM fields can be merged to make a larger constant. \\
 \hline
 \end{longtable}
-\vspace{2mm}
+\vv
 
 Instructions have several different formats, defined by the IL and mode bits, according to  table \ref{table:instructionFormats} below. The different formats specify different sizes of immediate data or memory operands with different addressing modes. \\
-\vspace{2mm}
+\vv
 
 Instructions can have up to three source operands (input), one destination operand (output), and a mask. The destination operand always uses the RD field, except where the destination is a memory operand. The source operands are using the available operand fields according to the following algorithm: The required source operands are assigned to the available
-operand fields defined by table \ref{table:instructionFormats} in the following order of 
-priority: immediate data field, memory operand, RT, RS, RU, RD - assigning the last source operands first. Thus, RD is used for both destination and the first source operand only if there are no other vacant register fields.
-\vspace{2mm}
-
-A fallback value is needed if there is a mask. The fallback is determined as follows. If there are three source operands then the first source register is used as fallback register. If there are less than three source operands then the first vacant register field in the sequence RU, RS is used for the fallback register. If there is no vacant register field then the first source register is used as fallback register. If the fallback register is r31 or v31 then the fallback value is zero, otherwise it is the value of the fallback register.
-\vspace{2mm}
-
-This principle can be illustrated with the following example. Format 2.2.1 uses RT for pointer in a memory operand and RS for vector length, leaving only RU and RD for register operands. An instruction with one input operand will have the memory operand as input and RU as fallback. An instruction with two input operands will have RU and memory as the operands and RU as fallback. An instruction with three input operands will have RD, RU, and memory as the operands and RD as fallback.
-\vspace{2mm}
+operand fields defined by table \ref{table:instructionFormats} in the following order of priority: immediate data field, memory operand, RT, RS, RU, RD. 
+The operands are assigned in reverse order so that the last operand gets the field that comes first in this order of priority. For example, the instruction r1 = r2 - r3 using template A will be RD = RS - RT. RD is used for both destination and the first source operand only if there are no other vacant register fields.
+\vv
 
 The coding of instructions with two or three source operands is indicated in the table in the following way: \\
 RD = f2(RS,RT)  means that instructions with two input operands (f2) use the register specified in RD as destination operand and RS and RT as source operands.\\
-RD=f3(RD, RU, [RT+RS*OS+IM2])  means that instructions with three input operands (f3) use the register specified in RD as both destination and the first source operand. The second source operand is RU. The third source operand is a memory operand with RT as base pointer, RS as index scaled by the operand size, and the constant IM2 as offset.\\
+RD=f3(RD, RU, [RS+RT*OS+IM2])  means that instructions with three input operands (f3) use the register specified in RD as both destination and the first source operand. The second source operand is RU. The third source operand is a memory operand with RS as base pointer, RT as index scaled by the operand size, and the constant IM2 as offset.\\
 Instructions with only one input operand are coded as f2 with the first source operand omitted.
 
 \begin{longtable} {|p{10mm}|p{6mm}|p{9mm}|p{7mm}|p{80mm}|}
@@ -270,7 +219,7 @@ Instructions with only one input operand are coded as f2 with the first source o
 \endfirsthead
 \endhead
 \hline
-Format name & IL & Mode. \small Mode2 & Tem-plate & Use \\
+\bfseries Format name & \bfseries IL & \bfseries Mode. \small Mode2 & \bfseries Tem-plate & \bfseries Use \\
 \hline
 0.0 & 0 & 0 & A & Three general purpose register operands.\newline 
 RD = f2(RS, RT). RD = f3(RD, RS, RT).\\
@@ -289,15 +238,15 @@ RD = f2(RS, IM1). RD = f3(RD, RS, IM1).\\
 
 \hline
 0.4 & 0 & 4 & A & One vector register and memory operand. Vector length specified by general purpose register. \newline
-RD = f2(RD, [RT]). length=RS.\\
+RD = f2(RD, [RS]). length=RT.\\
 
 \hline
 0.5 & 0 & 5 & A & One vector register and a memory operand with base pointer and negative index.  This is used for vector loops as explained on page \pageref{vectorLoops}. \newline
-RD = f2(RD, [RT-RS]). length=RS.\\
+RD = f2(RD, [RS-RT]). length=RT.\\
 
 \hline
 0.6 & 0 & 6 & A & One vector register and a scalar memory operand with base pointer and scaled index. \newline
-RD = f2(RD, [RT+RS*OS]).\\
+RD = f2(RD, [RS+RT*OS]).\\
 
 \hline
 0.7 & 0 & 7 & B & One vector register and a scalar memory operand with base pointer and 8-bit offset. \newline
@@ -305,7 +254,7 @@ RD = f2(RD, [RS+IM1*OS]).\\
 
 \hline
 0.8 & 0 & 0 M=1 & A & One general purpose register and a memory operand with base pointer and scaled index. \newline
-RD = f2(RD, [RT+RS*OS]).\\
+RD = f2(RD, [RS+RT*OS]).\\
 
 \hline
 0.9 & 0 & 1 M=1 & B & One general purpose register and a memory operand with base pointer and 8-bit offset. \newline
@@ -355,30 +304,30 @@ RD = f2(RS, IM1). RD = f3(RD, RS, IM1).\\
 
 \hline
 2.0.0 & 2 & 0.0  & E2 & Three general purpose registers and a memory operand with base and 16 bit offset.\newline 
-RD = f2(RS, [RT+IM2]). \newline 
-RD = f3(RU, RS, [RT+IM2]).\\
+RD = f2(RT, [RS+IM2]). \newline 
+RD = f3(RU, RT, [RS+IM2]).\\
 
 \hline
 2.0.1 & 2 & 0.1  & E2 & Two general purpose registers and a memory operand with base, index and optional 16 bit offset, no scale.\newline  
-RD = f2(RU, [RT+RS+IM2]).\newline  
-RD = f3(RD, RU, [RT+RS+IM2]). \newline  
-Support for offset is optional. \newline 
-Support for 3-operand instructions is optional. \\
+RD = f2(RU, [RS+RT+IM2]).\newline  
+RD = f3(RD, RU, [RS+RT+IM2]). \\
 
 \hline
 2.0.2 & 2 & 0.2  & E2 & Two general purpose registers and a memory operand with base,  scaled index, and optional 16 bit offset.\newline   
-RD = f2(RU, [RT+RS*OS+IM2]). \newline 
-RD = f3(RD, RU, [RT+RS*OS+IM2]). \newline  
-Support for offset is optional. \newline 
-Support for 3-operand instructions is optional. \\
+RD = f2(RU, [RS+RT*OS+IM2]). \newline 
+RD = f3(RD, RU, [RS+RT*OS+IM2]). \\
 
 \hline
 2.0.3 & 2 & 0.3  & E2 & Two general purpose registers and a memory operand with base, scaled index, and 16-bit limit. Optional. \newline 
-RD = f2(RU, [RT+RS*OS]). \newline 
-RD = f3(RD, RU, [RT+RS*OS]). \newline
-Limit RS $\leq$ IM2 (unsigned).\newline 
-Support for this format is optional. \newline 
-Support for 3-operand instructions is optional. \\
+RD = f2(RU, [RS+RT*OS]). \newline 
+RD = f3(RD, RU, [RS+RT*OS]). \newline
+Limit RT $\leq$ IM2 (unsigned).\newline 
+Support for this format is optional. \\
+
+\hline
+2.0.5 & 2 & 0.5  & E2 & One general purpose register and a memory operand with base, scaled index, 16-bit offset, and an 8-bit immediate operand using IM3 extended with OP2.  Optional. \newline 
+RD = f2([RS+RT*OS+IM2], IM3). \newline 
+RD = f3(RU, [RS+RT*OS+IM2], IM3). \\ 
 
 \hline
 2.0.6 & 2 & 0.6  & E2 & Four general purpose registers.\newline 
@@ -393,39 +342,43 @@ IM2 (signed) is shifted left by the 6-bit unsigned value of IM3, or whithout shi
 
 \hline
 2.1 & 2 & 1 & A2 & Two general purpose registers and a memory operand with base and 32 bit offset (IM2). \newline 
-RD = f2(RS, [RT+IM2]). \newline 
-RD = f3(RD, RS, [RT+IM2]).\\
+RD = f2(RT, [RS+IM2]). \newline 
+RD = f3(RD, RT, [RS+IM2]).\\
 
 \hline
 2.2.0 & 2 & 2.0 & E2 & Two vector registers and a broadcast scalar memory operand with base  and 16 bit offset.\newline 
-RD = f2(RU, [RT+IM2]). \newline 
-RD = f3(RD, RU, [RT+IM2]). \newline
-Broadcast to length RS.\\
+RD = f2(RU, [RS+IM2]). \newline 
+RD = f3(RD, RU, [RS+IM2]). \newline
+Broadcast to length RT.\\
 
 \hline
 2.2.1 & 2 & 2.1 & E2 & Two vector registers and a memory operand with base and 16 bit offset.\newline 
-RD = f2(RU, [RT+IM2]). \newline 
-RD = f3(RD, RU, [RT+IM2]).\newline
-Length=RS.\\
+RD = f2(RU, [RS+IM2]). \newline 
+RD = f3(RD, RU, [RS+IM2]).\newline
+Length=RT.\\
 
 \hline
-2.2.2 & 2 & 2.2 & E2 & Two vector registers and a scalar memory operand with base and scaled
-index. Optional support for a 16-bit offset.\newline 
-RD = f2(RU, [RT+RS*OS+IM2]). \newline 
-RD = f3(RD, RU, [RT+RS*OS+IM2]). IM2 must be zero if offset not supported.\\
+2.2.2 & 2 & 2.2 & E2 & Two vector registers and a scalar memory operand with base and scaled index. \newline 
+RD = f2(RU, [RS+RT*OS+IM2]). \newline 
+RD = f3(RD, RU, [RS+RT*OS+IM2]). \\
 
 \hline
 2.2.3 & 2 & 2.3 & E2 & Two vector registers and a scalar memory operand with base, scaled index, and 16-bit limit. Optional. \newline 
-RD = f2(RU, [RT+RS*OS]). \newline 
-RD = f3(RD, RU, [RT+RS*OS]).\newline
-Limit RS $\leq$ IM2 (unsigned).\\
+RD = f2(RU, [RS+RT*OS]). \newline 
+RD = f3(RD, RU, [RS+RT*OS]).\newline
+Limit RT $\leq$ IM2 (unsigned).\\
 
 \hline
-2.2.4 & 2 & 2.4 & E2 & Two vector registers and a memory operand with base and negative index. Optional support for a 16-bit offset.\newline 
-RD = f2(RU, [RT-RS+IM2]). \newline 
-RD = f3(RD, RU, [RT-RS+IM2]). \newline 
-Length=RS.\newline
-IM2 must be zero if offset not supported.\\
+2.2.4 & 2 & 2.4 & E2 & Two vector registers and a memory operand with base and negative index. \newline 
+RD = f2(RU, [RS-RT+IM2]). \newline 
+RD = f3(RD, RU, [RS-RT+IM2]). \newline 
+Length=RT. \\
+
+\hline
+2.2.5 & 2 & 2.5  & E2 & One vector register and a memory operand with base, 16-bit offset, and an 8-bit immediate operand using IM3 extended with OP2. Optional. \newline 
+RD = f2([RS+IM2], IM3). \newline 
+RD = f3(RU, [RS+IM2], IM3). \newline 
+Length=RT.\\
 
 \hline
 2.2.6 & 2 & 2.6 & E2 & Four vector registers.\newline 
@@ -446,7 +399,7 @@ RD = f3(RS, RT, IM2).\\
 
 \hline
 2.4 & 2 & 4 & A2 & One vector register and a memory operand with base and 32 bit offset.\newline
-RD = f2(RD, [RT+IM2]). length=RS.\\
+RD = f2(RD, [RS+IM2]). length=RT.\\
 
 \hline
 2.5 & 2 & 5 & A2, B2, C2 & Jump instructions for OP1 $<$ 8. Single format instructions with memory operands or mixed register types for OP1 $\geq$ 8.\\
@@ -472,22 +425,24 @@ RD = f3(RS, RT, IM2).\\
 
 \hline
 3.0.0 & 3 & 0.0  & E3 & Three general purpose registers and a memory operand with base and 32 bit offset.\newline 
-RD = f2(RS, [RT+IM4]). \newline 
-RD = f3(RU, RS, [RT+IM4]).\\
+RD = f2(RT, [RS+IM4]). \newline 
+RD = f3(RU, RT, [RS+IM4]).\\
 
 \hline
 3.0.2 & 3 & 0.2  & E3 & Two general purpose registers and a memory operand w. base, scaled index, and 32 bit offset.\newline 
-RD = f2(RU, [RT+RS*OS+IM4]). \newline 
-RD = f3(RD, RU, [RT+RS*OS+IM4]).\newline
-Support for 3-operand instructions is optional.\\
-
+RD = f2(RU, [RS+RT*OS+IM4]). \newline 
+RD = f3(RD, RU, [RS+RT*OS+IM4]). \\
 
 \hline
 3.0.3 & 3 & 0.3  & E3 & Two general purpose registers and a memory operand with base, scaled index, and 32-bit limit. Optional. \newline 
-RD = f2(RU, [RT+RS*OS]). \newline 
-RD = f3(RD, RU, [RT+RS*OS]). \newline 
-Limit RS $\leq$ IM4 (unsigned).\newline
-Support for 3-operand instructions is optional.\\
+RD = f2(RU, [RS+RT*OS]). \newline 
+RD = f3(RD, RU, [RS+RT*OS]). \newline 
+Limit RT $\leq$ IM4 (unsigned). \\
+
+\hline
+3.0.5 & 3 & 0.5  & E3 & One general purpose register and a memory operand with base, scaled index, 16-bit offset, and a 32-bit immediate operand. Optional. \newline 
+RD = f2([RS+RT*OS+IM2], IM4). \newline 
+RD = f3(RU, [RS+RT*OS+IM2], IM4). \\ 
 
 \hline
 3.0.7 & 3 & 0.7  & E3 & Three general purpose registers and a 32-bit integer with left shift.\newline 
@@ -500,26 +455,32 @@ IM4 (signed) is shifted left by the unsigned value of IM2. \\
 
 \hline
 3.2.0 & 3 & 2.0 & E3 & Two vector registers and a broadcast scalar memory operand with base and 32 bit offset.\newline 
-RD = f2(RU, [RT+IM4]). \newline 
-RD = f3(RD, RU, [RT+IM4]). \newline 
-Broadcast to length RS.\\
+RD = f2(RU, [RS+IM4]). \newline 
+RD = f3(RD, RU, [RS+IM4]). \newline 
+Broadcast to length RT.\\
 
 \hline
 3.2.1 & 3 & 2.1 & E3 & Two vector registers and a memory operand with base and 32 bit offset.\newline 
-RD = f2(RU, [RT+IM4]). \newline 
-RD = f3(RD, RU, [RT+IM4]). \newline 
-Length=RS.\\
+RD = f2(RU, [RS+IM4]). \newline 
+RD = f3(RD, RU, [RS+IM4]). \newline 
+Length=RT.\\
 
 \hline
 3.2.2 & 3 & 2.2 & E3 & Two vector registers and a scalar memory operand w. base, scaled index, and 32-bit offset. Optional. \newline 
-RD = f2(RU, [RT+RS*OS+IM4]). \newline 
-RD = f3(RD, RU, [RT+RS*OS+IM4]).\\
+RD = f2(RU, [RS+RT*OS+IM4]). \newline 
+RD = f3(RD, RU, [RS+RT*OS+IM4]).\\
 
 \hline
 3.2.3 & 3 & 2.3 & E3 & Two vector registers and a scalar memory operand with base, scaled index, and 32-bit limit. Optional. \newline 
-RD = f2(RU, [RT+RS*OS]). \newline 
-RD = f3(RD, RU, [RT+RS*OS]). \newline 
-Limit RS $\leq$ IM4 (unsigned).\\
+RD = f2(RU, [RS+RT*OS]). \newline 
+RD = f3(RD, RU, [RS+RT*OS]). \newline 
+Limit RT $\leq$ IM4 (unsigned).\\
+
+\hline
+3.2.5 & 3 & 2.5  & E3 & One vector register and a memory operand with base, 16-bit offset, and a 32-bit immediate operand. Optional. \newline 
+RD = f2([RS+IM2], IM4). \newline 
+RD = f3(RU, [RS+IM2], IM4). \newline 
+Length=RT.\\
 
 \hline
 3.2.7 & 3 & 2.7 & E3 & Three vector registers and a broadcast single precision float or 32-bit integer with left shift.\newline 
@@ -530,13 +491,13 @@ Integer operands: IM4 (signed) is shifted left by the unsigned value of IM2. \\
 
 \hline
 3.3 & 3 & 3 & A3 & Three vector registers and a broadcast 64-bit immediate operand.\newline 
-RD = f2(RT, IM2-3). \newline 
-RD = f3(RS, RT, IM2-3).\\
+RD = f2(RT, IM3:IM2). \newline 
+RD = f3(RS, RT, IM3:IM2).\\
 
 \hline
 3.8 & 3 & 0 M=1 & A3 & Three general purpose registers and a 64-bit immediate operand. \newline 
-RD = f2(RT, IM2-3). \newline 
-RD = f3(RS, RT, IM2-3).\\
+RD = f2(RT, IM3:IM2). \newline 
+RD = f3(RS, RT, IM3:IM2).\\
 
 \hline
 3.9 &  &  &  & There is no format 3.9 because 3.1 uses the M bit.\\
@@ -551,82 +512,86 @@ RD = f3(RS, RT, IM2-3).\\
 %\subsection{Maximum number of input operands}
 %The hardware supports a maximum of four or five input dependencies. Three-input instructions cannot have both a mask and a memory operand with base and index or vector length if the hardware has a limit of four input dependencies. For example the mul\_add instruction cannot have a mask in format 2.2.0 if the hardware does not support five inputs.
 
-\vspace{2mm}
+\vv
 \section{Coding of operands}
 \subsection{Operand type}
-The type and size of operands is determined by the OT field as indicated above. The operand type is 64 bit integer by default if there is no OT field. The operand size (OS) is the size in bytes of a scalar operand or a vector element. This is equal to the number of bits divided by 8.
+The type and size of operands is determined by the OT field as indicated above. The operand type is 32 bit integer if there is no OT field unless otherwise specified. The operand size (OS) is the size in bytes of a scalar operand or a vector element. This is equal to the number of bits divided by 8.
 
 \subsection{Register type}
 The instructions can use either general purpose registers or vector registers. General purpose registers are used for source and destination operands and for masks if the Mode field is 0 or 1 (with M = 0 or 1). Vector registers are used for source and destination operands and for masks if Mode is 2-7. Jump instructions use vector registers if M = 1. A few single-format instructions deviate from this rule and use mixed register types.
 
 \subsection{Pointer register}
-Instructions with a memory operand always use an address relative to a base pointer. The base pointer can be a general purpose register, the data section pointer, the thread data pointer,
-the instruction pointer, or the stack pointer. The pointer is determined by the RS or RT field. This field is interpreted as follows.
-\vspace{2mm}
+Instructions with a memory operand always use an address relative to a base pointer. The base pointer can be a general purpose register, the data section pointer, the thread data pointer, the instruction pointer, or the stack pointer. The pointer is determined by the RS field. This field is interpreted as follows.
+\vv
 
-Single-size instructions (formats 0.4 - 0.9) can use any of the registers r0-r31 as base pointer. r31 is the stack pointer.
-\vspace{2mm}
+Single-size instructions with a memory operand (formats 0.4 - 0.9) can use any of the registers r0-r31 as base pointer. r31 is the stack pointer.
+\vv
 
-Double and triple-size instructions (formats 2.0.x, 2.1, 2.2.x, 2.4, 3.0.x, 3.2.x) can use the same registers, except r28 - r30,  which are replaced by the thread pointer (THREADP), data section pointer (DATAP), and instruction pointer (IP), respectively.
-\vspace{2mm}
+Larger instructions with a memory operand and an offset field of at least 16 bits (formats 2.0.x, 2.1, 2.2.x, 2.4, 2.9, 3.0.x, 3.2.x) can use the same registers, except r28 - r30,  which are replaced by the thread pointer (THREADP), data section pointer (DATAP), and instruction pointer (IP), respectively.
+\vv
+
+The instruction pointer may be used for addressing data in a read-only data section. This works in the following way. The address of the end of the current instruction is used as a reference point. This is the same as the address of the next instruction. The reason for using the end of the instruction as reference point is that it makes relocation in the linker independent of the instruction length in most cases. This address is multiplied by 4 when used as a data address because the instruction pointer is addressing 32 bit word units while data pointers are addressing byte units.
+\vv
+
 
 \subsection{Index register}
-Instruction formats with an index can use r0 - r30 as index. A value of 31 in the index field (RS) means no index. The signed index is multiplied by the operand size (OS) for formats 0.6, 0.8, 2.0.2, 2.0.3, 2.2.3, 3.0.3, 3.2.3; by 1 for format 2.0.1; or by -1 for format 0.5 and 2.2.2. The result is added to the value of the base pointer.
+Instruction formats with an index can use r0 - r30 as index in the RT field. 
+A value of 31 in the index field means no index. The signed index is multiplied by the operand size (OS) for formats 0.6, 0.8, 2.0.2, 2.0.3, 2.0.5, 2.2.3, 3.0.3, 3.2.3; by 1 for format 2.0.1; or by -1 for format 0.5 and 2.2.2. The result is added to the address given by the base pointer.
 
 \subsection{Offsets}
-Offsets can be 8, 16 or 32 bits. The value is sign-extended to 64 bits. An 8-bit offset is multiplied by the operand size OS, as given by the OT field. An offset of 16 or 32 bits is not scaled. The result is added to the value of the base pointer.
-\vspace{2mm}
+Offsets can be 8, 16, or 32 bits. The value is sign-extended to 64 bits. An 8-bit offset is multiplied by the operand size OS, as given by the OT field. An offset of 16 or 32 bits is not scaled. The result is added to the address given by the base pointer and the index.
+\vv
 
-Formats with 8 bits offset can use any general purpose register as base pointer. Formats with 16 or
-32 bits offset use THREADP, DATAP, and IP as base pointers instead of r28, r29, and r30.
-\vspace{2mm}
-
-Support for addressing modes with both index and offset is optional (format 2.0.1, 2.0.2, 2.2.2, 2.2.4, 3.0.2, 3.2.2). If this kind of addressing involving two additions is not supported then the offset must be zero.
+Support for addressing modes with both index and offset is optional 
+(format 2.0.1, 2.0.2, 2.0.5, 2.2.2, 2.2.4, 3.0.2, 3.0.5, 3.2.2). 
+Hardware implementations where the use of two additions in the address calculation would cause timing problems may allow having an index with a offset of zero or an offset with no index (RT = 31).
+\vv
 
 \subsection{Limit on index}
 Formats 2.0.3, 2.2.3, 3.0.3, and 3.2.3 have a 16-bit or 32-bit limit on the index register. This is useful for checking array limits. A trap is generated if the value of the index register, interpreted as unsigned, is bigger than the unsigned limit. This feature is optional.
 
 \subsection{Vector length}
-The vector length of memory operands is specified by r0-r30 in the RS field for formats 0.4, 0.5, 2.2.0, 2.2.1, 2.2.2, 2.4, 3.2.0, 3.2.1. A value of 31 in the RS field indicates a scalar with the same length as the operand size (OS).
-\vspace{2mm}
+The vector length of memory operands is specified by r0-r30 in the RT field for formats with a vector memory operand. A value of 31 in the RT field indicates a scalar with the same length as the operand size (OS).
+\vv
 
-The value of the vector length register gives the vector length in bytes (not the number of elements). If the value is bigger than the maximum vector length then the maximum vector length is used. 
-If the vector length is zero or negative then the resulting vector will be empty and nothing will
-be read or written.
-\vspace{2mm}
+The value of the vector length register indicates the vector length in bytes (not the number of elements). If the value is bigger than the maximum vector length then the maximum vector length is used. 
+If the indicated vector length is zero or negative then the resulting vector will be empty and nothing will be read or written.
+\vv
 
-The vector length must be a multiple of the operand size OS, as indicated by the OT field. If the vector length is not a multiple of the operand size then the behavior of the partial vector element is implementation dependent.
-\vspace{2mm}
+The vector length must be a multiple of the operand size OS, as indicated by the OT field. If the vector length is not a multiple of the operand size then the partial vector element will be zero.
+\vv
 
-The vector length for source operands in vector registers is included in the register itself.
+The vector length for source operands in vector registers is stored in the register itself.
 
 \subsection{Combining vectors with different lengths}
-The length of the destination register of a vector instruction will be the same as the vector length of the first register source operand (even if the first source operand uses the RD field).
-\vspace{2mm}
+The length of the destination register of a vector instruction will be the same as the vector length of the first source operand.
+\vv
 
 A consequence of this is that the length of the result is determined by the order of the operands when vectors of different lengths are combined.
-\vspace{2mm}
+\vv
 
 If the source operands have different lengths then the lengths will be adjusted as follows. If a vector source operand is too long then the extra elements will be ignored. If a vector source operand is too short then the missing elements will be zero.
-\vspace{2mm}
+\vv
 
-A scalar memory operand (format 0.6 and 0.7) is not broadcast but treated as a short vector. It is padded with zeroes to the vector length of the destination.
-\vspace{2mm}
+A scalar memory operand is not broadcast but treated as a short vector. It is padded with zeroes to the vector length of the destination.
+\vv
 
-A broadcast memory operand (format 2.2.0 and 3.2.0) will use the vector length given by the vector length register in the RS field.
-\vspace{2mm}
+A broadcast memory operand will use the vector length given by the vector length register. If this is less than the length of the destination then it is padded with zeroes.
+\vv
 
-A broadcast immediate operand will use the same vector length as the destination.
+An immediate operand will be broadcast to the vector length of the destination.
+\vv
 
 \subsection{Immediate constants}
-Immediate constants can be 8, 16, 32, and optionally 64 bits. Immediate fields are aligned to natural addresses. They are interpreted as follows.
-\vspace{2mm}
+Immediate constants can be 8, 16, 32, and 64 bits. Immediate fields are aligned to natural addresses. They are interpreted as follows.
+\vv
 
 If OT specifies an integer type then the field is interpreted as an integer. If the field is smaller than the operand size then it is sign-extended to the appropriate size. If the field is larger than the operand size then the superfluous upper bits are ignored. The truncation of a too large immediate operand will not trigger any overflow condition.
-\vspace{2mm}
+\vv
 
-If OT specifies a floating point type then the field is interpreted as follows. Immediate fields of 8 bits are interpreted as integers and converted to floating point numbers of the desired precision. A 16-bit field is interpreted as a half precision floating point number (subnormal numbers are supported here). A 32-bit field is interpreted as a single precision floating point number. It is converted to the desired precision if necessary. A 64-bit field (if supported) is interpreted as a double precision floating point number. A 64-bit field is not allowed with a single precision operand type.
-\vspace{2mm}
+If OT specifies a floating point type then the field is interpreted as follows. Immediate fields of 8 bits are interpreted as signed integers and converted to floating point numbers of the desired precision. A 16-bit field is interpreted as a half precision floating point number (subnormal numbers are supported for float16). 
+A 32-bit field is interpreted as a single precision floating point number. It is converted to the desired precision if necessary. A 64-bit field is interpreted as a double precision floating point number. A 64-bit field is not allowed with a single precision operand type.
+\vv
 
 Some instruction formats allow immediate integer constants with a left shift. Large integer constants with a limited number of significant bits can be represented with fewer bits in this way.
 
@@ -636,33 +601,38 @@ Format 3.0.7 and 3.2.7 allow a 32-bit immediate constant in IM4 to be shifted le
 Any overflow beyond 64 bits is ignored.
 
 Some single-format instructions also use shifted constants.
-\vspace{2mm}
+\vv
 
 An instruction can be made compact by using the smallest size that fits the actual value of the constant.
 
 
-\subsection{Mask register and fallback register}
+\subsection{Mask register and fallback register} \label{MaskAndFallback}
 The 3-bit mask field in formats with templates of type A or E indicates a mask register. Register r0-r6 can be used as masks if the destination is a general purpose register. Vector register v0-v6 can be used as masks if the destination is a vector register. A value of 7 in the mask field means no mask and unconditional execution using the options specified in the numeric control register.
-\vspace{2mm}
+\vv
 
 If the mask is a vector register then it is interpreted as a vector with the same element size as indicated by the OT field. Each element of the mask register is applied to the corresponding element of the result.
-\vspace{2mm}
+\vv
 
-The mask has multiple purposes. The primary purpose is for conditional execution. An instruction is not executed if bit 0 of the mask is zero. In this case, the destination will get a fallback value instead of the result of the calculation, and any numerical error condition will be suppressed. Vector instructions are executed conditionally for each vector element separately, so that each vector element is enabled if bit 0 of the corresponding vector element of the mask register is one.
-\vspace{2mm}
+The mask has multiple purposes. The primary purpose is for conditional execution. An instruction is not executed if bit 0 of the mask is zero. In this case, the destination will get a fallback value instead of the result of the calculation, and any numerical error condition will be suppressed. Vector instructions are executed conditionally for each vector element separately, so that each vector element is enabled if bit 0 of the corresponding vector element of the mask register is 1.
+\vv
 
-The fallback value is taken from an extra register if the format has a vacant register, or from the first source register operand otherwise. If there is no source register operand and no vacant register field in the format template then the fallback value is zero.
-\vspace{2mm}
+The fallback value is taken from an extra register if the instruction has less than three source operands and the format has a vacant register field, or from the first source register operand otherwise. The fallback cannot be different from the first source register if the instruction has three source operands, even if there is a vacant register field. 
+If the instruction format has more than one vacant register field, then the field that would be used for the first source operand if the instruction had three source operands is used for the fallback register.
+\vv
 
-Register r31 (stack pointer) and v31 cannot be used for fallback value. Instead, the fallback value will be zero if a register number of 31 is indicated. This also applies if the first source operand is used for fallback value. If the first source operand is r31 (stack pointer) or v31 and there is no other fallback register then the fallback value will be zero.
-\vspace{2mm}
+Register r31 (stack pointer) and v31 cannot be used as fallback register. Instead, the fallback value will be zero if a register number of 31 is indicated. 
+Register r31 and v31 should not be used as first source register if it is also used as feedback because this would cause ambiguity about the fallback value. (The fallback value will not be zero in this case).
+\vv
+
+A memory write has no fallback register. Instead, the value of the memory operand will be unchanged if the mask has a zero in bit 0.
+\vv
 
 The remaining bits of the mask are used for specifying various options.
 The meanings of these mask bits are described in the next section.
 
 \section{Coding of masks}
 A mask register can be a general purpose register r0-r6 or a vector register v0-v6. A value of 7 in the mask field means no mask.
-\vspace{2mm}
+\vv
 
 The bits in the mask register are coded as follows.
 
@@ -697,30 +667,29 @@ This feature is optional.\\ \hline
 \hline
 26 - 30 & Possible use for enabling numerical traps. Not used in the standard version. \\
 \hline
-31 & Constant execution time. This bit makes the instruction take the same number of clock cycles
-regardless of the values of mask and operands. Most or all instructions have constant execution time anyway, but the guarantee provided by this bit is useful for cryptographic applications. This feature is optional. \\
+31 & Constant execution time. This bit makes instructions take the same number of clock cycles regardless of the values of mask and operands. The guarantee provided by this bit is useful for cryptographic applications. This feature is optional. \\
 \hline
 \end{longtable}
 
 Bits 8, 16, 24, etc. in a vector mask register can be used like bit 0 for 8-bit and 16-bit operand sizes. All other bits are reserved for future use.
-\vspace{2mm}
+\vv
 
 Vector instructions treat the mask register as a vector with the same element size (OS) as the operands. Each element of the mask vector has the bit codes as listed above. The different vector elements can have different mask bits.
-\vspace{2mm}
+\vv
 
-The numeric control register (NUMCONTR) is used as mask when the mask field is 7 or absent. The NUMCONTR register is broadcast to all elements of a vector, using as many bits of NUMCONTR as indicated by the operand size, when an instruction has no mask register. 
-The same mask is applied to all vector elements in this case. 
-Bit 0 in NUMCONTR must be 1.
-\vspace{2mm}
+The numeric control register (NUMCONTR) is used as mask when the mask field is 7 or absent. The NUMCONTR register is broadcast to all elements of a vector, using as many bits of NUMCONTR as indicated by the operand size, when an instruction has no mask register. The number of bits in NUMCONTR is implementation dependent (usually 16 or more). Any missing bits will be zero. 
+The same NUMCONTR value is applied to all vector elements. 
+Bit 0 of NUMCONTR is always 1.
+\vv
 
-The instruction-specific option bits (bit 18-23) are used for various options in compare, add\_add, mul\_add, and a few other instructions. The instruction-specific options are determined by IM3 in format 2.0.x, 2.2.x, 3.0.x, 3.2.x and by the mask register in other formats. The option bits in the mask are considered zero in vector operands with an 8-bit or 16-bit operand type because each mask element has too few bits in this case. The instruction-specific options are also zero when there is no IM3 and no mask. Unlike other options, the instruction-specific options are not taken from the numeric control register. The reason for this is that frequent changes of the numeric control register would be inefficient (renaming of the numeric control register is not necessarily supported).
-
+The instruction-specific option bits (bit 18-23) may be used for various options in specific instructions. The option bits in the mask are considered zero in vector operands with an 8-bit or 16-bit operand type because each mask element has too few bits in this case. 
+\vv
 
 \section{Format for jump, call and branch instructions}
-Most branches in ordinary code are based on the result of an arithmetic or logic instruction (ALU). The ForwardCom design combines the ALU instruction and the conditional jump into a single instruction. For example, a loop control can be implemented with a single instruction that counts down and jumps until it reaches zero or counts up until it reaches a certain limit.
-\vspace{2mm}
+Most branches in software are based on the result of an arithmetic or logic instruction (ALU). The ForwardCom design combines the ALU instruction and the conditional jump into a single instruction. For example, a loop control can be implemented with a single instruction that counts down and jumps until it reaches zero or counts up until it reaches a certain limit.
+\vv
 
-The jumps, calls, branches and multiway branches will use the following formats.
+The jumps, calls, branches, and multiway branches will use the following formats.
 
 \begin{longtable}
 {|p{10mm}|p{8mm}|p{8mm}|p{8mm}|p{8mm}|p{70mm}|}
@@ -729,64 +698,87 @@ The jumps, calls, branches and multiway branches will use the following formats.
 \endfirsthead
 \endhead
 \hline
-Format & IL & Mode & OP1 & Tem-plate & Description \\
+\bfseries Format & \bfseries IL & \bfseries Mode & \bfseries OP1 & \bfseries Tem-plate & \bfseries Description \\
 \hline
-1.6 A & 1 & 4 & OPJ & B & Multiway jump and system cals with three register operands.  \\
+1.6 A & 1 & 6 & OPJ & B & Multiway jump and calls with three register operands.  \\
 \hline
-1.6 B & 1 & 4 & OPJ & B & Short jump with two register operands (RD, RS) and 8 bit offset  (IM1).  \\
+1.6 B & 1 & 6 & OPJ & B & Short jump with two register operands (RD, RS) and 8 bit offset  (IM1).  \\
 \hline
-1.7 C & 1 & 5 & OPJ & C & Short jump with one register operand (RD), an 8-bit immediate constant (IM2) and 8 bit offset (IM1), or a 16-bit offset (IM2+IM1 combined). \\
+1.7 C & 1 & 7 & OPJ & C & Short jump with one register operand (RD), an 8-bit immediate constant (IM2) and 8 bit offset (IM1). \\
 \hline
-1.7 D & 1 & 5 & 0-15 & D & Jump or call with 24-bit offset. \\
+1.7 D & 1 & 7 & 0-15 & D & Jump or call with 24-bit offset. \\
 \hline
-2.5.0 & 2 & 5 & 0 & B2 & Double size jump with two register operands and 32 bit offset (IM2). OPJ in IM1. \\
+
+2.5.0 & 2 & 5 & 3 & A2 & Double size jump with three register operands (RD, RS, RT), 
+and a 24-bit address offset (IM2). OPJ in upper 8 bits of IM2. \\
 \hline
-2.5.1 & 2 & 5 & 1 & B2 & Double size jump with a register destination operand, a register source operand, a 16-bit offset (IM2 lower half) and a 16-bit immediate operand (IM2 upper half). OPJ in IM1. \\
+
+2.5.1 & 2 & 5 & 1 & B2 & Double size jump with a register destination operand, a register source operand, a 16-bit immediate operand (IM2 lower half), and 
+a 16-bit jump offset (IM2 upper half). OPJ in IM1. \\
 \hline
-2.5.2 & 2 & 5 & 2 & C2 & Double size jump with one register operand (RD), one 8-bit immediate constant (IM2) and 32 bit offset (IM3). OPJ in IM1. \\
+
+2.5.2 & 2 & 5 & 2 & B2 & Double size jump with one register operand (RD), 
+a memory operand with base RS and 16-bit address offset (IM2 lower half), 
+and a 16-bit jump offset (IM2 upper half). OPJ in IM1. Optional. \\
 \hline
-2.5.3 & 2 & 5 & 3 & C2 & Double size jump with one register operand (RD), an 8-bit offset (IM2) and a 32-bit immediate constant (IM3).  OPJ in IM1. \\
+
+2.5.4 & 2 & 5 & 4 & C2 & Double size jump with one register operand (RD), one 8-bit immediate constant (IM2) and 32 bit offset (IM3). OPJ in IM1. \\
 \hline
-2.5.4 & 2 & 5 & 4 & C2 & Double size system call, 16 bit constant (IM1,IM2) and 32-bit constant (IM3). No OPJ. \\
+
+2.5.5 & 2 & 5 & 5 & C2 & Double size jump with one register operand (RD), an 8-bit offset (IM2) and a 32-bit immediate constant (IM3).  OPJ in IM1. \\
 \hline
-3.1.0 & 3 & 1 & 0 & B3 & Triple size jump with a register destination operand, a register source operand, a 32-bit immediate operand (IM2) and a 32-bit offset (IM3). Optional. OPJ in IM1. \\
+
+2.5.7 & 2 & 5 & 7 & C2 & Double size system call, 16 bit constant (IM1,IM2) and 32-bit constant (IM3). No OPJ. \\
 \hline
+
+3.1.0 & 3 & 1 & 0 & A3 & Triple size jump with two register operands (RD, RT), 
+a 24-bit jump offset (IM2), and a memory operand with base RS and 32-bit address offset (IM3). OPJ in last byte of IM2. Optional. \\
+\hline
+
+3.1.1 & 3 & 1 & 1 & B3 & Triple size jump with a register destination operand, a register source operand (RS), a 32-bit jump offset (IM2), and a 32-bit immediate operand (IM3). OPJ in IM1. Optional. \\
+\hline
+
+
 \end{longtable}
 
-The jump, call and branch instructions have signed offsets of 8, 16, 24 or 32 bits relative to the instruction pointer. Or, more precisely, relative to the end of the instruction. This offset is multiplied by the instruction word size (= 4 bytes) to cover an address range of $\pm$ 512 bytes for short conditional jumps with 8 bits offset, $\pm$ 128 kbytes for jumps and calls with 16 bits offset, $\pm$ 32 megabytes for 24 bits offset, and $\pm$ 8 gigabytes for 32 bits offsets. The optional triple-size format includes unconditional jump and call with a 64 bits absolute address.
-\vspace{2mm}
+The jump, call, and branch instructions have signed offsets of 8, 16, 24, or 32 bits relative to the instruction pointer. Or, more precisely, relative to the end of the instruction. This offset is multiplied by the instruction word size (= 4 bytes) to cover an address range of $\pm$ 512 bytes for short conditional jumps with 8 bits offset, $\pm$ 128 kilobytes for jumps and calls with 16 bits offset, $\pm$ 32 megabytes for 24 bits offset, and $\pm$ 8 gigabytes for 32 bits offsets.
+\vv
 
-The versions with template C and C2 have no OT field. The operand type is 64-bit integer when there is no OT field. It is not possible to use formats with template C or C2 with floating point types. The instructions will use vector registers (first element only) when there is an OT field and M = 1. In other words, the combined ALU-and-branch instructions will use vector registers only when a floating point type is specified (or 128-bit integer type, if supported). General purpose registers are used in all other cases. The logical instructions will interpret the value in a vector register as an integer, when a floating point type is specified. Only the compare instructions interpret the operands as floating point when a floating point type is indicated.
-\vspace{2mm}
+The OPJ field defines the operation and jump condition. This field has 6 bits in the single size version and 8 bits in the longer format versions. The two extra bits in the longer versions are reserved for future use.
+\vv
 
-The OPJ field defines the operation and jump condition. This field has 6 bits in the single size version and 8 bits in the longer versions. The two extra bits in the longer versions are used as follows. Bit 6 is reserved for future extensions, and must be zero. Bit 7 may be used for indicating loop behavior as a hint for choosing the optimal branch prediction algorithm.
-\vspace{2mm}
+The versions with template C and C2 have no OT field. The operand type is 32-bit integer when there is no OT field, unless otherwise noted. It is not possible to use formats with template C or C2 with other operand types. 
+\vv
 
-The combined ALU and conditional jump instructions can be coded in the formats 1.6 B, 1.7 C, 2.5.0, 2.5.1, 2.5.2, 2.5.3, and 3.1.0, except subtraction which cannot be coded in format 1.7 C. Subtraction with an immediate constant can be replaced by addition with the negative constant. The code space that would have been used by subtraction in format 1.7 C is instead used for coding direct jump and call instructions with a 24-bit offset using format 1.7 D, where the lower three bits of OP1 are used as part of the 24-bit offset.
-\vspace{2mm}
+The instructions will use vector registers when there is an OT field and M = 1. In other words, the combined ALU-and-branch instructions will use vector registers only when a floating point type is specified (or 128-bit integer type, if supported). General purpose registers are used in all other cases. Only the first element of a vector register is used. 
+Logical instructions will interpret the value in a vector register as an integer, when a floating point type is specified. Only the compare instructions interpret the operands as floating point when a floating point type is indicated. Branch instructions with addition and subtraction cannot use floating point operands. The codes that these instructions would use are used for floating point compare instructions instead.
+\vv
+
+The combined ALU and conditional jump instructions can be coded in the formats listed above. Subtraction with a constant cannot be coded in format 1.7 C. The assembler will replace subtraction with a small immediate constant by addition with the negative constant. The code space that would have been used by subtraction in format 1.7 C is instead used for coding direct jump and call instructions with a 24-bit offset using format 1.7 D, where the lower three bits of OP1 are used as part of the 24-bit offset.
+\vv
 
 Unconditional and indirect jumps and calls use the formats indicated above, where unused fields must be zero. Bit 0 of the OPJ field is zero for unconditional jump instructions and one for call instructions.
-\vspace{2mm}
+\vv
 
 See page \pageref{table:controlTransferInstructions} for a list of OPJ condition codes.
-\vspace{2mm}
+\vv
 
 
 \section{Assignment of opcodes}
 The opcodes and formats for new instructions can be assigned according to the following rules.
 
 \begin{itemize}
-\item Multi-format instructions. Often-used instructions that need to support many different operand types, addressing modes and formats use all or most of the following formats: 0.0 - 0.9, 2.0.x, 2.1, 2.2.x, 2.3, 2.4, 2.8, and optionally 3.0.x, 3.2.x, 3.3, and 3.8 if triple-size instructions are supported. The same value of OP1 is used in all these formats. OP2 must be 0. Instructions with few source operands should have the lowest values of OP1.
+\item Multi-format instructions. Often-used instructions that need to support many different operand types, addressing modes, and formats use all or most of the following formats: 0.0 - 0.9, 2.0.x, 2.1, 2.2.x, 2.3, 2.4, 2.8, 3.0.x, 3.2.x, 3.3, and 3.8. The same value of OP1 is used in all these formats. OP2 must be 0, except in formats 2.0.5 and 2.2.5 that use OP2 for other purposes. Instructions with few source operands should have the lowest values of OP1. Available OP1 values is a limited resource that should be economized. Instructions for integers only and instructions for floating point only may share the same OP1 value.
 
 \item Control transfer instructions, i. e. jumps, branches, calls and returns, can be coded as short instructions with IL = 1, mode = 6 - 7, and OP1 = 0 - 63 or as double-size instructions with IL = 2, mode = 5, OP1 = 0 - 7, and optionally as triple-size instructions with IL = 3, mode = 1, OP1 = 0-7. See page \pageref{table:jumpInstructionFormats}.
 
-\item Short single-format instructions with general purpose registers. Use mode 1.0, 1.1, and 1.8, with  any value of OP1.
+\item Short single-format instructions with general purpose registers. Use mode 1.0, 1.1, and 1.8, with any value of OP1. Mode 1.0 is currently unused and may be reserved for future purposes.
 
 \item Short single-format instructions with vector registers. Use mode 1.2, 1.3, and 1.4 with any value of OP1.
 
-\item Double-size single-format instructions with general purpose registers can use mode 2.9 with any value of OP1, and mode 2.0.x with any value of OP1 and OP2 $\neq$ 0 (give similar instructions the same value of OP2). If more combinations are needed then use IM3 for further subdivision of the code space.
+\item Double-size single-format instructions with general purpose registers can use mode 2.9 with any value of OP1, and mode 2.0.x (except 2.0.5) with any value of OP1 and OP2 $\neq$ 0 (give similar instructions the same value of OP2). If more combinations are needed then use IM3 for further subdivision of the code space.
 
-\item Double-size single-format instructions with vector registers can use mode 2.6 with with any value of OP1, and mode 2.2.x with any value of OP1 and OP2 $\neq$ 0 (give similar instructions the same value of OP2). If more combinations are needed then use IM3 for further subdivision of the code space.
+\item Double-size single-format instructions with vector registers can use mode 2.6 with with any value of OP1, and mode 2.2.x (except 2.2.5) with any value of OP1 and OP2 $\neq$ 0 (give similar instructions the same value of OP2). If more combinations are needed then use IM3 for further subdivision of the code space.
 
 \item Double-size single-format instructions with mixed vector and general purpose registers or with memory operands can use mode 2.5 with OP1 in the range 8-63.
 
@@ -796,12 +788,11 @@ The opcodes and formats for new instructions can be assigned according to the fo
 
 \item Triple-size single-format instructions with mixed register types can use mode 3.1 with with OP1 in the range 8-63.
 
-
-\item Future instructions longer than three 32-bit words are coded with IL = 3, mode = 4-7.
+\item Possible future instructions longer than three 32-bit words should be coded with IL = 3, mode = 4-7.
 
 \item New options or other modifications to existing instructions can use IM3 bits in template E or mask register bits.
 
-\item New addressing modes and formats may be implemented as single-format read and write instructions. Template E formats use Mode2 and OP2 for distinguishing between different formats. 
+\item New addressing modes and formats may be implemented as single-format read and write instructions. Template E formats use Mode2 for distinguishing between different formats. 
 Other single-format templates may be divided into groups of eight consecutive OP1 values with the same format.
 New addressing modes or other formats that apply to all multi-format instructions can use vacant values of Mode2 with E templates.
 
@@ -812,14 +803,14 @@ New addressing modes or other formats that apply to all multi-format instruction
 \end{itemize}
 
 Application-specific instructions may preferably use E template formats with OP2 $\neq$ 0. There are many vacant opcodes in these formats. General multi-purpose instructions may use some of the more crowded formats.
-\vspace{2mm}
+\vv
 
 Unused register fields may have the same value as the first source register operand in order to avoid false dependences. Unused mask fields have the value 7 in instructions that can have a mask.
 All other unused fields must be zero. The instructions with the fewest input operands should preferably have the lowest OP1 codes. 
-\vspace{2mm}
+\vv
 
 The file forwardcom\_sourcecode\_documentation has a checklist of what to do when making or modifying instructions.
-\vspace{2mm}
+\vv
 
 
 \end{document}

@@ -5,16 +5,52 @@
 
 \chapter{Revision history}
 
+\subsubsection{Version 1.11, 2021-08-07.}
+
+\begin{itemize}
+\item Templates E2 and E3 are reorganized so that IM2, IM3, and OP2 are adjacent. IM3 can now be extended into OP2 to form an 8-bit immediate operand.
+
+\item New instruction formats 2.0.5, 2.2.5, 3.0.5, and 3.2.5 with both memory and immediate operands. Special cases for bit manipulation instructions with both memory and immediate operands are no longer needed.
+
+\item New branch instruction formats 2.5.2 and 3.1.2 for conditional jumps with a memory operand. Format 2.5.0 modified to allow three registers. Other jump instruction formats modified to facilitate these changes.
+
+\item Instruction formats with memory operands are modified so that the base pointer always uses the RS field while index and vector length always use the RT field. Other instructions with a length parameter are modified to use RT for the length parameter.
+
+\item Optional support for push and pop instructions with a sequence of registers in one instruction.
+
+\item Performance monitoring counters and error tracking features added.
+
+\item New instructions: select\_bits, funnel\_shift, breakpoint.
+
+\item Removed instructions: and\_not, and\_bit, rotate\_up, rotate\_down, truth\_tab2, replace\_bits.
+
+\item Renamed instructions: test\_bits\_and, test\_bits\_or, test\_bits\_and/jump\_true
+
+\item Modified instructions: sign\_extend\_add, mul\_add, mul\_add2, truth\_tab3, input, output.
+
+\item New branch instructions: increment\_compare/jump\_below, test\_bits\_or/jump\_true,  
+compare\_abs/jump\_below/above, fp\_category/jump\_true.
+
+\item Removed branch instructions: shift\_right/left/jump\_zero, 
+rotate/jump\_carry, compare/jump\_finite
+
+\item Modified branch instructions: and, or, xor/jump\_zero, test\_bit/jump\_true.
+
+\item Operand size for some instructions with C template changed from int64 to int32.
+
+\item Op1 code changed in several instructions.
+
+\end{itemize}
+
+
 \subsubsection{Version 1.10, 2020-05-21.}
 
 \begin{itemize}
-\item Tiny instructions are dropped. Earlier versions defined a compact instruction format that allowed two tiny instructions to be packed into a single 32-bit code word. However, it was found that most tiny instructions go unpaired so that they use 32 bits anyway. The limited advantage of tiny instructions did not justify the extra complexity. The code space that was reserved for tiny instruction pairs can be reused for other purposes.
+\item Tiny instructions are dropped. Earlier versions defined a compact instruction format that allowed two tiny instructions to be packed into a single 32-bit code word. However, it was found that most tiny instructions go unpaired so that they use 32 bits anyway. The limited advantage of tiny instructions did not justify the extra complexity. The code space that was occupied by tiny instruction pairs are reused for other purposes.
 
-\item Single-word jump instructions are moved from format 1.4 and 1.5 to format 1.6 and 1.7, formerly used for tiny instructions. Format 1.3B and 1.3C is split into 1.3B and 1.4C. Format 1.5 is now vacant for application specific vector instructions.
+\item Single-word jump instructions are moved from format 1.4 and 1.5 to format 1.6 and 1.7, formerly used for tiny instructions. Format 1.3B and 1.3C is split into 1.3B and 1.4C. Format 1.5 is now vacant for application-specific vector instructions.
 
 \item New push, pop, and clear instructions to replace the former tiny instruction pairs with the same functionality. These instructions may generate multiple micro-operations.
-
-\item New instruction: vectors\_used.
 
 \end{itemize}
 
@@ -38,7 +74,7 @@
 \item Format for event handlers and other features defined in the file elf\_forwardcom.h
 \item File header modified to remove the limitation of 64000 sections
 \item Improved NAN propagation made mandatory. Addition of NANs gives the highest payload. 
-Min and max instructions propagate NANs according to the forthcoming revision of IEEE-754 standard.
+Min and max instructions propagate NANs according to the forthcoming revision of the IEEE-754 standard.
 \item Floating point compare/jump instructions have ordered and unordered versions.
 \item Better support for half precision floating point vectors.
 \item Many small changes in instruction list. 
@@ -120,12 +156,11 @@ Min and max instructions propagate NANs according to the forthcoming revision of
 
 \subsubsection{Version 1.00, 2016-03-22.}
 This document is the result of a long discussion on 
-\href{http://www.agner.org/optimize/blog/read.php?i=421}{Agner Fog's blog}
-, starting on 2015-12-27, as well as input from the RISC-V mailing list and the Opencores forum.
-\vspace{2mm}
+\href{http://www.agner.org/optimize/blog/read.php?i=421}{Agner Fog's blog}, starting on 2015-12-27, as well as input from the RISC-V mailing list and the Opencores forum.
+\vv
 
 Additional inspiration was found in various sources listed on page \pageref{referencesToIntroduction}. 
-\vspace{2mm}
+\vv
 
 Version 1.00 of this manual was published at 
 \href{http://www.agner.org/optimize}{www.agner.org/optimize}.

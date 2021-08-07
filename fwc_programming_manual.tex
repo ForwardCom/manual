@@ -7,42 +7,1150 @@
 \lstset{basicstyle=\ttfamily,breaklines=true}
 
 \chapter{Programming manual}\label{chap:programmingManual}
-This manual is based primarily on the assembly language syntax described in chapter \ref{chap:assembler}.
+This manual is based primarily on assembly language. 
 Instructions for other programming languages should be described in the manuals for the respective compilers.
-\vspace{2mm}
+\vv
 
-\subsection{Code and data sections} \label{codeDataSections}
-All code must be placed in executable sections. Data can be placed in read-only sections or
-writeable sections. Read-only sections are used for constants and tables. Function pointers
-and jump tables should preferably be placed in read-only sections for security reasons.
+
+\section{Assembly language syntax} \label{AssemblyLanguageSyntax}
+
+\subsection{Introduction}
+
+The ForwardCom assembly language is standardized to avoid the confusion 
+that we have seen with other instruction sets. 
+The basic syntax of an instruction looks like a function call:
+\vv
+
+\begin{lstlisting}
+    datatype destination_operand = instruction(source_operands)
+\end{lstlisting}
+\vv
+
+This syntax leaves no doubt about which operands are source and destination. 
+You can also use common operators, such as + - * / etc. instead of instructions that correspond
+to these operators.
+\vv
+
+Branches and loops can use conditional jump instructions or the high-level language keywords:
+if, else, for, do, while, break, continue.
+\vv
+
+Before defining the syntax details we will look at a few examples.
+\vv
+
+The following example shows a function that calculates the factorial of an integer:
+
+
+\begin{example}
+\label{exampleFactorial}
+\end{example} % frame disappears if I put this after end lstlisting
+\begin{lstlisting}[frame=single]
+code section execute        // define executable code section
+
+// factorial function calculates n!
+// input: r0, output: r0
+_factorial function public
+if (uint64 r0 <= 20) {      // check for overflow, 64 bit unsigned
+   uint64 r1 = 1            // start with 1
+   while (uint64 r0 > 1) {  // loop through r0 values
+      uint64 r1 *= r0       // multiply all values
+      uint64 r0--           // count down to 1
+   }
+   uint64 r0 = r1           // put result in r0
+   return                   // normal return from function
+}
+int64 r0 = -1               // overflow. return max unsigned value
+return                      // error return
+_factorial end              // end of function
+
+code end                    // end of code section
+\end{lstlisting}
+\vspace{4mm}
+
+The next example illustrates the use of the efficient vector loop described on page \pageref{vectorLoops}. 
+It calculates the polynomial $y = 0.5 x^2 - 4 x + 1$ for all elements of an array $x$
+and stores the results in an array $y$.
+
+\begin{example}
+\label{examplePolyn}
+\end{example} % frame disappears if I put this after end lstlisting
+\begin{lstlisting}[frame=single]
+data section read write datap       // define data section
+% arraysize = 100                   // define constant
+float x[arraysize], y[arraysize]    // define arrays
+data end                            // end of data section
+
+code section execute                // define code section
+
+// This function calculates a polynomial on all elements of an
+// array x and stores the results in an array y
+_polyn function public
+int64 r1 = address([x+arraysize*4]) // end of array x
+int64 r2 = address([y+arraysize*4]) // end of array y
+int64 r0 = arraysize*4              // array size in bytes = 400
+
+for (float v0 in [r1-r0]) {         // vector loop
+   float v0 = [r1-r0, length=r0]    // read x vector
+   float v1 = v0 * 0.5              // 0.5 * x
+   float v1 -= 4                    // 0.5 * x - 4
+   float v0 = v0 * v1 + 1           // (0.5 * x - 4) * x + 1
+   float [r2-r0, length=r0] = v0    // save y vector
+}
+return                              // return from function
+_polyn end                          // end of function
+
+code end                            // end of code section
+\end{lstlisting}
+\vv
+
+While this looks very much like high-level language code, you have to explicitly specify which register to use for each variable, and you cannot put more code on one line than fits into a single instruction.
+In example \ref{examplePolyn}, the line {\ttfamily float v0 = v0 * v1 + 1 } is allowed because it fits the {\ttfamily mul\_add2} instruction, but we cannot write {\ttfamily float v1 = v0 * 0.5 - 4 } because this instruction cannot have two immediate constants.
+The line {\ttfamily int64 r1 = address([x+arraysize*4])} also fits a single instruction because 
+{\ttfamily arraysize*4} can be calculated at assembly time (it involves only constants) and the result can be added to the relative address of {\ttfamily x} by the linker. The only thing the {\ttfamily address} instruction has to do at runtime is to add a constant to the {\ttfamily datap} pointer.
+\vv
+
+More code examples are given in chapter \ref{chap:codeExamples}
+\vv
+
+
+\subsection{File format} \label{assemblyFileFormat}
+An assembly file can be in ASCII or UTF-8 format. An UTF-8 byte order mark is allowed at the beginning of the file, but not required.
+\vv
+
+Whitespace can be spaces or tabs. The use of tabs is discouraged because different editors may have different tabstops.
+\vv
+
+Linefeeds can be UNIX style (\textbackslash n), Mac style (\textbackslash r), or Windows style (\textbackslash r\textbackslash n). There is no limit to the line length.
+\vv
+
+Comments are C style:  /* */ or // \\
+\vv
+
+Nested comments are allowed. This makes it possible to comment out a piece of code that already contains comments.
+\vv
+
+
+\subsection{Sections} \label{assemblySections}
+A section containing code or data is defined as follows:
+\begin{lstlisting}[frame=single]
+name section options
+...
+name end
+\end{lstlisting}
+\vv
+
+The following options can be defined for a section. Multiple options are separated by space or comma.
+
+\begin{tabular}{|p{28mm}p{130mm}|}
+\hline
+read & Readable data section. \\
+write & Writeable data section. \\
+execute & Executable code section. This does not imply read access. Write access is usually not allowed for executable sections. \\
+ip & Addressed relative to the instruction pointer. This is the default for executable and read-only sections. \\
+datap & Addressed relative to the data pointer. This is the default for writeable data sections. \\
+threadp & Addressed relative to the thread data pointer. The section will have one instance for each thread. \\
+communal \label{communal} & Communal section. Allows identical sections in different modules, where only one of the
+communal sections with the same name is included by the linker. 
+Unreferenced communal sections may be removed.
+Public symbols in communal sections must be weak. \\
+uninitialized & Data section containing only zeroes. The data of this section does not take up space in object files and executable files.\\
+exception\_hand & Exception handler and stack unroll information.\\
+event\_hand & Event handler information, including static constructors and destructors.\\
+debug\_info & Debug information.\\
+comment\_info & Comments, including copyright and required library names.\\
+align=n & Align the beginning of the section to an address divisible by n, which must be a power of 2.
+The default alignment for executable sections is 4. The default alignment for a data section is the size of the biggest data type in the section. A higher alignment can be specified with the align directive.\\
+\hline
+\end{tabular}
+%\end{table}
+\vv
+
+Sections with the same name are placed consecutively in the executable file. They must have the same attributes, except for alignment.
+\vv
+
+Sections with different names but the same attributes (except for alignment) are placed in alphabetical order in the executable file.
+\vv
+
+All code must be placed in executable sections. 
+Data can be placed in read-only sections or writeable sections. Read-only sections are used for constants and tables. 
+Function pointers and jump tables are preferably placed in read-only sections for security reasons.
+
 Variables can be placed in writeable data sections, on the stack, or in registers.
-\vspace{2mm}
+\vv
 
-Numeric constants can be included in the instruction codes. This will reduce the pressure on the data cache.
-\vspace{2mm}
 
-\subsection{Register use} \label{registerUse}
+
+\subsection{Registers} \label{AsmRegisters}
 There are 32 general purpose registers r0 - r31, and 32 vector registers of variable length v0 - v31.
-r31 is the stack pointer. r0 - r27 can be used as general pointers. r28 - r30 can be used as pointers
-with no offset or with a scaled offset of no more than 8 bits. r0 - r30 can be used as array indexes.
+\vv
+
+r31 is the stack pointer, also called sp. r0 - r27 can be used as general pointers. r28 - r30 can only be used as pointers if there is no offset or a scaled offset that fits into 8 bits. r0 - r30 can be used as array indexes.
+\vv
+
 r0 - r6 and v0 - v6 can be used as masks. r0 - r30 and v0 - v30 can be used as fallback values.
 
-\vspace{2mm}
+\vv
 The use of registers in function calls must obey the function calling conventions described in chapter \ref{chap:functionCallingConventions} and the regster usage conventions in chapter
 \ref{chap:registerUsageConvention}.
-\vspace{2mm}
+\vv
 
-\subsection{Addressing of data} \label{AddressingOfData}
-All addresses of code and data should be relative. Pointer tables should use addresses 
-relative to a reference point such as \_\_ip\_base, \_\_datap\_base, the beginning of the table,
-or a reference point near the targets. The relative addresses may be scaled by a power of 2. 
-64-bit absolute addresses should be avoided.
-\vspace{2mm}
+
+\subsection{Names of symbols} \label{assemblerNames}
+The names of data symbols, code labels, functions, etc. are case sensitive. 
+A name can consist of letters a-z, A-Z, numbers 0-9, the special characters \_ \$ @, 
+and unicode letters. A name cannot begin with a number. There is no limit to the length of a name.
+\vv
+
+All names are prefixed with an underscore or mangled in some other way when compiling high-level language code. This is to prevent high-level language names from clashing with assembly keywords, register names, etc.
+\vv
+
+The names of keywords and instructions are not case sensitive.
+The following are reserved keywords:
+\begin{lstlisting}[frame=single]
+align 
+break broadcast
+capab0-capab31 case comment_info communal constant continue
+datap debug_info do double 
+else end event_hand exception_hand execute extern 
+fallback false float float16 float32 float64 float128 for function 
+if in int int8 int16 int32 int64 int128 ip 
+length limit
+mask
+option options
+perf0-perf31 pop public push
+r0-r31 read
+scalar section sp spec0-spec31 string switch sys0-sys31
+threadp true
+uint8 uint16 uint32 uint64 uint128 uninitialized
+v0-v31 
+weak while write
+\end{lstlisting}
+\vv
+
+
+\subsection{Constant expressions} \label{assemblyConstantExpressions}
+Integer constants can be expressed in the following ways:
+
+\begin{tabular}{|p{47mm}p{115mm}|}
+\hline
+decimal numbers & contains only digits 0-9 \newline Numbers beginning with 0 are interpreted as decimal, not octal. \\
+binary numbers & 0b followed by digits 0-1\\
+octal numbers & 0O followed by digits 0-7\\
+hexadecimal numbers & 0x followed by digits 0-9, a-f\\
+character constants & 1-8 ASCII characters enclosed in single quotes '{ }'. The first character will be contained in the lowest byte of a 64 bit integer. For example 'AB' = 0x4241 \\
+imported constant & extern name: constant \\
+difference between addresses & symbol1 - symbol2. The two symbols must have the same base pointer, either ip, datap, threadp, or none. \\
+\hline
+\end{tabular}
+%\end{table}
+\vv
+
+Integer constants can be combined with all common operators: \\
++ \hspace{2mm} - \hspace{2mm} * \hspace{2mm} / \hspace{2mm} \% \hspace{2mm} \& \hspace{2mm} $\vert$ \hspace{2mm} \^{} \hspace{2mm} \textasciitilde \hspace{2mm}
+ \&\& \hspace{2mm} $\vert\vert$ \hspace{2mm} ! \hspace{2mm}
+$<<$ \hspace{2mm} $>>$ \hspace{2mm}  
+\textless \hspace{2mm} \textless= \hspace{2mm} \textgreater \hspace{2mm} \textgreater= \hspace{2mm} 
+ == \hspace{2mm} != \hspace{2mm} ?: 
+\vv
+
+The operators have the same order of precedence as in C.
+\vv
+
+Additional operators not found in C are: \\
+$>>>$ \hspace{2mm} shift right unsigned, \\ 
+\^{}\^{} \hspace{7.5mm} logical exclusive or.
+\vv
+
+
+The results are calculated as signed 64-bit integers, except for $>>>$ \hspace{0.5mm} which is unsigned.
+\vv
+
+Imported constants and differences between addresses cannot be allowed in general calculations. 
+The only operations allowed for these are addition of a local constant, and division by a power of 2.
+These calculations are done by the linker except for a difference between two local symbols in the same section.
+\vv
+
+Floating point constants must contain a dot or an E and at least one digit, for example 1.23E-4
+\vv
+
+Floating point expressions are calculated with double precision. The following operators can be used: \\
++ \hspace{2mm} - \hspace{2mm} * \hspace{2mm} / \hspace{2mm} 
+\textless \hspace{2mm} \textless= \hspace{2mm} \textgreater \hspace{2mm} \textgreater= \hspace{2mm} 
+ == \hspace{2mm} != \hspace{2mm} ?: 
+\vv
+
+String constants are sequences of ASCII or UTF-8 characters enclosed in " ".\\
+The following escape sequences are recognized: \textbackslash\textbackslash \hspace{1mm}
+\textbackslash n \textbackslash r  \textbackslash t  \textbackslash " \\
+String constants can be concatenated with the + operator like in Java.
+\vv
+
+Numeric constants can be included in the instruction codes. This will reduce the pressure on the data cache.
+\vv
+
+
+
+\subsection{Data types} \label{assemblyDataTypes}
+The following data types are used in data definitions and instructions:
+
+\begin{tabular}{|p{15mm}p{125mm}|}
+\hline
+int8    & 8 bit signed integer\\
+uint8   & 8 bit unsigned integer\\
+int16   & 16 bit signed integer\\
+uint16  & 16 bit unsigned integer\\
+int     & 32 bit signed integer\\
+int32   & 32 bit signed integer\\
+uint32  & 32 bit unsigned integer\\
+int64   & 64 bit signed integer\\
+uint64  & 64 bit unsigned integer\\
+int128  & 128 bit signed integer (optional)\\
+uint128 & 128 bit unsigned integer (optional)\\
+float16 & half precision floating point\\
+float   & single precision floating point\\
+float32 & single precision floating point\\
+double  & double precision floating point\\
+float64 & double precision floating point\\
+float128 & quadruple precision floating point (optional)\\
+\hline
+\end{tabular}
+\vv
+
+A '+' after an integer type indicates that the assembler can use a bigger type if this makes
+the instruction smaller or more efficient, for example int16+.
+\vv
+
+
+\subsection{Data definitions} \label{assemblyDataDefinitions}
+Static data can be defined inside a data section. Several different forms are allowed:
+\vv
+
+\begin{tabular}{|p{140mm}|}
+\hline
+Assembly style data definition:\\
+\hspace{4mm} label : datatype value, value, ...\\
+C style data definition:\\
+\hspace{4mm} datatype name = value, name = value, ...\\
+C style array definition, uninitialized:\\
+\hspace{4mm} datatype name[number]\\
+C style array definition, initialized:\\
+\hspace{4mm} datatype name[number] = \{value, value, ...\}\\
+Assembly style string definition:\\
+\hspace{4mm} label : int8 "string", "string", ...\\
+C style string definition:\\
+\hspace{4mm} int8 name = "string" \\
+\hline
+\end{tabular}
+\vv
+
+A terminating zero after a string must be added explicitly if needed.
+\vv
+
+Examples:
+\vspace{1mm}
+
+\begin{lstlisting}[frame=single, showstringspaces=false]
+mydata section read write datap
+alpha: float 0.1, 0.2, 0.3
+int16 beta = 4, gamma = 5
+int8 delta[25]
+align (8)
+int8 epsilon[] = {6, 7, 8, 9}
+zeta: int8 "Dear reader", 0
+int8 eta = "Nice to meet you\0"
+mydata end
+\end{lstlisting}
+\vv
+
+
+\subsection{Function definitions and labels} \label{assemblyFunctionDef}
+A function can be defined inside an executable section. It is defined like this:
+\vspace{1mm}
+
+\begin{tabular}{|p{140mm}|}
+\hline
+\hspace{4mm} name function attributes\\
+\hspace{4mm} ...\\
+\hspace{4mm} name end\\
+\hline
+\end{tabular}
+\vspace{4mm}
+
+Attributes can be 'public', 'weak', and 'reguse=value,value'. 
+The function will be local if no attributes are specified and 
+the name does not appear in a public declaration.
+\vv
+
+Example:
+\vspace{1mm}
+
+\begin{lstlisting}[frame=single]
+mycode section execute
+// this function calculates the square of a double
+_square function public, reguse = 0, 1
+double v0 *= v0
+return
+_square end
+mycode end
+\end{lstlisting}
+\vv
+
+The calling conventions for functions are defined in chapter \ref{chap:functionCallingConventions}.
+\vv
+
+
+\subsection{Instructions} \label{assemblyInstructions}
+It is convenient to have only one instruction per line. Multiple instructions on the same line must be separated by semicolon.
+\vv
+
+Instructions can be defined only inside an executable section. The general form looks like this:
+
+\begin{tabular}{|p{130mm}|}
+\hline
+\hspace{4mm} label : datatype destination = instruction(source\_operands), options \\
+\hline
+\end{tabular}
+%\end{table}
+\vspace{4mm}
+
+For example:
+\begin{lstlisting}[frame=single]
+A: int32 r1 = add(r2, 18), mask = r3, fallback = r4
+\end{lstlisting}
+\vv
+
+The destination is a register in most cases. A few instructions allow a memory operand as destination.
+\vv
+
+The source operands can be registers, memory operands, or immediate constants. 
+No instruction can have more than one memory operand.
+\vv
+
+The source operands should be written in the following order: registers, memory operand, immediate operand. The assembler will reorder the operands automatically in certain cases. For example, int r2 = 1 + r1 will be coded as int r2 = r1 + 1. Reordering of operands is not always possible. For example, there is no way to code r2 = 8 $>>$ r1 as a single instruction. Vector operands are not reordered automatically because this will give an invalid result in case the vectors have different lengths.
+\vspace{4mm}
+
+The following options are possible:\\
+\begin{tabular}{|p{140mm}|}
+\hline
+options = integer constant\\
+mask = register\\
+fallback = register\\
+fallback = 0\\
+\hline
+\end{tabular}
+\vv
+
+Options specify various option bits for specific instructions. 
+Only certain instructions can have options.
+\vv
+
+Instructions can be written in a simpler form with an operator instead of the instruction name if the instruction does the same as the operator. The general form is:
+\vv
+
+\begin{tabular}{|p{140mm}|}
+\hline
+\hspace{4mm} label : datatype destination = operand1 operator operand2 \\
+\hline
+\end{tabular}
+%\end{table}
+\vspace{4mm}
+
+For example:
+\begin{lstlisting}[frame=single]
+int r1 = r2 + 18
+\end{lstlisting}
+\vv
+
+
+Masks are used for conditional execution. The mask registers may also contain bits specifying various numerical options. See page \pageref{MaskAndFallback} for details. 
+Almost all multi-format instructions can have a mask. Single-format instructions with A or E templates can also have a mask. Jump instructions cannot have a mask.
+\vv
+
+The mask register can be r0-r6 or v0-v6. The fallback register can be r0-r30 or v0-v30. 
+The mask and fallback registers must be the same type of register as the destination (general purpose or vector register). The fallback specifies the result when bit 0 of the mask is zero.
+\vv
+
+The default fallback register is the same as the first source register. A different fallback register is  possible only if there is a vacant register field in the code template. 
+The fallback register cannot be different from the first source register in the following cases:
+\begin{itemize}
+\item the instruction has three source operands
+\item the instruction needs 64 bits for an immediate constant
+\item the instruction has a memory operand with index
+\item the instruction has vector registers and a memory operand
+\end{itemize}
+\vv
+
+
+The mask and fallback can be indicated as mask = register, and fallback = register, 
+or in a simple way with the ?: operator:
+\vv
+
+\begin{tabular}{|p{140mm}|}
+\hline
+\hspace{4mm} datatype destination = mask ? operand1 operator operand2 : fallback\\
+\hline
+\end{tabular}
+\vspace{4mm}
+
+For example:
+\begin{lstlisting}[frame=single]
+int r1 = r3 ? r2 + 18 : r4
+\end{lstlisting}
+\vv
+
+A memory operand must be enclosed in square brackets. Memory references are always relative to a base pointer. 
+A memory operand can contain:
+\vv
+
+\begin{description}
+
+\item[A base pointer]
+This is a general purpose register or a special pointer (ip, datap, threadp, sp). The base pointer contains a memory address. 
+The base pointer is implicit for data labels in an ip, datap, or threadp section.
+
+\item[A scaled index]
+This is a general purpose register multiplied by a scale factor. 
+The scaled index is added to the base pointer. This is useful for accessing an array element where the base pointer contains the address of the beginning of the array. 
+The scale factor is the same as the operand size in most cases. Instructions with a general purpose register destination can also have a scale factor of 1. Instructions with a vector register destination can also have a scale factor of -1.
+
+\item[An offset]
+This is an integer constant that will be added to the address.
+
+\item[limit=constant]
+This specifies a maximum value for the index. An error trap will be generated if the unsigned index exceeds this value.
+
+\end{description}
+
+Memory operands in vector instructions must have one of the following options:
+
+\begin{description}
+
+\item[scalar]
+Only one element is read.
+
+\item[length=register]
+The length of the vector, in bytes, is specified by a general purpose register. 
+The number of vector elements is equal to the value of this register divided by the number of bytes used by each element.
+
+\item[broadcast=register]
+Only one element is read. This element is broadcast to a vector with a total length specified by a general purpose register. The number of identical elements is equal to the value of this register divided by the number of bytes used by one element.
+
+\end{description}
+\vspace{4mm}
+
+
+Examples:
+\vv
+
+\begin{lstlisting}[frame=single]
+int32 r1 = r2 + [alpha] // the base pointer is implicit
+int32 r1 = r2 + [r3 + 0x10]
+int32 r1 = r2 + [r3 + 4*r4, limit = 100]
+int32 v1 = v2 + [r3 - r4, length = r4]
+float v1 = v2 + [beta, scalar]
+float v1 = v2 + [beta, broadcast=r3]
+\end{lstlisting}
+\vv
+
+Remember that the base pointer, index, and offset of a memory operand must all be inside the square bracket. Otherwise they will be interpreted as separate operands.
+\vv
+
+The details for each instruction are described in chapter \ref{chap:DescriptionOfInstructions}.
+\vv
+
+
+\subsection{Unconditional jumps, calls, and returns} \label{assemblyJumps}
+Direct unconditional jumps, calls, and  returns are coded as follows:
+\vv
+
+\begin{tabular}{|p{140mm}|}
+\hline
+\hspace{4mm} jump target\\
+\hspace{4mm} call target\\
+\hspace{4mm} return\\
+\hline
+\end{tabular}
+\vv
+
+Example:
+\begin{lstlisting}[frame=single]
+my_func function public
+    nop
+    return
+my_func end
+
+...
+
+call my_func
+\end{lstlisting}
+\vspace{4mm}
+
+
+\subsection{Indirect jumps and calls} 
+Indirect jumps and calls can use an absolute 64-bit address in 
+a register or memory operand:
+
+\begin{tabular}{|p{140mm}|}
+\hline
+\hspace{4mm} jump register\\
+\hspace{4mm} call register\\
+\hspace{4mm} jump ([base\_register+offset])\\
+\hspace{4mm} call ([base\_register+offset])\\
+\hline
+\end{tabular}
+\vv
+
+Example:
+\begin{lstlisting}[frame=single]
+my_func function public
+    nop
+    return
+my_func end
+
+...
+
+int64 r1 = address([my_func])
+call r1
+\end{lstlisting}
+\vv
+
+The absolute address must be divisible by 4 because code words are 32 bits (4 bytes).
+\vspace{4mm}
+
+It is often more efficient to use relative addresses rather than absolute addresses for indirect jumps and calls with memory operands. A relative address contains an offset relative to an arbitrary reference point. The relative address needs fewer bits because it contains the difference between the target address and the reference point. All code addresses are divisible by 4 so we can save two more bits by dividing the relative address by 4.
+\vv
+
+Indirect jumps and calls using a relative pointer can have the following forms:
+
+\begin{tabular}{|p{150mm}|}
+\hline
+\hspace{4mm} datatype jump\_relative (ref\_register, [base\_register+offset])\\
+\hspace{4mm} datatype call\_relative (ref\_register, [base\_register+offset])\\
+\hspace{4mm} datatype jump\_relative (ref\_register, [base\_register+index\_register*scale])\\
+\hspace{4mm} datatype call\_relative (ref\_register, [base\_register+index\_register*scale])\\
+\hline
+\end{tabular}
+\vspace{4mm}
+
+The datatype specifies the size of the relative pointer stored in memory. This must be a signed integer type. The reference point must be contained in a 64-bit register.
+\vv
+
+Example:
+\vv
+
+\begin{lstlisting}[frame=single]
+extern function1: function, function2: function
+
+rodata section read ip  // read-only data section
+// relative address of function1, scaled by 4
+funcpoint1: int16 (function1-reference_point) / 4
+// relative address of function2, scaled by 4
+funcpoint2: int16 (function2-reference_point) / 4
+rodata end
+
+code section execute ip
+reference_point:
+  // load address of reference_point: 
+  int64 r1 = address([reference_point])
+  int16 call_relative (r1, [funcpoint1])  // call function1
+  int16 call_relative (r1, [funcpoint2])  // call function2
+code end
+
+\end{lstlisting}
+
+See page \pageref{relativeDataPointer} for further explanation of relative pointers.
+\vspace{4mm}
+
+
+\subsection{Conditional jumps and loops} \label{assemblyConditionalJumps}
+
+Conditional jumps always involve an arithmetic or logic operation and a jump conditional upon the result:
+
+\begin{tabular}{|p{150mm}|}
+\hline
+\hspace{4mm} datatype destination = instruction(source\_operands), jump\_condition target \\
+\hline
+\end{tabular}
+\vspace{4mm}
+
+Examples:
+\vv
+
+\begin{lstlisting}[frame=single]
+  int32+ r1 = add(r1, r2), jump_pos L1
+  uint64      compare(r2, 5), jump_above L1
+  float       test_bit(v1, 31), jump_nzero L1
+  L1:
+\end{lstlisting}
+\vv
+
+Vector registers can be used only when the data type does not fit into a general purpose register. Floating point addition and subtraction cannot be used with conditional jumps.
+\vv
+
+The most common conditional jumps can be coded more conveniently using the high-level language keywords: if, else, for, do, while, break, continue.
+\vv
+
+An 'if' statement can have the form:
+\vv
+
+\begin{tabular}{|p{150mm}|}
+\hline
+\hspace{4mm} if (datatype register operator operand) \{...\} else \{...\}\\
+\hline
+\end{tabular}
+\vv
+
+Line breaks are allowed before and after '\{' and '\}'. The curly brackets cannot be omitted.
+
+Comparing a register value with another register or a constant is done with one of the operators:\\
+\textless \hspace{2mm} \textless= \hspace{2mm} \textgreater \hspace{2mm} \textgreater= \hspace{2mm} 
+ == \hspace{2mm} != \hspace{2mm} 
+\vv
+
+Unsigned tests can be indicated with an unsigned integer type, for example uint32. 
+Bit tests can be coded with the \& operator as described on page \pageref{table:testBitJumpTrueInstruction}.
+\vv
+
+Examples:
+\vv
+
+\begin{lstlisting}[frame=single]
+  if (int r1 >= r2) {
+    nop     // r1 >= r2
+  } else {  // r1 < r2
+    if (int !(r3 & (1 << 20))) {
+      nop   // bit 20 in r3 is not set
+    }
+  }  
+\end{lstlisting}
+\vv
+
+The conditions cannot be combined with \&\& $\vert$ $\vert$ etc. because the statement must fit into a single instruction.
+\vv
+
+The 'while', 'do-while', and 'for' loops are written in the same way as if statements:
+
+\begin{tabular}{|p{150mm}|}
+\hline
+\hspace{4mm} while (datatype condition) \{...\}\\
+\hspace{4mm} do \{...\} while (datatype condition) \\
+\hspace{4mm} for (datatype initialization; condition; increment) \{...\}\\
+\hline
+\end{tabular}
+\vv
+
+Examples:
+\vv
+
+\begin{lstlisting}[frame=single]
+  for (int r1 = 1; r1 <= 100; r1++) {
+    int64 r2 = 4  // executed 100 times
+    while (uint64 r2 > 0) {
+      int64 r2--  // executed 400 times
+    }
+  } 
+  do {
+    int32 r2 = r1 - 1     // executed once
+  } while (int32 r2 > r1) // never true
+\end{lstlisting}
+\vv
+
+The initialization and increment instructions in the 'for' loop can be anything that fits into a single instruction with the specified data type.
+\vspace{4mm}
+
+ForwardCom has a very efficient way of doing vector loops as explained on page \pageref{vectorLoops}. Vector loops are written in the following way:
+
+\begin{tabular}{|p{150mm}|}
+\hline
+\hspace{4mm} for (datatype vector\_register in [end\_pointer - index\_register]) \{...\}\\
+\hline
+\end{tabular}
+\vspace{4mm}
+
+Example:
+
+\begin{lstlisting}[frame=single]
+  int64 r1 = address([my_array])      // address of my_array
+  int64 r2 = my_arraysize * 4         // size of my_array in bytes
+  int64 r1 += r2                      // point to end of my_array
+  for (float v1 in [r1 - r2]) {       // loop through my_array
+    float v1 = [r1 - r2, length = r2] // read vector
+    float v1 *= 2                     // multiply values by 2
+    float [r1 - r2, length = r2] = v1 // store results in my_array
+  }
+\end{lstlisting}
+\vv
+
+This loop will subtract the maximum vector length from r2 for each iteration and continue as long as r2 (interpreted as a signed 64 bit integer) is positive. It will use the maximum vector length as long as r2 is bigger than the maximum vector length.
+The maximum vector length may depend on the data type. The loop will use the maximum vector length for the data type specified in the for statement (float in this case). It is possible to use more vector registers and more end-of-array pointers than the ones specified in the 'for' statement.
+\vv
+
+It is recommended to use optimization level 1 or higher when assembling branches and loops.
+\vv
+
+
+\subsection{Boolean operations} \label{BooleanOperations}
+Boolean variables are using only bit 0 for indicating false or true, according to the standard defined on page \pageref{booleanRepresentation}. The remaining bits may be used for other purposes.
+\vv
+
+Boolean variables can be generated with the compare instruction or the bit test instructions. For example:
+
+\begin{lstlisting}[frame=single]
+// C code: 
+// if (r2 > r3) r4 += 5
+// Assembly code:
+  int r1 = r2 > r3              // true if r2 > r3
+  int r4 = r1 ? r4 + 5 : r4     // conditional add
+\end{lstlisting}
+\vv
+
+The boolean variable r1 is 1 if the condition is true, and 0 if false. 
+\vv
+
+Boolean variables may be combined with the operators 
+\hspace{2mm} \& \hspace{2mm} $\vert$ \hspace{2mm} \^{}. Boolean variables are negated by XOR'ing with 1:
+ 
+\begin{lstlisting}[frame=single]
+  int r1 = r2 > r3              // true if r2 > r3
+  int r4 = r5 != 0              // true if r5 != 0
+  int r6 = r1 & r4              // r1 && r4
+  int r7 = r6 ^ 1               // r7 = !r6
+\end{lstlisting}
+\vv
+
+The compare and bit test instructions can have extra boolean operands. 
+An extra boolean operand to a compare instruction can be specified conveniently with the logical operators 
+\hspace{2mm} \&\& \hspace{2mm} $\vert\vert$ \hspace{2mm} \^{}\^{} \hspace{2mm}  \\
+This makes it possible to improve the above example:
+
+\begin{lstlisting}[frame=single]
+  int r1 = r2 > r3              // true if r2 > r3
+  int r6 = r5 != 0 && r1        // true if r5 != 0 && r2 > r3
+  int r7 = r6 ^ 1               // r7 = !r6
+\end{lstlisting}
+\vv
+
+It is even possible to add yet another boolean operand to a compare or bit test instruction by using a mask register. This requires manual coding of the option bits:
+
+\begin{lstlisting}[frame=single]
+  int r1 = r2 > r3              // true if r2 > r3
+  int r4 = r5 < 0               // true if r5 < 0
+  int r6 = compare(r7, r8), mask=r1, fallback=r4, options=0b010001
+  // r6 is true if r2 > r3 && r5 < 0 && r7 != r8
+  
+  int r9 = test_bits_or(r1,5), mask=r2, fallback=r3, options=0b10010
+  // r9 is true if (((r1 & 5) != 0) || r3) && !r2
+\end{lstlisting}
+\vv
+
+See page \pageref{table:compareInstruction} for details of the compare instruction, and page \pageref{table:testBitInstruction} for the test\_bit instructions.
+\vv
+
+Boolean variables may be used for conditional jump instructions by testing bit 0 of the register:
+\begin{lstlisting}[frame=single]
+  if (int r1 & 1) {
+    // do this if boolean r1 is true
+  }
+\end{lstlisting}
+\vv
+
+It is possible to combine two boolean variables in a conditional jump instruction with \hspace{2mm} \& \hspace{2mm} $\vert$ \hspace{2mm} \^{} \hspace{2mm} operations. Note that this will test all the bits of the result, not just bit 0:
+
+\begin{lstlisting}[frame=single]
+  int r1 = r1 | r2, jump_nzero Label
+\end{lstlisting}
+\vv
+
+The condition is defined only by bit zero when a boolean variable is used as a mask. The remaining bits of the mask may be used for specifying various options, such as floating point exception handling. These mask bits are defined on page \pageref{table:maskBits}. It may be necessary to insert these option bits before using a boolean variable as mask for floating point operations:
+
+\begin{lstlisting}[frame=single]
+  float v1 = 1.2
+  float v2 = 3.4
+  int32 v3 = v1 < v2           // boolean variable
+  int32 v4 = make_mask(v3, 0)  // copy option bits from NUMCONTR
+  int32 v3 |= v4               // combine boolean and option bits
+  float v5 = v3 ? v1 * v2 : v1 // conditional multiplication
+\end{lstlisting}
+\vv
+
+
+\subsection{Absolute and relative pointers} \label{AbsoluteAndRelativePointers}
+
+Absolute addresses of code and data will usually need 64 bits because the program may be loaded at any memory address. 32 bits will suffice if the program is never run on a machine with more than 2 GB of address space.
+\vv
+
+Relative addresses can be coded with fewer bits because they specify an address relative to some reference point within the code or data sections of the running program. The necessary number of bits can be further reduced by dividing the relative address by a power of 2. If the address of the target as well as the reference point are know to be divisible by, for example, 4 then we can save two bits by dividing the relative address by 4. In this case, we only need 16 bits for the relative pointer if the distance between target and reference point is less than 128 kB and the relative address is divided by 4.
+\vv
+
+A further advantage of relative addresses is that they are always position-independent, while absolute addresses must be calculated after the program has been loaded at an arbitrary address in RAM.
+\vv
+
+Absolute addresses are calculated with the address instruction. For example:
+
+\begin{example}
+\label{addressInstruction2Pointer}
+\end{example} % frame disappears if I put this after end lstlisting
+\begin{lstlisting}[frame=single]
+data section datap                  // define data section
+float alpha                         // define variable
+data end
+
+code section execute                // define code section
+int64 r1 = address([alpha])         // absolute address of alpha
+float v1 = [r1, scalar]             // load alpha through pointer
+code end
+\end{lstlisting}
+\vv
+
+A variable can be initialized with an absolute address only if the loader supports relocation. The following example shows how to use an absolute address, though this is not recommended:
+
+\begin{example}
+\label{absolutePointer}
+\end{example} % frame disappears if I put this after end lstlisting
+\begin{lstlisting}[frame=single]
+data section datap                  // define data section
+float alpha                         // define variable
+int64 pointer_to_alpha = alpha      // contains address of alpha
+data end
+
+code section execute                // define code section
+int64 r1 = [pointer_to_alpha]       // pointer to alpha
+float v1 = [r1, scalar]             // load alpha through pointer
+code end
+\end{lstlisting}
+\vv
+
+Here, the address of alpha is inserted into pointer\_to\_alpha. Note that this makes the code position-dependent. The address of alpha must be calculated by the loader rather than by the linker. Not all platforms support position-dependent code. Therefore, it is preferred to use relative pointers.
+\vspace{4mm}
+
+A relative pointer contains an address relative to an arbitrary reference point. The reference point must be placed in a section with the same base pointer (IP, DATAP, or THREADP) as the target of the pointer. A relative address can be converted to an absolute address by the instruction sign\_extend\_add. Example:
+
+\begin{example}
+\label{relativeDataPointer}
+\end{example}
+\begin{lstlisting}[frame=single]
+data section datap                  // define data section
+float alpha                         // define variable
+int16 relative_pointer = (alpha - reference_point) // relative address
+float reference_point               // arbitrary reference point
+data end
+
+code section execute                // define code section
+int64 r1 = address ([reference_point]) // address of reference point
+// convert relative address to absolute address:
+int16 r2 = sign_extend_add(r1, [relative_pointer])
+float v1 = [r2, scalar]             // load alpha through pointer
+code end
+\end{lstlisting}
+\vv
+
+In example \ref{relativeDataPointer}, the sign\_extend\_add instruction will sign-extend the relative pointer to 64 bits and add the address of the reference point to get the address of the variable alpha. Note that the type int16 on the sign\_extend\_add instruction indicates the size of relative\_pointer, while the size of the reference address r1 and the result r2 are both 64 bits.
+\vv
+
+The limit of the addresses that can be covered by a 16 bits relative address is $\pm 2^{15}$ or $\pm$ 32 kB. This range can be increased by scaling the relative address. If the target and the reference point are both aligned to addresses divisible by 4, then we can divide the relative address by 4 without losing information. The scale factor must be a power of 2. The same code with a relative address scaled by 4 looks like this:
+
+\begin{example}
+\label{relativeDataPointerScaled}
+\end{example}
+\begin{lstlisting}[frame=single]
+data section datap                  // define data section
+float alpha                         // define variable
+// relative address divided by 4:
+int16 relative_pointer = (alpha - reference_point) / 4
+float reference_point               // arbitrary reference point
+data end
+
+code section execute                // define code section
+int64 r1 = address ([reference_point]) // address of reference point
+// Convert the relative address to absolute address. 
+// options = 2 is a shift count that shifts the relative address 
+// two bits to the left, so that is is multiplied by 4:
+int16 r2 = sign_extend_add(r1, [relative_pointer]), options = 2
+float v1 = [r2, scalar]             // load alpha through pointer
+code end
+\end{lstlisting}
+\vv
+
+This works in the following way. The linker has support for calculating relative addresses and for scaling addresses by a power of 2. The linker calculates 
+$(\mathrm{alpha} - \mathrm{reference\_point}) / 4$ and inserts the value at 
+relative\_pointer. 
+The sign\_extend\_add instruction loads the relative pointer, sign-extends to 64 bits, shifts it left by 2, which corresponds to multiplying by $2^2 = 4$, and adds the absolute address in r1. The maximum shift count supported by this instruction is usually 3, corresponding to a scale factor of 8. Support for higher shift counts is optional.
+\vv
+
+Variables in static memory are always aligned to a natural address, i.e. an address divisible by the size of a data element of the specified type. Thus, int8 is not aligned, int16 is aligned by 2, int32 is aligned by 4, int64 is aligned by 8, float is aligned by 4, and double is aligned by 8. The reference point must have at least the same alignment when relative pointers are scaled. The predefined symbols at page \pageref{SpecialAddressSymbols} may be used as reference points.
+\vspace{4mm}
+
+
+Relative pointers are also used for function pointers and jump tables. Relative code pointers are always scaled by 4. The function pointer can be calculated with the sign\_extend\_add instruction as in example \ref{relativeDataPointerScaled}, but it is easier to use the relative jump or call instruction:
+
+\begin{example}
+\label{exampleRelFuncPointer}
+\end{example}
+\begin{lstlisting}[frame=single]
+const section read ip               // define constant data section
+// relative function pointer divided by 4:
+int32 function1_pointer = (function1 - reference_point) / 4
+const end
+
+code section execute                // define code section
+reference_point:
+int64 r1 = address ([reference_point]) // address of reference point
+int32 call_relative (r1, [function1_pointer])
+...
+function1 function public
+    nop
+    return
+function1 end
+
+code end
+\end{lstlisting}
+\vv
+
+The jump\_relative and call\_relative instructions work by sign extending the relative address, multiplying by 4, adding the reference point (first parameter), and then jumping or calling to the calculated address. Remember that the operand type on the call\_relative instruction must match the size of the relative function pointer, which is int32 in example \ref{exampleRelFuncPointer}.
+\vv
+
+A switch-case multiway branch can be implemented in a similar same way, using a table of relative addresses. This table may be placed in read-only memory for security reasons.
+\vv
+
+\begin{example}
+\label{exampleSwitchCase}
+\end{example}
+\begin{lstlisting}[frame=single]
+/* C code:
+int j, x;
+switch (j) {
+case 1:
+   x = 10;  break;
+case 2:
+   x = 12;  break;
+case 5:   
+   x = 20;  break;
+default:
+   x = 99;  break;
+}
+*/
+// ForwardCom code:
+
+rodata section read ip
+// table of relative addresses, using DEFAULT as reference point
+align (4)
+jumptable: int16 0            // case 0
+int16 (CASE1 - DEFAULT) / 4   // case 1
+int16 (CASE2 - DEFAULT) / 4   // case 2
+int16 0                       // case 3
+int16 0                       // case 4
+int16 (CASE5 - DEFAULT) / 4   // case 5
+rodata end
+
+code section execute ip
+// r0 = j
+// r1 = x
+// Test if i is outside of the range,
+// use unsigned test to avoid testing for r0 < 0
+if (uint32 r0 > 5) {
+   jump DEFAULT
+}
+int64 r2 = address([jumptable])
+int64 r3 = address([DEFAULT])
+// relative jump with r3 = DEFAULT as reference point,
+// r2 as table base and r0 as index
+int16 jump_relative (r3, [r2 + r0 * 2])
+
+CASE1:
+   int32 r1 = 10
+   jump FINISH
+CASE2:
+   int32 r1 = 12
+   jump FINISH
+CASE5:
+   int32 r1 = 20
+   jump FINISH
+DEFAULT:
+   int32 r1 = 99
+FINISH:
+
+code end
+\end{lstlisting}
+\vv
+
+The operand type for the multiway jump\_relative instruction must match the size of the entries in the table of relative jump addresses, which is int16 in example \ref{exampleSwitchCase}. The scale factor must also match this size, which is 2 in this case. The size of the table entries must be big enough to contain the distance between the jump target and the reference point, divided by 4, as a signed integer. 
+The address of jumptable is loaded into a register because the jump\_relative instruction does not have space for both the address of the jump table and the index.
+\vspace{4mm}
+
+A multiway call\_relative instruction is coded in the same way, using a table of relative function pointers. This can be useful for virtual functions in an object-oriented programming language with polymorphism. An example is provided on page \pageref{exampleVirtualFunctions}
+\vspace{4mm}
+
+
+\subsection{Imports and exports} \label{assemblyImportExport}
+A function, data symbol, or constant defined in one assembly module can be accessed from another module if it is exported from the first module and imported to the second module. The necessary cross references are calculated and inserted by the linker.
+\vv
+
+Symbols are imported as follows:
+\vv
+
+\begin{tabular}{|p{150mm}|}
+\hline
+\hspace{4mm} extern symbolname : attributes, symbolname : attributes, ...\\
+\hline
+\end{tabular}
+\vv
+
+The following attributes can be specified:
+\vv
+
+\begin{tabular}{|p{20mm}p{130mm}|}
+\hline
+function & the symbol is an executable function\\
+ip & the symbol is a data object addressed relative to the ip pointer\\
+datap & the symbol is a data object addressed relative to the datap pointer\\
+threadp & the symbol is a data object addressed relative to the threadp pointer\\
+constant & the symbol is a constant with no address\\
+read & the symbol is in a readable data section\\
+write & the symbol is in a writeable data section\\
+execute & the symbol is executable code\\
+data type & the data type for the data symbol\\
+weak & weak linking: the symbol will be resolved only if it exists\\
+reguse & register use, indicating which registers are modified by a function\\
+\hline
+\end{tabular}
+\vv
+
+An external symbol must have one, and only one, of the following attributes: function, ip, datap, threadp, constant.
+The other attributes are optional. Multiple attributes are separated by space or comma.
+\vv
+
+The reguse option indicates which registers are modified by a function. 
+It it followed by two numbers indicating the use of general purpose registers and vector registers, respectively. Bit number n indicates that register number n is used. For example: reguse=0x1F,1 indicates that general purpose registers r0-r4 and vector register v0 are modified by the function.
+\vv
+
+A weak external symbol will only be linked if it exists. The linker will not search function libraries to find the weak symbol, but the symbol will be resolved if it exists in a module that is linked in for other reasons.
+A weak external constant or data symbol that is not resolved will be zero. A weak function that has not  been resolved will return zero.
+\vv
+
+Symbols are exported as follows:
+\vv
+
+\begin{tabular}{|p{150mm}|}
+\hline
+\hspace{4mm} public symbolname : attributes, symbolname : attributes, ...\\
+\hline
+\end{tabular}
+\vv
+
+The possible attributes are the same as for external symbols. It may not be necessary to specify all the attributes because the attributes of locally defined symbols are already known. 
+\vv
+
+It is convenient to place extern and public declarations in the beginning of the assembly file. Forward references are allowed.
+\vv
+
+Weak public symbols work as follows. If more than one module contains a weak public symbol with the same name then the linker will not issue an error message but link the first symbol.
+It there is one occurrence of a non-weak symbol with this name then the non-weak symbol will be chosen. If there are more than one non-weak public symbol with the same name then the linker will issue an error message.
+\vv
 
 \subsection{Special address symbols} \label{SpecialAddressSymbols}
 The following symbol names are defined by the linker:
 
-\begin{longtable} {|p{28mm}|p{12mm}|p{95mm}|}
+\begin{longtable} {|p{35mm}|p{16mm}|p{85mm}|}
 \caption{SpecialSymbols} 
 \label{table:specialSymbols}\\
 \endfirsthead
@@ -53,7 +1161,7 @@ The following symbol names are defined by the linker:
 \_\_ip\_base & ip & The linker will place this symbol where read-only data ends and code begins. 
 It is possible to explicitly place this symbol elsewhere in an ip-addressable section.\\
 \hline
-\_\_datap\_base & datap & The linker will place this symbol where writeable data ends and uninitialized data begins. 
+\_\_datap\_base & datap & The linker will place this symbol where static initialized writeable data ends and uninitialized data begins. 
 It is possible to explicitly place this symbol elsewhere in a datap-addressable section.\\
 \hline
 \_\_threadp\_base & threadp & The linker will place this symbol at the beginning of thread-local data. 
@@ -70,7 +1178,66 @@ if \_\_program\_entry is not defined elsewhere.\\
 \hline
 \end{longtable}
 
-\vspace{2mm}
+\vv
+
+
+\subsection{Other directives} \label{assemblyOtherDirectives}
+
+\subsubsection{Align}
+The 'align' directive can align data or code:
+\vv
+
+\begin{tabular}{|p{150mm}|}
+\hline
+\hspace{4mm} align (number)\\
+\hline
+\end{tabular}
+\vv
+
+The number must be a power of 2. The next data or code will be aligned to an address divisible by the specified number. The beginning of the section will automatically be aligned to at least the same size.
+\vv
+
+
+\subsubsection{Options} \label{optionsDirective}
+The 'options' directive can change certain parameters with effect from the place of the directive. The syntax is:
+\vv
+
+\begin{tabular}{|p{150mm}|}
+\hline
+\hspace{4mm} options name = value, name = value, ...\\
+\hline
+\end{tabular}
+\vv
+
+The value must be an integer constant or an expression that can be evaluated immediately to an integer constant.
+\vv
+
+\begin{tabular}{|p{150mm}|}
+\hline
+\hspace{4mm} options codesize = 0x100000 \\
+\hspace{4mm} options datasize = 0x4000 \\
+\hline
+\end{tabular}
+\vv
+
+These options change the codesize or datasize so that subsequent instructions
+will use address sizes that fit the specified codesize or datasize as explained on page \pageref{SpecifyDataSize}. Setting codesize = 0 or datasize = 0 will reset these parameters to the value specified on the assembler command line, or a default value if no value is specified on the command line.
+\vv
+
+
+\subsection{Combining vectors of different lengths} \label{vectorsDifferentLengths}
+
+The length of the destination register is the same as the length of the first vector register source operand when vectors of different lengths are combined. For example:
+\vv
+
+\begin{lstlisting}[frame=single]
+float v1 = v2 - v3             // v1 has length of v2
+float v1 = -v3 + v2            // Same, but v1 has length of v3
+float v1 = v2 - [r3,length=r4] // Has length of v2, even if memory
+                               // operand has a different length
+\end{lstlisting}
+\vspace{4mm}
+
 
 \subsection{Event handlers} \label{EventHandlers}
 You can specify event handlers for all the events defined in the file elf\_forwardcom.h.
@@ -93,22 +1260,23 @@ Normal priority = 0x1000.\\
 \hline
 key         & 32 bit & Subdivision of event. This can define a hotkey, menu item, or icon id for user command events.\\
 \hline
-event       & 32 bit & Event ID. Possible values are defined in the file elf\_forwardcom.h.\\
+event       & 32 bit & Event ID. Possible values are defined in the file \newline elf\_forwardcom.h.\\
 \hline
 \end{longtable}
-\vspace{2mm}
+\vv
 
 The linker will make a table of all the event handler records, sorted by event, key, and priority.
-\vspace{2mm}
+\vv
 
 The event function uses register r0 as status. The function should 
 return a value of 1 in r0 in the normal case. The function can return 0 in r0 to bypass further 
 event handlers with lower priority.
-\vspace{2mm}
+\vv
 
 r1 can be used for further parameters. r2 can point to a zero-terminated string.
-\vspace{2mm}
+\vv
 
+A common use of event handlers it to call initialization functions that must be called before \_main (constructors) and cleanup functions that must be called after \_main (destructors). 
 The following example shows an event handler for the event EVT\_CONSTRUCT (= 1), initializing some data.
 
 \begin{example}
@@ -138,27 +1306,104 @@ init_func end
 \end{lstlisting}
 \vspace{4mm}
 
-You can create an event by calling the function \_call\_event in the library forwc.li.
+You can activate an event by calling the function \_call\_event in the library libc.li.
 This function will search the table of event records for an event with the specified 
 event and key number and call all corresponding event handler functions.
-\vspace{2mm}
+\vv
 
 The table of events cannot be changed while the application is running. 
 A module or library that is added by dynamic linking while the application is running
 cannot add new event handler records.
-\vspace{2mm}
+\vv
+
+
+
+\section{Metaprogramming} \label{assemblyMetaprogramming}
+Metaprogramming means variables and instructions that do not form part of the final executable code but 
+are useful for controlling the assembly process.
+\vv
+
+Traditional assemblers use macros for this purpose. The syntax for this is often confusing, especially when macros are nested.
+\vv
+
+Instead, the ForwardCom assembler will implement metaprogramming involving the following features:
+
+\begin{itemize}
+\item variables that are used only during the assembly process
+\item include files
+\item assembly-time branches and loops
+\item assembly-time functions
+\item generate a text string and emit this string as assembly code
+\end{itemize}
+
+Metaprogramming commands are indicated by a percent sign at the beginning of the line.
+At present, only variables are implemented. The other metaprogramming features will be added later.
+\vv
+
+
+\subsection{Metaprogramming variables} \label{MetaprogrammingVariables}
+
+Metaprogramming variables are defined and assigned on a separate line in the following way:
+\vv
+
+\begin{tabular}{|p{154mm}|}
+\hline
+\hspace{4mm} \% name = value\\
+\hline
+\end{tabular}
+\vspace{4mm}
+
+Meta-variables are weakly typed. They can have one of the following types:
+
+\begin{tabular}{|p{30mm}p{120mm}|}
+\hline
+integer & evaluated as signed 64-bit integer \\
+floating point & evaluated as double precision\\
+string & ASCII or UTF-8 text string\\
+register & the variable can be an alias for any register\\
+memory operand & the variable can be an alias for any memory operand\\
+type name & the variable can be an alias for a type\\
+\hline
+\end{tabular}
+\vv
+
+It makes no difference whether this meta-code is inside a section or not.
+\vv
+
+Meta-variables can be redefined or reassigned at any time. Meta-code is sequential so that the same variable can have different values at different places in the code.
+\vv
+
+An integer meta-variable can be exported as a constant with a public declaration if it has only one value. This is the only case where a forward reference to a meta-symbol is allowed.
+\vv
+
+While general assembly code allows forward references to data and code labels, meta-code cannot in general have forward references.
+\vv
+
+Example:
+\vv
+
+\begin{lstlisting}[frame=single]
+  % A = 5         // meta-variable integer A = 5
+  % R = r1        // alias for register r1
+  int32 R = A     // r1 = 5
+  % A++           // change value of A to 6
+  int32 R = A     // r1 = 6
+\end{lstlisting}
+\vv
+
+
 
 \section{Code examples}\label{chap:codeExamples}
 
 This section contains examples of assembly code to illustrate the features of the ForwardCom instruction set.
 The syntax for assembly language is described in chapter \ref{chap:assembler}.
 The function calling conventions are described in chapter \ref{chap:functionCallingConventions}.
-\vspace{2mm}
+\vv
 
 
 \subsection{Horizontal vector add} \label{horizontalVectorAdd}
 ForwardCom has no instruction for adding all elements of a vector because this would be a complex instruction with variable latency depending on the vector length.
-\vspace{2mm}
+\vv
 
 The sum of all elements in a vector can be calculated by repeatedly adding the lower half and the upper half of the vector. This method is illustrated by the following example, finding the horizontal sum of a vector of single precision floats. 
 
@@ -169,10 +1414,10 @@ The sum of all elements in a vector can be calculated by repeatedly adding the l
 v0 = my_vector              // we want the horizontal sum of this
 int64 r0 = get_len(v0)      // length of vector in bytes
 int64 r0 = roundp2(r0, 1)   // round up to nearest power of 2
-float v0 = set_len(r0,v0)   // adjust vector length
+float v0 = set_len(v0, r0)  // adjust vector length
 while (uint64 r0 > 4) {     // loop to calculate horizontal sum
    uint64 r0 >>= 1          // the vector length is halved
-   float v1 = shift_reduce(r0,v0) // get upper half of vector
+   float v1 = shift_reduce(v0,r0) // get upper half of vector
    // the result vector has the length of the first operand:
    float v0 = v1 + v0       // Add upper half and lower half
 }
@@ -192,12 +1437,12 @@ v0 = my_vector             // find the smallest element in this
 r0 = get_len(v0)           // length of vector in bytes
 int64 r1 = roundp2(r0, 1)  // round up to nearest power of 2
 uint64 r1 >>= 1            // half length
-v1 = shift_reduce(r1,v0)   // upper part of vector
+v1 = shift_reduce(v0, r1)  // upper part of vector
 int64 r2 = r0 - r1         // length of v1
-float v0 = set_len(r1,v0)  // reduce length of v0
+float v0 = set_len(v0, r1) // reduce length of v0
 // make mask for length of v1 because the two operands may 
 // have different length
-int64 v2 = mask_length(r2, v0, 0), options=4
+int64 v2 = mask_length(v0, r2, 0), options=4
 // Get minimum. Elements of v0 fall through where v1 is empty
 float v0 = min(v0, v1, mask=v2, fallback=v0) // minimum
 // loop to calculate the rest. vector length is now a power of 2
@@ -205,7 +1450,7 @@ while (uint64 r1 > 4) {
    // Half vector length
    uint64 r1 >>= 1
    // Get upper half of vector
-   float v1 = shift_reduce(r1, v0)
+   float v1 = shift_reduce(v0, r1)
    // Get minimum of upper half and lower half
    float v0 = min(v1, v0)  // has the length of the first operand
 }
@@ -214,76 +1459,11 @@ while (uint64 r1 > 4) {
 \vspace{4mm}
 
 
-\subsection{Switch-case statement} \label{switchCase}
-A switch-case multiway branch can be implemented efficiently with a table of relative addresses.
-This table is placed in read-only memory for security reasons.
-\vspace{2mm}
-
-\begin{example}
-\label{exampleSwitchCase}
-\end{example}
-\begin{lstlisting}[frame=single]
-/* C code:
-int i, x;
-switch (i) {
-case 1:
-   x = 10;  break;
-case 2:
-   x = 12;  break;
-case 5:   
-   x = 20;  break;
-default:
-   x = 99;  break;
-}
-*/
-// ForwardCom code:
-
-rodata section read ip
-// table of relative addresses, using DEFAULT as reference point
-align (4)
-jumptable: int16 0            // case 0
-int16 (CASE1 - DEFAULT) / 4   // case 1
-int16 (CASE2 - DEFAULT) / 4   // case 2
-int16 0                       // case 3
-int16 0                       // case 4
-int16 (CASE5 - DEFAULT) / 4   // case 5
-rodata end
-
-code section execute ip
-// r0 = i
-// r1 = x
-// test if i is outside of the range
-// use unsigned test to avoid testing for r0 < 0
-if (uint32 r0 > 5) {
-   jump DEFAULT
-}
-int64 r2 = address([jumptable])
-int64 r3 = address([DEFAULT])
-// relative jump with r3 = DEFAULT as reference point,
-// r2 as table base and r0 as index
-int16 jump (r3, [r2 + r0 * 2])
-
-CASE1:
-   int32+ r1 = 10
-   jump FINISH
-CASE2:
-   int32+ r1 = 12
-   jump FINISH
-CASE5:
-   int32+ r1 = 20
-   jump FINISH
-DEFAULT:
-   int32+ r1 = 99
-FINISH:
-
-code end
-\end{lstlisting}
-\vspace{4mm}
 
 
 \subsection{Boolean operations} \label{BooleanOperations}
 Boolean combinations of conditions can be implemented with branches as shown in this example.
-\vspace{2mm}
+\vv
 
 \begin{example}
 \label{exampleBooleanOperations1}
@@ -304,7 +1484,7 @@ code section execute ip
 extern _sqrtf : function
 
 // v0 = a, v1 = b
-_condfunc function public
+_condfunc1 function public
 if (float v0 >= 0) {
    if (float v0 < 20) {jump L1}
    if (float v0 == v1) {
@@ -313,7 +1493,7 @@ if (float v0 >= 0) {
    }
 }
 return  // return value is in v0
-_condfunc end
+_condfunc1 end
 
 code end
 \end{lstlisting}
@@ -343,9 +1523,7 @@ _condfunc2 end
 \end{lstlisting}
 \vspace{4mm}
 
-We can reduce the number of instructions and make the code still faster by using
-a special feature of the compare instruction that uses the mask and fallback registers
-as extra boolean operands:
+We can reduce the number of instructions and make the code still faster by using a special feature of the compare instruction that uses the mask and fallback registers as extra boolean operands:
 
 \begin{example}
 \label{exampleBooleanOperations3}
@@ -364,12 +1542,30 @@ _condfunc3 end
 \end{lstlisting}
 \vspace{4mm}
 
+The high level operators \&\& $||$ \^{}\^{} allow a more intuitive coding:
+
+\begin{example}
+\label{exampleBooleanOperations4}
+\end{example}
+\begin{lstlisting}[frame=single]
+_condfunc4 function public
+float v3 = v0 < 20          // boolean variable for a < 20
+float v3 = (v0 == v1) || v3 //  a == b || a < 20
+float v3 = v0 >= 0 && v3    // a >= 0 && (a == b || a < 20)
+if (float v3 & 1) {         // test bit 0 of boolean v3
+   call _sqrtf
+}
+return
+_condfunc4 end
+\end{lstlisting}
+\vspace{4mm}
+
 
 \subsection{Virtual functions} \label{virtualFunctions}
 Virtual functions are used in C++ for polymorphous classes.
 This example shows how to implement a virtual class in ForwardCom.
 We can save space by using 32-bit relative pointers rather than 64-bit absolute pointers as other systems do.
-\vspace{2mm}
+\vv
 
 \begin{example}
 \label{exampleVirtualFunctions}
@@ -448,13 +1644,13 @@ call VirtClass_constructor
 // Get the address of the virtual table
 int32 r1 = sign_extend_add(r16, [r0])
 // call VirtClass_func1 as the first table entry
-int32 call (r16, [r1])
+int32 call_relative (r16, [r1])
 // get a pointer to the object again
 int64 r0 = sp
 // Get the address of the virtual table
 int32 r1 = sign_extend_add(r16, [r0])
 // call VirtClass_func2 as the second table entry
-int32 call (r16, [r1+4])
+int32 call_relative (r16, [r1+4])
 // release space allocated for 'obj'
 int64 sp += 8
 pop (r16)        // restore register
@@ -467,38 +1663,13 @@ code end
 \vspace{4mm}
 
 
-\subsection{Memory copying} \label{memcpy}
-The standard memcpy function can be implemented efficiently as a vector loop.
-
-\begin{example}
-\label{exampleMemcpy}
-\end{example}
-\begin{lstlisting}[frame=single]
-// C function:
-// void *memcpy(void *destination, const void *source, size_t n);
-
-_memcpy function public
-// r0 = destination
-// r1 = source
-// r2 = n
-int64 r3 = r0 + r2           // end of destination
-int64 r1 += r2               // end of source
-// the type int32 has the longest maximum vector length
-// make vector loop with vector of int32
-for (int32 v0 in [r1-r2]) {
-   int32 v0 = [r1-r2, length = r2]  // read from source
-   int32 [r3-r2, length = r2] = v0  // write to destination
-}
-// destination is returned unchanged in r0
-return
-_memcpy end   
-\end{lstlisting}
-\vspace{4mm}
+% \subsection{Memory copying} \label{memcpy}
+% Needs revision to obey alignment
 
 
 \subsection{High precision arithmetic} \label{highPrecisionArithmetic}
 Function libraries for high precision arithmetic typically use a long sequence of add-with-carry instructions for adding integers with a very large number of bits. A more efficient method for big number calculation is to use vector addition and a carry-look-ahead method. The following algorithm calculates A + B, where A and B are big integers represented as two vectors of n$\cdot$64 bits each, where n \textless{} 64.
-\vspace{2mm}
+\vv
 
 \begin{example}
 \label{exampleHighPrecisionArithmetic}
@@ -511,8 +1682,8 @@ uint64 v0 += v1              // sum without intermediate carries
 uint64 v3 = v0 < v1          // carry generate = (SUM < B)
 uint64 v4 = v0 == -1         // carry propagate = (SUM == -1) 
 uint64 r0 = get_len(v0)      // length of vector in bytes
-uint64 v3 = bool2bits(r0,v3) // compressed to bitfield
-uint64 v4 = bool2bits(r0,v4) // compressed to bitfield
+uint64 v3 = bool2bits(v3)    // compressed to bitfield
+uint64 v4 = bool2bits(v4)    // compressed to bitfield
 // calculate propagated additional carry:
 // CA = CP ^ (CP + (CG<<1) + CIN)
 uint64 v3 <<= 1              // shift left carry generate
@@ -525,13 +1696,13 @@ uint64 v3 = gp2vec(r0)       // copy to vector register
 uint64 v2 >>= v3             // carry out
 // v0 = sum, v2 = carry out
 \end{lstlisting}
-\vspace{2mm}
+\vv
 
 If the numbers A and B are longer than the maximum vector length then the algorithm is repeated. If the vector length is more than 64 * 8 bytes then the calculation of the additional carry involves more than 64 bits, which again requires a big number algorithm.
 
 \subsection{Matrix multiplication} \label{matrixMultiplication}
 Matrix operations can be difficult because they involve a lot of permutations. The following example shows the multiplication of two $4\times4$ matrixes of floating point numbers, assuming that the vector registers are long enough to contain an entire matrix.
-\vspace{2mm}
+\vv
 
 \begin{example}
 \label{exampleMatrixMultiplication}
@@ -544,47 +1715,101 @@ int64 r2 = 1                     // shift count, elements
 int64 r3 = 4                     // shift count, elements
 float v0 = replace(v1,0)         // make a matrix of zeroes
 for (int64 r0 = 0; r0 < 4; r0++) { // repeat 4 times
-   float v3 = repeat_within_blocks(r1,v1,16) // repeat column
-   float v4 = repeat_block(r1,v2,16)         // repeat row
+   float v3 = repeat_within_blocks(v1,r1,16) // repeat column
+   float v4 = repeat_block(v2,r1,16)         // repeat row
    float v0 = v0 + v3 * v4       // multiply rows and columns
-   float v1 = shift_down(r2,v1)  // next column
-   float v2 = shift_down(r3,v2)  // next row
+   float v1 = shift_down(v1, r2) // next column
+   float v2 = shift_down(v2, r3) // next row
 }
 // Result is in v0.
 \end{lstlisting}
-\vspace{2mm}
+\vv
 You may roll out the loop and calculate partial sums separately to
 reduce the loop-carried dependency chain of v0
-\vspace{2mm}
+\vv
+
+
+\section{Detecting support for particular instructions}
+\label{DetectingSupportForInstructions}
+The capabilities registers can give information about the capabilities of the processor the code is running on, including support for certain instructions and features, and maximum vector length. See page \pageref{table:capabilitiesRegisters} for details.
+\vv
+
+While ForwardCom is in a phase of experimental development, there may not be specific bits in the capabilities registers for every instruction that may be supported. An alternative way of testing whether a particular instruction is supported is to disable error trapping and try to execute the instruction. 
+This can be done without system access. For example:
+
+\begin{example}
+\label{exampleDetectInstructionSupport}
+\end{example}
+\begin{lstlisting}[frame=single]
+// Disable error traps for unknown instructions and wrong operands
+int r0 = 3
+int64 capab2 = write_capabilities(r0, 0)
+// Reset counter registers
+int r0 = read_perfs(perf16, 0)
+// Try to execute instruction
+int r0 = userdef56(r0, r0)
+// Read counters
+int r1 = read_perfs(perf16, 1)   // counter for unknown instruction
+int r2 = read_perfs(perf16, 2)   // counter for wrong operands
+// Enable error traps again
+int r0 = 0;
+int64 capab2 = write_capabilities(r0, 0)
+// Test if any of the two counters is nonzero, and
+// jump to some code if the instruction is not supported
+int r1 = r1 | r2, jump_nzero INSTRUCTION_NOT_SUPPORTED
+\end{lstlisting}
+\vv
 
 
 
-\section{Optimization tricks}
-\label{OptimizationTricks}
+\section{Optimization of code}
+\label{OptimizationOfCode}
 
 The ForwardCom system is designed with high performance as a top priority. The following guidelines may help programmers and compiler makers obtain optimal performance.
+\vv
+
+\subsubsection{Use general purpose registers for control code}
+Any variables that control program execution, such as branch conditions and loop counters, should preferably be stored in general purpose registers rather than memory or vector registers. This may enable the microprocessor to resolve branches early and prefetch the code after the branch earlier.
+\vv
+
+\subsubsection{Efficient loops}
+The overhead of a loop can be reduced to a single instruction in most cases. 
+A loop that counts up is most efficient when the loop counter is a 32-bit signed integer incremented by 1 and the loop condition is expressed as counter < limit or counter <= limit. A loop that counts down is most efficient when the condition is expressed as counter > 0 or counter >= 0. 
+Examples:
+
+\begin{lstlisting}[frame=single]
+for (int32 r1 = 0; r1 < r2; r1++) {  }
+for (int32 r1 = 1; r1 <= 100; r1++) {  }
+for (int32 r1 = 100; r1 > 0; r1--) {  }
+\end{lstlisting}
+
+The assembler will not insert an initial check before the loop if the start and end values are both constants.
+\vv
+
+Array loops are particularly efficient if the vector loop feature is used. See the example page \pageref{examplePolyn}. 
+Loops containing function calls can be vectorized if the functions allow vector parameters.
+\vv
+
+\subsubsection{Avoid long dependency chains}
+ForwardCom may be implemented on a superscalar processor that can execute multiple instructions simultaneously. This works most efficiently if the code does not contain long dependency chains.
+\vv
 
 \subsubsection{Minimize instruction size}
 The assembler will automatically pick the smallest possible version of an instruction. 
-Instructions can have different versions with 4-bit, 8-bit, 16-bit, 32-bit, and 64-bit integer constants. 
+Instructions can have different versions with 8-bit, 16-bit, 32-bit, and 64-bit integer constants. 
 A large integer constant with few significant bits can be represented as a smaller constant with a left shift. For example, the constant 0x5000000000 can be represented as 5 $<<$ 36. The assembler will do this automatically when possible.
-Small floating point constants with no decimals can be represented as 8-bit signed integers. Simple rational numbers where the denominator is a power of 2 can be represented as half precision without loss of precision. The assembler does this automatically, too.
+\vv
+
+Small floating point constants with no decimals can be represented as 8-bit signed integers. Simple rational numbers where the denominator is a power of 2 can be represented as half precision without loss of precision. The assembler does this automatically, too. For example, the constant 2.25 can be coded in half precision without loss of precision, while the constant 2.24 can not.
+\vv
+
+Memory addresses can use an offset of 8, 16, or 32 bits relative to a base pointer. 
+A 32-bit offset is needed for data in static memory when the data size is large or not specified (see page \pageref{SpecifyDataSize}). A smaller offset is possible when data are addressed relative to a stack pointer, structure pointer, class pointer, or a pointer to a strategically placed reference point. An smaller offset will often allow the assembler to use a smaller instruction format.
+\vv
+
 It is recommended to check the output listing from the assembler to see 
 how much space each instruction takes. Sometimes, you can reduce the instruction size by simple changes in the code. Many instructions will be smaller if the first source register is the same as the destination register. 
-
-\subsubsection{Optimize jumps}
-The assembler will merge a jump with a preceding arithmetic instruction if possible, unless optimization is turned off. For example, an integer addition followed by a conditional jump that compares the result with zero may be merged into a single instruction. This is only possible when a number of conditions are fulfilled: 
-\begin{itemize}
-\item the two instructions have the same data type
-\item the destination of the arithmetic instruction is the same register as the source of the branch instruction
-\item the arithmetic instruction uses the same register for source and destination
-\item there are no other instructions between the two, and no jump label.
-\end{itemize}
-
-The output listing will show if the two instructions have been merged.
-\vspace{2mm}
-
-Optimization of jumps to jumps, etc., is generally the responsibility of the compiler. The assembler will do only a few simple jump optimizations.
+\vv
 
 
 \subsubsection{Optimize cache use}
@@ -595,20 +1820,163 @@ in several ways:
 \item Optimize code caching by minimizing instruction sizes and inlining functions.
 \item Optimize data caching by embedding immediate constants in instructions.
 \item Use register variables instead of saving variables in memory.
-\item Use registers as function parameters.
 \item Avoid spilling registers to memory by using the information about register use in object files, as described on page \pageref{chap:registerUsageConvention}.
+\item Use relative pointers rather than absolute pointers for pointer tables and function pointers in static memory (see page \pageref{relativeDataPointer}).
+\end{itemize}
+\vv
+
+\subsubsection{Calculate pointers early}
+Registers used for pointers, array index, or for specifying the vector length of a memory operand are used at an early stage in the pipeline. The CPU may have to wait for these registers if they are not available at the time they are needed. Therefore, it is recommended to calculate pointer, array index, and vector length before the other instruction operands.
+\vv
+
+\subsubsection{Optimize jumps}
+The assembler will merge a jump with a preceding arithmetic instruction if possible, unless optimization is turned off. For example, an integer addition followed by a conditional jump that compares the result with zero may be merged into a single instruction. This is only possible when a number of conditions are fulfilled: 
+\begin{itemize}
+\item the two instructions have the same data type
+\item the destination of the arithmetic instruction is the same register as the source of the branch instruction
+\item the arithmetic instruction uses the same register for source and destination
+\item there are no other instructions between the two, and no jump label at the branch instruction.
 \end{itemize}
 
-\subsubsection{Use general purpose registers for control code}
-Any variables that control program execution, such as branch conditions and loop counters, should preferably be stored in general purpose registers rather than memory or vector registers. This may enable the microprocessor to resolve branches early and prefetch the code after the branch earlier.
+The output listing will show if the two instructions have been merged.
+\vv
 
+Optimization of chained jumps, etc., is generally the responsibility of the compiler. The assembler will do only a few simple jump optimizations.
+\vv
 
-\subsubsection{Use the vector loop feature}
-Array loops are particularly efficient if the vector loop feature described on page \pageref{vectorLoops} is used. Loops containing function calls can be vectorized if the functions allow vector parameters.
+\subsubsection{Avoid conditional jumps}
+Conditional and indirect jumps are quite slow. 
+Conditional jumps can sometimes be replaced by conditional execution of instructions with the use of mask registers. This can be advantageous even if it requires a few more instructions. It is good to calculate the mask register before the operands are calculated because some ForwardCom implementations will not wait for delayed operands if the mask is already known to be zero so that the operands are not needed.
+\vv
 
-\subsubsection{Avoid long dependency chains}
-ForwardCom may be implemented on a superscalar processor that can execute multiple instructions simultaneously. This works most efficiently if the code does not contain long dependency chains.
+\subsubsection{Specify data size and code size} \label{SpecifyDataSize}
+It is recommended to specify a maximum size for code and static data on the assembler command line (see page \pageref{assemblerCommandLine}) 
+or in a directive (see page \pageref{optionsDirective}). 
+This allows the assembler to optimize relative addresses for both code and data to the minimum number of bits necessary. 
+You may use a link map to see how much memory is needed for code and static data, and add some extra for future additions to the code. 
+A link map can be generated during the link process with the link option
+ {\ttfamily -map=filename}, or after linking with the command {\ttfamily forw -dump-L filename.ex}
+\vv
 
+Direct jump and call instructions use 24 or 32 bits for relative addresses. Conditional jumps use 8, 16, 24, or 32 bits. The table below shows the largest distance you can jump with these numbers of bits, using signed relative offsets scaled by 4:
+\vv
+
+\begin{tabular}{|p{20mm}|p{140mm}|}
+\hline
+\bfseries Bits & \bfseries Jump distance \\
+\hline
+8 & 508 bytes \\
+16 & 128 kbytes \\
+24 & 32 Mbytes \\
+32 & 8 Gbytes \\
+\hline
+\end{tabular}
+\vv
+
+For example, if you specify codesize=100000, then you will be able to make conditional jumps to external labels using 16 bits for relative addresses. 
+The distance to local labels within the same assembly file and the same section are calculated by the assembler and optimized to the appropriate number of bits regardless of the specified codesize.
+\vv
+
+Instructions with a memory operand in static memory are using an offset relative to a base pointer, typically DATAP. The offset can be 8, 16, or 32 bits. 8-bit offsets are scaled by the operand size. 16-bit and 32-bit offsets are not scaled. The maximum distance from the base pointer you can address with different sizes of offset are listed in the following table:
+\vv
+
+\begin{tabular}{|p{20mm}|p{20mm}|p{116mm}|}
+\hline
+\bfseries Bits & \bfseries Data type & \bfseries Addressing range \\
+\hline
+8 & int8 & 127 bytes \\
+8 & int16 & 254 bytes \\
+8 & int32 & 508 bytes \\
+8 & int64 & 1 kbyte \\
+16 & any & 32 kbytes \\
+32 & any & 2 Gbytes \\
+\hline
+\end{tabular}
+\vv
+
+Specifying a maximum datasize on the assembler command line or in a directive will help the assembler select the smallest possible instruction for addressing static data in a writeable data section. 
+\vv
+
+Note that data in a read-only section are usually addressed with IP as base pointer. The number of bits needed for addressing IP-based read-only data is determined by codesize, not datasize.
+\vv
+
+Conditional jumps can use small single-word instructions if there is no constant immediate operand bigger than 8 bytes and if the distance to the destination is no more than 127 code words (= 508 bytes). This will often suffice for conditional jumps within the same function or module. 
+See page \pageref{table:jumpInstructionFormats} for a list of jump instruction formats with different number of bits for the offset.
+\vv
+
+Instructions with a memory operand in static data are two or three code words long. The three-word version is needed if the datasize is bigger than 32 kbytes and the instruction has an array index or option bits or three input operands. Example:
+
+\begin{example}
+\label{instructionSizeOptimization}
+\end{example} % frame disappears if I put this after end lstlisting
+
+\begin{lstlisting}[frame=single]
+data section read write datap
+alpha: int32 123
+data end
+
+code section execute
+int32 r0 = r1 < [alpha]
+code end
+
+\end{lstlisting}
+
+The compare instruction in this example will need three words if datasize is bigger than 32 kbytes. A smaller 2-word version of this instruction can be used if datasize is specified to a value less than 32 kbytes. 
+\vv
+
+The assembler will automatically choose the smallest version of an instruction that fits the specified datasize and codesize. The linker will give an 
+``Address overflow'' error message if a relative address does not fit the available number of bits.
+\vv
+
+It is not possible to have memory operands with an 8-bit offset for data with IP, DATAP, or THREADP as implicit base pointer, but it is possible to make the instruction smaller if a general purpose register is used as base pointer. Instructions with a memory operand can use a single-word version of the instruction if the following conditions are satisfied:
+
+\begin{itemize}
+\item the base pointer is a general purpose register or stack pointer
+\item the scaled offset fits into an 8-bit signed integer
+\item the instruction has no more than two source operands
+\item the first source operand is the same register as the destination
+\item there is no mask
+\item there are no option bits
+\item if vector registers are used: must be scalar
+\end{itemize}
+\vv
+
+We can make the code more compact by placing a reference point near the data we want to access, and load the address of this reference point into a register. This example shows how:
+
+\begin{example}
+\label{ExampleLocalPointer}
+\end{example} % frame disappears if I put this after end lstlisting
+
+\begin{lstlisting}[frame=single]
+data section read write datap
+int32 A, B, C	
+align 8
+refPoint: // reference point, aligned by 8
+int32 D
+double E
+data end
+
+code section execute
+// load address of refPoint:
+int64 r1 = address ([refPoint])
+// address of A relative to refPoint:
+int32 r2 = r2 + [r1 + A - refPoint]
+// address of E relative to refPoint:
+double v3 = v3 * [r1 + E - refPoint], scalar
+
+code end
+
+\end{lstlisting}
+\vv
+
+The offset relative to the reference point is scaled by 4 and 8 for A and E, respectively, in this example. The scaled offset is calculated automatically by the assembler. The reference point must be aligned by 8 in this example in order to make the offset to E divisible by 8.
+\vv
+
+This method will make the code more compact if the base pointer is used in more than two instructions. Data on the stack can be accessed with single-word instructions if they are near the address that the stack pointer points to. Data in a structure or class can be accessed in the same way relative to a structure pointer or 'this' pointer.
+\vv
+
+You can use an assembler listing to check the size and format of each instruction. A table of instruction formats is given on page \pageref{table:instructionFormats}.
+\vv
 
 
 \end{document}

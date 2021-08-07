@@ -10,130 +10,146 @@ The memory organization is little endian. Instructions for byte swapping are pro
 
 \subsubsection{Rationale}
 The storage of vectors in memory would depend on the element size if the organization was big endian. Assume, for example, that we have a 128 bit vector register containing four 32-bit integers, named A, B, C, D. With little endian organization, they are stored in memory in the order:
-\vspace{2mm}
+\vv
 
 A0, A1, A2, A3, B0, B1, B2, B3, C0, C1, C2, C3, D0, D1, D2, D3,
-\vspace{2mm}
+\vv
 
 where A0 is the least significant byte of A and D3 is the most significant byte of D. With big endian organization we would have:
-\vspace{2mm}
+\vv
 
 A3, A2, A1, A0, B3, B2, B1, B0, C3, C2, C1, C0, D3, D2, D1, D0.
-\vspace{2mm}
+\vv
 
 This order would change if the same vector register is organized, for example, as eight integers of 16 bits each or two integers of 64 bits each. In other words, we would need different read and write instructions for different vector organizations. 
-\vspace{2mm}
+\vv
 
 Little endian organization is more common for a number of reasons that have been discussed many times elsewhere.
-\vspace{2mm}
+\vv
+
+
+\section{Pointers and addresses} \label{PointersAndAddresses}
+ForwardCom is using a flat memory model with 64-bit addresses.
+Pointers stored in registers contain absolute addresses with 64 bits. A lower number of bits is allowed for systems with a smaller address space.
+\vv
+
+Function pointers and code pointers must be divisible by 4 because the code consists of 4-byte words.
+\vv
+
+Data pointers and function pointers stored in data memory may contain absolute or relative addresses. 
+There is a problem if absolute pointers in static data memory need to be initialized prior to program start. There are three different ways to accomplish this:
+\begin{enumerate}
+  \item Initialize the data to an absolute address. This is possible, but it is not recommended because the data section containing an absolute address will be position-dependent. A particular platform may or may not support position-dependent code.
+  
+  \item Make a start-up code that initializes the pointer, using a relative address for calculation.
+        
+  \item Store a relative pointer and calculate the full address in the running
+        program. This is explained below
+  
+\end{enumerate}
+\vspace{4mm}
+
+
+Relative pointers can be more compact than absolute pointers. 
+A relative pointer is storing the address of a function, code label, or data label relative to an arbitrary reference point. The reference point must be placed in a section with the same address regime as the target that we want to address - either IP-based or DATAP-based or THREADP-based.
+\vv
+
+A relative pointer may be scaled by a power of 2. For example, it is useful to scale a relative code pointer by 4 because all code addresses are divisible by 4. This allows us to use fewer bits for the relative pointer. The relative pointer may be a signed integer of 8, 16, or 32 bits. The number of bits must be sufficient to contain the distance between the target and the reference point, divided by the scale factor, in a signed integer. The calculation of the scaled relative address is done by the linker.
+\vv
+
+A relative pointer must be converted to an absolute pointer before it can be used for addressing a target. The sign\_extend\_add instruction is useful for converting a relative pointer to an absolute pointer. This instruction will read the relative pointer, sign-extend it to 64 bits, optionally scale it by a factor of 2, 4, or 8, and then add the address of the reference point. 
+See page \pageref{relativeDataPointer} for details.
+\vv
+
+Relative code pointers can also be used directly in the jump\_relative or call\_relative instruction. 
+This instruction will read one entry from an indexed list of relative addresses, sign extend the relative address, scale it by 4, add an arbitrary reference point, and then jump or call to the calculated address. This is a very compact and efficient way of implementing a multiway jump or call, such as a switch/case statement. 
+See page \pageref{exampleSwitchCase} for an example. The jump\_relative  instruction can also be used without an index if you have just one relative code pointer. (page \pageref{exampleRelFuncPointer})
+\vspace{4mm}
+
+Direct jump and call instructions, and conditional jump instructions, use relative addresses of 8, 16, 24, or 32 bits stored as part of the instruction. The least significant two bits of relative code addresses are not stored because they are always zero. The target address of a relative jump or call is calculated in the following way. The relative address is multiplied by 4 and sign-extended to 64 bits. The address of the end of the instruction (beginning of next instruction) is added to this value to get the address of the target. \vv
+
+Indirect jump and call instructions can use a pointer containing an absolute address. 
+The pointer can be a register or a memory operand initialized as described above. 
+\vv
+
+Multiway jump and call instructions use a table of relative addresses stored in data memory as explained above. A read-only data section is preferred for security reasons. 
+\vv
+
 
 \section{Implementation of call stack} \label{callStackAlternatives}
 There are various methods for saving the return addresses for function calls: a link register, a separate call stack, or a unified stack for return addresses and local data. Here, we will discuss the pro's and con's of each of these methods.
-\vspace{2mm}
+\vv
 
 \subsubsection{Link register}
 Some systems use a link register to hold the return address. The advantage of a link register is that a leaf function can be called without storing anything on the stack. This saves cache bandwidth in programs with many leaf function calls. The disadvantage is that every non-leaf function needs to save the link register on a stack before calling another function, and restore the leaf register before returning.
-\vspace{2mm}
+\vv
 
 If we decide to have a link register then it should be a special register, not one of the general purpose registers. A link register does not need to support all the things that a general purpose register can do. If the link register is included as one of the general purpose registers then it will be tempting for a programmer to save it to another register rather than on the stack, and then end the function by jumping to that other register. This will work, of course, but it will interfere with the way returns are predicted. A branch predictor is typically using a special mechanism for predicting returns, which is different from the mechanism used for predicting other jumps and branches. This mechanism, which is called a return stack buffer, is a small rolling cache that remembers the addresses of the last calls. If a function returns by a jump to another register than the link register then it will use the wrong prediction mechanism, and this will cause severe delays due to misprediction of the subsequent series of returns. The return stack buffer will also be messed up if the link register is used for indirect jumps or other purposes.
-\vspace{2mm}
+\vv
 
 The only instructions that are needed for the link register other than call and return, are push and pop. We can reduce the number of instructions in non-leaf functions by making a combined instruction for ``push link register and then call a function'' which can be used for the first function call in a non-leaf function, and another instruction for ``pop link register and then return'' to end a non-leaf function. However, this will violate the principle that we want to avoid complex instructions in order to simplify the pipeline design.
-\vspace{2mm}
+\vv
 
 The only performance gain we get from using a link register is that it saves cache bandwidth by not saving the return address on leaf function calls. It will not affect performance in applications where cache bandwidth is not a bottleneck. The performance of the return instruction is not influenced by cache bandwidth because it can rely on the prediction in the return stack buffer.
-\vspace{2mm}
+\vv
 
 The disadvantage of using a link register is that the compiler has to treat leaf functions and non-leaf functions differently, and that non-leaf functions need extra instructions for saving and restoring the leaf register on the stack.
-\vspace{2mm}
+\vv
 
 Therefore, we will not use a link register in the ForwardCom architecture.
 
 \subsubsection{Separate call stack} \label{dualStack}
 We may have two stacks: 
 a call stack for return addresses and a data stack for the local data of each function. Most programs have a quite limited call depth so that the entire call stack, or at least the ``hot'' part of it, can be stored on the chip. This will improve the performance because no memory or cache operations are needed for call and return operations -- at least not in the critical innermost loops of the program. It will also simplify prediction of return addresses because the on-chip rolling stack and the return stack buffer will be one and the same structure.
-\vspace{2mm}
+\vv
 
 The call stack can be implemented as a rolling register stack on the chip. The call stack is spilled to memory if it overflows. A return instruction after such a spilling event will use the on-chip value rather than the value in memory as long as the on-chip value has not been overwritten by new calls. Therefore, the spilling event is unlikely to occur more than once in the innermost part of a program. 
 Spilling of the call stack will be extremely rare, even for programs with recursive functions, if the on-chip call stack has a reasonable size.
-\vspace{2mm}
+\vv
 
 The pointer for the call stack should not be a general purpose register because the programmer will rarely need to access it directly. Direct manipulation of the call stack is only needed in a stack unroll event (after an exception or long jump) or a task switch.
-\vspace{2mm}
+\vv
 
 A function does not have easy access to the return address that it was called from. Information about the caller may be supplied explicitly as a function parameter in the rare case that it is needed. There is a security advantage in hiding the return address inside the chip. This prevents overwriting return addresses in case of program errors or malicious buffer overflow attacks.
-\vspace{2mm}
+\vv
 
 A further advantage of a separate call stack is that call and return instructions can be executed at a very early stage in the pipeline because there is no dependence on other instructions that may modify the stack pointer. This avoids delays or bubbles in the pipeline that may otherwise occur when a return address is only available at a late stage in the pipeline.
-\vspace{2mm}
+\vv
 
 The disadvantage of having a separate call stack is that it makes memory management more complicated if there are two stacks that can potentially overflow. The size of the call stack can be predicted accurately for programs without recursive functions by using the method described on page \pageref{predictingStackSize}.
-\vspace{2mm}
+\vv
 
 \subsubsection{Unified stack for return addresses and local data} \label{singleStack}
 Many current systems use the same stack for return addresses and local data. 
 Corruption of the stack is an error that often occurs with a unified stack, resulting in a wrong return address.
-\vspace{2mm}
+\vv
 
 \subsubsection{Conclusion for ForwardCom}
 It is decided to use a separate call stack for ForwardCom because of the security advantage and the more efficient hardware implementation. \\
-\vspace{2mm}
+\vv
 
 The calling conventions defined in chapter \ref{chap:functionCallingConventions} will 
 work with a separate stack as well as a with unified stack.
-\vspace{2mm}
-
-
-\subsection{Propagation of NANs}
-\label{nanPropagation}
-If the result of a floating point calculation cannot be represented as a real number, it will be coded as $\pm$ infinity or NAN (Not a number). Overflow and division by zero gives infinity.
-Operations that generate NAN include the following:\\
-0/0, $\infty$/$\infty$, 0*$\infty$, $\infty$-$\infty$, rem(1,0), rem($\infty$,1), sqrt(-1), log(-1), pow(-1, 0.1), asin(2).
-\vspace{2mm}
-
-These values are propagated through a series of calculations because any floating point calculation with a NAN input will produce a NAN output. This makes it possible to detect the error in the final result after a series of calculations. This method of detecting floating point errors is particularly useful for vector instructions because the result is independent of the vector length.
-\vspace{2mm}
-
-A NAN can contain a bit pattern of diagnostic information called the payload, and this bit pattern is propagated to the result. A problem arises when two different NANs are combined, for example NAN1 + NAN2. The IEEE-754 floating point standard  has no definite rule for the result of the combination of two NANs, but it recommends that one of the two NAN operands is propagated to the result. Most microprocessors just propagate the first operand in this case. This is unfortunate because the result is not predictable when the compiler may code a+b as b+a. ForwardCom solves this problem by propagating the NAN value with the highest payload. Therefore, a+b and b+a will always give the same result.
-\vspace{2mm}
-
-Another problem is that NAN values are not propagated through the max and min instructions according to the 2008 version of the IEEE-754 standard. 
-This problem is solved in the 2019 revision of the IEEE standard. ForwardCom will use the 2019 standard so that max and min instructions always produce a NAN output when at least one of the inputs is NAN.
-\vspace{2mm}
-
-Certain instructions have floating point inputs but no floating point output. 
-This includes float2int, compare, and compare-and-jump instructions. 
-Some systems are able to trap NANs in these cases, but ForwardCom is not fond of traps, as explained below. The float2int instruction can detect NANs by generating error codes in the output vector. Compare instructions can explicitly detect NAN inputs.
-\vspace{2mm}
-
-Infinity will also propagate to the end result in many cases. 
-Infinity will be converted to NAN in cases like $\infty$/$\infty$, 0*$\infty$, and $\infty$-$\infty$.
-Infinity will be converted to zero in situations like $1/\infty$. Infinity will not be propagated in situations like min(1,$\infty$).
-\vspace{2mm}
-
-It is possible to generate NANs instead of infinity by enabling exception handling, as explained in the next section. This will improve propagation of error information. 
-\vspace{2mm}
-
-Signalling NANs are not trapped in ForwardCom. Instead, signalling NANs are propagated without conversion to quiet NANs. Signalling NANs take precedence over quiet NANs when two NANs are combined. Signalling NANs may be used for NAN boxing of non-numeric data or for application-specific error tracking.
-\vspace{2mm}
-
-Other methods for generating error messages in function libraries are discussed on page \pageref{errorMessageHandling}.
-\vspace{2mm}
+\vv
 
 
 \section{Floating point errors and exceptions}
+\label{FloatingPointErrors}
 The traditional ways of detecting floating point errors is to check a global status register or to use traps (software interrupts). Both methods are problematic and inefficient for SIMD processing and for out-of-order processing. 
 A global status register does not tell where the error occurred or how many errors occurred. It is a problem for out-of-order processing that all floating point operations can write to the floating point status register. 
-ForwardCom has no status register for this reason. In fact, the ForwardCom hardware design does not support instructions with multiple output registers. 
-\vspace{2mm}
+ForwardCom has no status register for this reason. In fact, the ForwardCom hardware design may not support instructions with multiple output registers. 
+\vv
 
-Traps are avoided too because traps have to occur in order. This means that all instructions would have to execute speculatively until all preceding instructions that might possibly generate traps have retired (see  
-\href{https://www.agner.org/optimize/nan_propagation.pdf}{www.agner.org/optimize/nan\_propagation.pdf}).
-\vspace{2mm}
+Traps are avoided too because traps have to occur in order. This means that all instructions would have to execute speculatively until all preceding instructions that might possibly generate traps have retired. 
+\vv
 
-The ForwardCom design can overcome these problems by signalling numerical exceptions in the same register that outputs the normal result of an instruction. 
-This behavior is controlled by bits 2-5 in the mask register or the numerical control register. Floating point exceptions will generate a NAN with a payload that indicates the kind of error and its position if these bits are enabled. The NAN code will appear in the specific vector element that caused the exception, and this value will propagate to the end result if the sequence of instructions allows it. This method is sure to give deterministic results despite out-of-order processing and parallelism.
-\vspace{2mm}
+See 
+\href{https://www.agner.org/optimize/nan_propagation.pdf}{www.agner.org/optimize/nan\_propagation.pdf} for a detailed discussion of these problems.
+\vv
+
+The ForwardCom design can overcome these problems by signaling numerical exceptions in the same register that outputs the normal result of an instruction. 
+This behavior is controlled by bits 2-5 in the mask register or the numerical control register. Floating point exceptions will generate a NAN with a payload that indicates the kind of error and its position if these bits are enabled. The NAN code will appear in the specific vector element that caused the exception, and this value will propagate to the end result if the sequence of instructions allows it. This method is sure to give deterministic results regardless of out-of-order processing and parallelism. The propagation of NAN values is further explained on page \pageref{nanPropagation}.
+\vv
 
 The exception indications are as follows:
 
@@ -171,30 +187,67 @@ other math functions & & NAN(0x2A - 0xFF) \\
 
 Bits 0-7 of the NAN payload contains the exception code according to the table above. 
 The quiet bit of the NAN is set. The remaining bits of the NAN payload contain the code address where the error occurred, with all bits inverted (lower 14 bits of the address for single precision, lower 43 bits for double precision, 64 bits for quadruple precision). This makes sure that the first error in a linear code sequence will have preference when multiple NAN codes are propagated to the end result.
-\vspace{2mm}
+\vv
 
 Floating point exceptions can be detected by enabling the exception types you want to detect and checking for NAN values at the end of the floating point instruction sequence, at the end of any 
 try/catch block, and before any instruction that cannot propagate NANs. 
-\vspace{2mm} 
+\vv 
 
 While ForwardCom has no status flags, the NAN payload is replacing the 
 status flags for floating point exceptions specified by the IEEE-754 standard. 
 Any arithmetic operation can signal at most one exception per vector element, according to the standard.
-\vspace{2mm} 
+\vv 
 
 If you want to find the first floating point error during debugging then you may insert additional NAN checks before any backward jump or call and before any overflow of the address bits.
-\vspace{2mm}
+\vv
 
-Traditional fault trapping is not possible in the preferred implementation of ForwardCom. However, bits 26-30 of the mask register or numerical control register may be used for enabling floating point fault trapping and trapping of signalling NANs if hardware support for traditional fault trapping is needed.
-\vspace{2mm}
+Traditional fault trapping is not possible in the preferred implementation of ForwardCom. Signaling NANs and signaling operations are not supported in the preferred implementation. 
+However, bits 26-30 of the mask register or numerical control register may be used for enabling floating point fault trapping and trapping of signaling NANs if hardware support for traditional fault trapping is needed.
+\vv
 
+
+\section{Propagation of NANs}
+\label{nanPropagation}
+If the result of a floating point calculation cannot be represented as a real number, then it will be coded as $\pm$ infinity or NAN (Not a number). Overflow and division by zero gives infinity.
+Operations that generate NAN include the following:\\
+0/0, $\infty$/$\infty$, 0*$\infty$, $\infty$-$\infty$, rem(1,0), rem($\infty$,1), sqrt(-1), log(-1), pow(-1, 0.1), asin(2).
+\vv
+
+These values are propagated through a series of calculations because any floating point calculation with a NAN input will produce a NAN output. This makes it possible to detect the error in the final result after a series of calculations. This method of detecting floating point errors is particularly useful for vector instructions because the result is independent of the vector length.
+\vv
+
+A NAN can contain a bit pattern of diagnostic information called the payload, and this bit pattern is propagated to the end result. A problem arises when two different NANs are combined, for example NAN1 + NAN2. The IEEE-754 floating point standard  has no definite rule for the result of the combination of two NANs, but it recommends that one of the two NAN operands is propagated to the result. Most microprocessors just propagate the first operand in this case. This is unfortunate because the result is not predictable when the compiler may code a+b as b+a. ForwardCom solves this problem by propagating the NAN value with the highest payload. Therefore, a+b and b+a will always give the same result.
+\vv
+
+Another problem is that NAN values are not propagated through the max and min instructions according to the 2008 version of the IEEE-754 standard. 
+This problem is solved in the 2019 revision of the IEEE standard. ForwardCom is using the 2019 standard so that max and min instructions always produce a NAN output when at least one of the inputs is NAN.
+\vv
+
+Certain instructions have floating point inputs but no floating point output. 
+This includes float2int, compare, and compare-and-jump instructions. 
+Some systems are able to trap NANs in these cases, but ForwardCom is not fond of traps, as explained above on page \pageref{FloatingPointErrors}. The float2int instruction can detect NANs by generating error codes in the output vector. Compare instructions can explicitly detect NAN inputs.
+\vv
+
+Infinity will also propagate to the end result in many cases. 
+Infinity will be converted to NAN in cases like $\infty$/$\infty$, 0*$\infty$, and $\infty$-$\infty$.
+Infinity will be converted to zero in situations like $1/\infty$. Infinity will not be propagated in situations like min(1,$\infty$).
+\vv
+
+It is possible to generate NANs instead of infinity by enabling exception handling, as explained above. This will improve propagation of error information. 
+\vv
+
+Signaling NANs are not trapped in ForwardCom, and there is no difference in the behavior of signaling NANs and quiet NANs. Signaling NANs are propagated without conversion to quiet NANs. Signaling NANs may be used for NAN boxing of non-numeric data or for application-specific error tracking.
+\vv
+
+Other methods for generating error messages in function libraries are discussed on page \pageref{errorMessageHandling}.
+\vv
 
 
 \section{Detecting integer overflow} 
 \label{integerOverflowDetection}
 There is no common standard method for detecting overflow in integer calculations. The detection of overflow in signed integer operations is a real nightmare in some programming languages like C++ (see 
-\href{http://stackoverflow.com/questions/199333/how-to-detect-integer-overflow-in-c-c}{stackoverflow.com/questions/199333/how-to-detect-integer-overflow-in-c-c}).
-\vspace{2mm}
+\href{https://stackoverflow.com/questions/3944505/detecting-signed-overflow-in-c-c}{stackoverflow.com/questions/3944505/detecting-signed-overflow-in-c-c}).
+\vv
 
 Possible solutions with a status register or fault trapping are not recommended in ForwardCom for the same reasons as explained above for floating point errors. 
 Instead, the following methods may be used for detecting signed and unsigned integer overflow: 
@@ -215,21 +268,35 @@ Instead, the following methods may be used for detecting signed and unsigned int
     Enable the mask bits for detection of overflow and inexact.
   
 \end{itemize}
-\vspace{2mm}
+\vv
+
+
+\section{Performance monitoring and error tracking}
+ForwardCom supports a set of performance counter registers. These registers count the number of instructions of different kinds that are executed, for example double-size instructions, vector instructions, or branch instructions. The read\_perf instruction can read and reset these registers. This instruction is described on page \pageref{table:readPerfInstruction}. Specific hardware implementations may have different performance counter registers. These will be described in the manual for the specific hardware implementation or soft core.
+\vv
+
+Tracking of floating point errors is described on page \pageref{FloatingPointErrors}. Tracking of integer overflow is described on page \pageref{integerOverflowDetection}.
+\vv
+
+A special set of performance counters may be used for tracking non-recoverable errors such as unknown instructions, wrong parameters for instructions, and memory access violations. These errors will normally generate a trap or stop execution, but the error traps can be disabled using the capabilities registers described on page \pageref{table:capabilitiesRegisters}. This makes it possible to execute a piece of code tentatively and afterwards check if any errors have occurred. The number of errors of each type is counted, and the position and type of the first error is recorded.
+\vv
+
+Specific hardware implementations may have additional features for debugging and error tracking. These will be described in the manual for the specific hardware implementation or soft core.
+\vv
 
 
 \section{Multithreading}
 The ForwardCom design makes it possible to implement very large vector registers to process large data sets. However, there are practical limits to how much you can speed up the performance by using larger vectors. First, the actual data structures and algorithms often limit the vector length that can be used. And second, large vectors mean longer physical distances on the semiconductor chip and longer transport delays.
-\vspace{2mm}
+\vv
 
 Additional parallelism can be obtained by running multiple threads in each their CPU core. The design should allow multiple CPU chips or multiple CPU cores on the same physical chip.
-\vspace{2mm}
+\vv
 
-Communication and synchronization between threads can be a performance problem. The system should have efficient means for these purposes, including speculative synchronization.
-\vspace{2mm}
+Communication and synchronization between threads can be a performance problem. The system should have efficient means for these purposes, perhaps including speculative synchronization.
+\vv
 
 It is probably not worthwhile to allow multiple threads to share the same CPU core and level-1 cache simultaneously (this is what Intel calls hyper-threading) because this could allow a low priority thread to steal resources from a high priority thread, and it is difficult for the operating system to determine which threads might be competing for the same execution resources if they are run in the same CPU core. Simultaneous multithreading may also involve security problems by making the design vulnerable to side-channel attacks.
-\vspace{2mm}
+\vv
 
 \section{Security features} \label{securityFeatures}
 Security is included in the fundamental design of both hardware and software. This includes the following features.
@@ -251,7 +318,7 @@ Buffer overrun errors can be effectively prevented by controlling which memory a
 
 \item Application programs have only access to specific resources as specified in the executable file header and controlled by the system.
 
-\item Array bounds checking is simple and efficient, using an addressing mode with built-in bounds checking or a conditional trap.
+\item Array bounds checking is simple and efficient, using an addressing mode with built-in bounds checking or a simple branch.
 
 \item There are various optional methods for checking integer overflow.
 
@@ -274,11 +341,11 @@ Input buffers must be protected against overflow. This can be done efficiently b
 Function pointers and other pointers to code are vulnerable to control flow hijack attacks. These include:
 
 \begin{description}
-\item[Return addresses.] Return addresses on the stack are particularly vulnerable to buffer overflow attacks. Use a dual stack design to isolate the return stack from other data.
+\item[Return addresses.] Return addresses on the stack are particularly vulnerable to buffer overflow attacks. ForwardCom has separate call stack and data stack so that return addresses are isolated from other data.
 
-\item[Jump tables.] Switch/case multiway branches are often implemented as tables of jump addresses. These should use the jump table instruction with the table placed in a read-only section. See page \pageref{jumpTableInstruction}.
+\item[Jump tables.] Switch/case multiway branches are often implemented as tables of jump addresses. These should use the jump table instruction with the table placed in a read-only section. See page \pageref{table:indirectJumpInstruction}.
 
-\item[Virtual function tables.] Programming languages with object polymorphism, such as C++, use tables of pointers to virtual functions. These should use the call table instruction with the table placed in the a read-only section. See page \pageref{jumpTableInstruction}.
+\item[Virtual function tables.] Programming languages with object polymorphism, such as C++, use tables of pointers to virtual functions. These should use the call table instruction with the table placed in the a read-only section. See page \pageref{table:IndirectCallInstruction}.
 
 \item[Procedure linkage tables.] Procedure linkage tables, import tables and symbol interposition are not used in ForwardCom. See page \pageref{libraryLinkMethods}.
 
@@ -286,8 +353,8 @@ Function pointers and other pointers to code are vulnerable to control flow hija
 
 \item[State machines.] If a state machine or similar algorithm is implemented with function pointers then place these function pointers in a read-only array, use a state variable as index into this array and check the index for overflow. The compiler should have support for defining an array of relative function pointers in a read-only section and access them with the call table instruction.
 
-\item[Other function pointers.] Most uses of function pointers can be covered by the methods described above. Other uses of function pointers should be avoided in high security applications, or the pointers should be placed in protected memory areas or with unpredictable addresses. (See
-\href{http://dslab.epfl.ch/proj/cpi/}{Code-Pointer Integrity link}).
+\item[Other function pointers.] Most uses of function pointers can be covered by the methods described above. Other uses of function pointers should be avoided in high security applications, or the pointers should be placed in protected memory areas or with unpredictable addresses. 
+% DEAD LINK: (See \href{http://dslab.epfl.ch/proj/cpi/}{Code-Pointer Integrity link}).
 
 \end{description}
 
@@ -298,7 +365,9 @@ The executable file header of an application program should include information 
 Many operating systems are giving very extensive rights to device drivers. Rather than having a bureaucratic centralized system for approval of device drivers, we should have a more careful control of the access rights of each device driver. The system call instruction in ForwardCom gives a device driver access to only a limited area of application memory (see page \pageref{systemCallInstruction}). The executable file header of a device driver should have information about which ports and system registers the device driver has access to. The user should have a simple way of checking if these access rights are acceptable.
 
 \subsubsection{Standardized installation procedure} 
-Malware protection should be an integral part of the operating system, not a third-party add on with possible compatibility problems and performance problems. The operating system should provide a standardized way of installing and uninstalling applications. The system should refuse to run any program, script or driver that has not been installed through this procedure. This will make it possible for the user to review the access requirements of all installed programs and to remove any malware or other unwanted software through the normal uninstallation procedure.
+The operating system should provide a standardized way of installing and uninstalling applications. The system should refuse to run any program, script or driver that has not been installed through this procedure. This will make it possible for the user to review the access requirements of all installed programs and to remove any malware or other unwanted software through the normal uninstallation procedure.
+\vv
 
+Malware protection should be an integral part of the operating system, not a third-party add on with possible compatibility problems and performance problems. 
 
 \end{document}

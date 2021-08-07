@@ -1,0 +1,33 @@
+% chapter included in forwardcom.tex
+\documentclass[forwardcom.tex]{subfiles}
+\begin{document}
+\RaggedRight
+
+\chapter{Test suite}
+A suite of test is provided for testing all instructions and formats. 
+\vv
+
+The test programs are written in ForwardCom assembly for the purpose of self test of emulator and softcores.
+\vv
+
+The source code for the test programs are available at:\\
+\href{https://github.com/ForwardCom/test-suite}{github.com/ForwardCom/test-suite}
+\vv
+
+The following test programs are available so far:
+\begin{itemize}
+\item tests\_arithmetics.as: Test all integer arithmetic instructions
+\item tests\_bool\_bit.as: Test all boolean and bit manipulation instructions
+\item tests\_branch.as: Test all jump, call, and branch instructions
+\item test\_formats.as: Test all integer instruction formats
+\end{itemize}
+\vv
+
+Test programs for vector instructions and floating point instructions are not available yet.
+\vv
+
+The test programs must be assembled and linked with the library libc.li for testing on the emulator or full-featured softcores. Use libc-light.li instead of libc.li for the softcore with limited capabilities and no system calls.
+\vv
+
+
+\end{document}

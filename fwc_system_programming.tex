@@ -6,7 +6,7 @@
 \chapter{System programming}
 
 The system instructions have not been fully defined yet. There is more work to do making an efficient system design. However, the first experimental implementations of ForwardCom do not include an operating system so the details of system design do not have to be fixed yet. It is preferred to spend more time on optimizing the system design rather than to define a complete standard at this stage of development.
-\vspace{2mm}
+\vv
 
 There should be at least three different levels of privilege:
 \begin{itemize}
@@ -19,16 +19,16 @@ There should be at least three different levels of privilege:
 \end{itemize}
 
 Transitions between these levels are managed by the system call and system return instructions and by traps and interrupts.
-\vspace{2mm}
+\vv
 
-There are various system registers for control purposes. In addition, there are two sets of registers used for temporary storage, one set for the device driver level and one for the system core level. The temporary registers for the device driver level are cleared for security reasons every time a device driver is called. These registers are used mainly for temporary saving of the general purpose registers.
+There are various system registers for control purposes. In addition, there may be two sets of registers used for temporary storage, one set for the device driver level and one for the system core level. The temporary registers for the device driver level are cleared for security reasons every time a device driver is called. These registers are used mainly for temporary saving of the general purpose registers.
 
 \section{Memory map}
-There are three kinds of memory access: read, write, and execute access. These kinds of access are separate, but can be combined. For example, execute access does not imply read access. Write access and execute access should not normally be combined, because self-modifying code is not allowed.
-\vspace{2mm}
+There are three kinds of memory access: read, write, and execute access. These kinds of access are separate, but can be combined. For example, execute access does not imply read access. Write access and execute access should not normally be combined, because self-modifying code is discouraged.
+\vv
 
 The memory map is stored in the CPU chip. Each entry has three fields: A virtual address (up to 64 bits), access rights (3 bits), and an addend for address translation (up to 64 bits). There is no memory paging. Instead, the memory blocks have variable sizes.
-\vspace{2mm}
+\vv
 
 The entries in the memory map must be kept sorted at all times so that each memory block ends where the next block begins. The addresses must be divisible by 8. Each thread has its own memory map. A typical memory map for an application thread may look like this.
 
@@ -50,34 +50,34 @@ The entries in the memory map must be kept sorted at all times so that each memo
 \end{longtable}
 
 There may be a few further entries for memory blocks shared between processes and for secure isolated memory blocks. A virtual memory block may have multiple entries in case the memory becomes fragmented. The addends are used for keeping the virtual addresses of the block contiguous while the physical addresses are noncontiguous. The start addresses are virtual memory addresses.
-\vspace{2mm}
+\vv
 
 The size of the memory map is variable. The maximum size is implementation dependent.
 A scalar memory access cannot cross a memory map boundary. A vector memory access cannot cross more than one memory map boundary.
-\vspace{2mm}
+\vv
 
-There are at least three memory maps on the chip, one for each privilege level. This makes transitions between the levels fast. The chip space used for memory maps may be reconfigurable so that the memory maps of multiple processes can remain on the chip in case the memory maps are small. This makes task switching faster.
-\vspace{2mm}
+There may be multiple memory maps on the chip, one for each privilege level. This makes transitions between the levels fast. The chip space used for memory maps may be reconfigurable so that the memory maps of multiple processes can remain on the chip in case the memory maps are small. This makes task switching faster.
+\vv
 
-The memory maps are controlled at the system core level. The instructions read\_memory\_map and write\_memory\_map use the vector loop mechanism for fast manipulation of memory maps.
-\vspace{2mm}
+The memory maps are controlled at the system core level. The instructions read\_memory\_map and write\_memory\_map may use the vector loop mechanism for fast manipulation of memory maps.
+\vv
 
 The methods described on page \pageref{memoryManagement} for avoiding memory fragmentation are important for keeping the memory maps small. 
-\vspace{2mm}
+\vv
 
-Task switches will be very fast because we have replaced the large page tables and translation-lookaside-buffer (TLB) of traditional systems with a small on-chip memory map. This makes the system suitable for real-time operating systems.
+Task switches can be very fast because we have replaced the large page tables and translation-lookaside-buffer (TLB) of traditional systems with a small on-chip memory map. This makes the system suitable for real-time operating systems.
 
 \section{Call stack}
-It is preferred to have a separate call stack as discussed on page \pageref{callStackAlternatives}. \vspace{2mm}
+It is preferred to have a separate call stack as discussed on page \pageref{callStackAlternatives}. \vv
 
 The two-stack system has the call stack stored inside the CPU rather than in RAM memory. A method may be required for saving this stack to memory when it is full. This method may use vector-size memory access. It should be possible to manipulate the call stack for task switches and for stack unrolling in the exception handler.
 
 \section{System calls and system functions} \label{systemCallIDSystem}
 Calls to system functions are made with a system call instruction (sys\_call). The system functions are identified by ID numbers rather than addresses. Each ID number consists of a function ID in the lower half and a module ID in the upper half. The module ID identifies a system module or device driver. The system core has ID = 0 and basic system functions have ID = 1. Each part of the ID can be either 16 bits or 32 bits so that the combined ID is 32, 48, or 64 bits. 
-\vspace{2mm}
+\vv
 
 System add-on modules and device drivers do not necessarily have fixed ID numbers because this would require some central authority to assign these ID numbers. Instead, the program will have to translate the module name to an ID number before the first call to a module. This translation is done by a system function with a fixed ID number. The functions within a module can have fixed or variable ID numbers.
-\vspace{2mm}
+\vv
 
 The ID number of a system function can be put into the program in three ways: 
 \begin{enumerate}
@@ -94,39 +94,39 @@ The calling convention for system functions is the same as for other functions, 
 The registers used for parameters are determined by the general calling convention. 
 The calling conventions are described in chapter \ref{chap:functionCallingConventions}.
 The parameter registers should not be confused with the operands for the system call instruction. 
-\vspace{2mm}
+\vv
 
 The system call instruction can have four operands. 
 The first operand (RD) is a pointer to a memory block that may be used for transferring data between the calling program and the system function. The second operand (RS) is a register containing the size of this memory block.
 The third operand is the module ID specified as a constant. 
 The fourth operand is the function ID specified as a constant. 
 The last two two parameters may be combined into a 64-bit register. 
-\vspace{2mm}
+\vv
 
 The calling thread must have access rights to the memory block that it shares with the system 
 function. This can be read access or write access or both. These access rights are transferred to the system function. The system function has no access rights to any other part of the application's memory.
-\vspace{2mm}
+\vv
 
 A system call that contains zero-terminated strings must provide access to at least 256 bytes beyond the end of the string so that the system function does not have to read only a single character at a time when searching for the end of the string.
-\vspace{2mm}
+\vv
 
 It is not possible to use callback function pointers with a system call because executable memory cannot be shared with a system function. If necessary, the system function can call an exported function provided by the application, using the method for inter-process calls described below.
-\vspace{2mm}
+\vv
 
-Device driver functions should preferably use separate stacks. The system call goes first to the system core which assigns a stack to the device driver function and makes a memory map for it before dispatching the call to the desired function. Preferably, no stack is used during this dispatching. The two registers identifying a shared memory block are copied to special registers which are accessible to the called system function. The system function runs in the same thread as the application that called it, but not with the same stack. 
-\vspace{2mm}
+Device driver functions may use separate stacks. The system call goes first to the system core which assigns a stack to the device driver function and makes a memory map for it before dispatching the call to the desired function. Preferably, no stack is used during this dispatching. The two registers identifying a shared memory block are copied to special registers which are accessible to the called system function. The system function runs in the same thread as the application that called it, but not with the same stack. 
+\vv
 
 The old values of instruction pointer, stack pointer, and DATAP are saved in system registers, to be restored when returning to the application code. 
-\vspace{2mm}
+\vv
 
 System functions, device drivers and interrupt handlers are allowed to use all general purpose registers and vector registers if they are saved and restored according to the normal calling conventions. Interrupt handlers must save and restore all registers they use. 
-\vspace{2mm}
+\vv
 
 A method is provided to get information about the register use of system functions so that it is possible to call them using the register usage conventions of either method 1 or method 2, described on page \pageref{chap:registerUsageConvention}. The stack use of system functions is irrelevant for the caller because they do not use the stack of the calling application program. 
-\vspace{2mm}
+\vv
 
 Some important system functions must be standardized and must be available in all operating systems. This will make it possible, for example, to make a third-party function library that works in all operating systems, even if this library needs to call system functions. It will also make it easier to adapt a program for different operating systems. The list of system functions that might be standardized includes functions for thread creation, thread synchronization, setting thread priority, memory allocation, time measurement, system information, etc. 
-\vspace{2mm}
+\vv
 
 There should be a selection of system libraries providing the most common user interface forms, such as graphical user interface, console mode, and server mode. These user interface system libraries should be provided for each operating system that the architecture can run on, so that the same executable program can run in different operating systems simply by linking with the appropriate user interface library when the program is installed. Such user interface libraries may be based on existing platform-independent GUI libraries such as, e. g., wxWidgets or QT. All user interface libraries must support the error\_message function mentioned below. 
 
@@ -150,18 +150,18 @@ message to the user in the way that is appropriate for the user interface (e. g.
 
 \label{errorReportFunction}
 It is proposed to define a standard library function named error\_message for this purpose. All user interface frameworks must define this function. It is possible to choose between different versions of this function when the program is installed by linking with the appropriate library. The main program may override this function by defining its own function with the same name. 
-\vspace{2mm}
+\vv
 
 The error\_message function must have the following parameters: a numerical error code, a string pointer giving an error message, and another string pointer giving the name of the function where the error occurred. These strings are coded as zero-terminated UTF-8 strings. 
 The error message is in the English language by default. It is not reasonable to require support for many different languages (see 
 \href{https://en.wikibooks.org/wiki/Usability_for_Nerds/Software/Internationalization}{this link} for a discussion of problems with internationalization). Instead, a manual in the desired language can contain a list of error codes. 
-\vspace{2mm}
+\vv
 
 The error message string may include numerical values and diagnostic information, such as the value of a parameter that is out of range.
-\vspace{2mm}
+\vv
 
 The error\_message function may or may not return. If it returns then the function that called it must return in a graceful way. The error\_message function may alternatively terminate the application or it may raise an exception or trap which is handled by the operating system in case the exception is not caught by the program. 
-\vspace{2mm}
+\vv
 
  
 \end{document}
