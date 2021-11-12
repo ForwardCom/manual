@@ -7,10 +7,10 @@
 \label{chap:DescriptionOfInstructions}
 \vv
 
-\subsection{Data move and conversion instructions}
+\section{Data move and conversion instructions}
 \vv
 
-\subsubsection{broad}
+\subsection{broad}
 
 \label{table:broadInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
@@ -35,7 +35,7 @@ This instruction can have a mask but not a fallback register. The fallback value
 (This instruction is not called broadcast because that is a reserved keyword).
 
 
-\subsubsection{broadcast\_max}
+\subsection{broadcast\_max}
 
 \label{table:broadcastMaxInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
@@ -52,7 +52,7 @@ Broadcast a small constant to all elements of a vector with maximum length.
 \vv
 
 
-\subsubsection{compress}
+\subsection{compress}
 \label{table:compressInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -113,7 +113,7 @@ NANs are converted by preserving the least significant bits of the payload and t
 \vv
 
 
-\subsubsection{compress\_sparse}
+\subsection{compress\_sparse}
 \label{table:compressSparseInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -139,7 +139,7 @@ This instruction cannot have a fallback register.
 \vv
 
 
-\subsubsection{concatenate}
+\subsection{concatenate}
 \label{table:concatenateInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -159,7 +159,7 @@ of length 2$\cdot$r3, with v2 in the high end.
 This instruction cannot have a mask.
 \vv
 
-\subsubsection{expand}
+\subsection{expand}
 \label{table:expandInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -192,7 +192,7 @@ bit 0-1 & integer options: \newline
 \vv
 
 
-\subsubsection{expand\_sparse}
+\subsection{expand\_sparse}
 \label{table:expandSparseInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -226,7 +226,7 @@ times the element size. This instruction cannot have a fallback register.
 \vv
 
 
-\subsubsection{extract}
+\subsection{extract}
 \label{table:extractInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -252,7 +252,7 @@ This instruction cannot have a mask.
 \vv
 
 
-\subsubsection{float2int}
+\subsection{float2int}
 \label{table:extractInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -298,7 +298,7 @@ To check for overflow: Compare the results for overflow gives zero and overflow 
 To check if the result is exact: Compare the results for round down and round up.
 
 
-\subsubsection{get\_len}
+\subsection{get\_len}
 \label{table:getLenInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -312,7 +312,7 @@ Get length in bytes of vector register RT into general purpose register RD.
 
 This instruction cannot have a mask.
 
-\subsubsection{get\_num}
+\subsection{get\_num}
 \label{table:getNumInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -326,7 +326,7 @@ Get the number of elements in vector register RT into general purpose register R
 
 This instruction cannot have a mask.
 
-\subsubsection{gp2vec}
+\subsection{gp2vec}
 \label{table:gp2vecInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -343,7 +343,7 @@ scalar in vector register RD.
 \vv
 
 
-\subsubsection{insert}
+\subsection{insert}
 \label{table:insertInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -369,7 +369,7 @@ An index out of range will leave the vector unchanged. An operand size of 128 bi
 This instruction cannot have a mask.
 \vv
 
-\subsubsection{insert\_hi}
+\subsection{insert\_hi}
 \label{table:insertHiInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -394,7 +394,7 @@ dest[0] = src1[0], dest[1] = IM2.
 \vv
 
 
-\subsubsection{int2float}
+\subsection{int2float}
 \label{table:int2floatInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -423,8 +423,7 @@ Options are coded in IM1:
 \vv
 
 
-
-\subsubsection{interleave}
+\subsection{interleave}
 \label{table:interleaveInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -442,7 +441,7 @@ Interleave the inputs from two vectors, v1 and v2, so that the even-numbered ele
 This instruction can have a mask but not a fallback register. The fallback value is zero.
 \vv
 
-\subsubsection{load\_hi}
+\subsection{load\_hi}
 \label{table:loadHiInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -457,7 +456,7 @@ float v0 = load\_hi(1.2)
 Make vector of two elements. dest[0] = 0, dest[1] = IM2.
 \vv
 
-\subsubsection{move}
+\subsection{move}
 \label{table:moveInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -483,7 +482,7 @@ The move instruction with an immediate operand is the preferred method for setti
 \vv
 
 
-\subsubsection{permute}
+\subsection{permute}
 \label{table:permuteInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -523,7 +522,7 @@ Permute instructions can also be used for parallel table lookup when the block s
 Finally, permute instructions can be used for gathering and scattering data within an area not bigger than the vector length or the block size.
 \vv
 
-\subsubsection{read\_insert}
+\subsection{read\_insert}
 \label{table:readInsertInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -541,7 +540,7 @@ at offset RT$\cdot$OS, with scalar memory operand
 
 (OS = operand size).
 
-\subsubsection{repeat\_block}
+\subsection{repeat\_block}
 \label{table:repeatBlockInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -559,7 +558,7 @@ Repeat a block of data to make a longer vector. This is the same as broadcast, b
 This instruction cannot have a mask.
 \vv
 
-\subsubsection{repeat\_within\_blocks}
+\subsection{repeat\_within\_blocks}
 \label{table:repeatWithinBlockInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -580,7 +579,7 @@ For example, if the input vector contains (0,1,2,3,4,5,6,7,8) and the block size
 This instruction cannot have a mask.
 \vv
 
-\subsubsection{replace}
+\subsection{replace}
 \label{table:replaceInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -601,9 +600,9 @@ When used without a mask, the constant is simply broadcast to make a vector of t
 \vv
 
 When used with a mask, the elements of src1 are selectively replaced. Elements that are not selected by the mask will be taken from a fallback register.
+\vv
 
-
-\subsubsection{replace\_even}
+\subsection{replace\_even}
 \label{table:replaceEvenInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -613,8 +612,9 @@ When used with a mask, the elements of src1 are selectively replaced. Elements t
 \vv
 
 Same as replace. Only even-numbered vector elements are replaced.
+\vv
 
-\subsubsection{replace\_odd}
+\subsection{replace\_odd}
 \label{table:replaceOddInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -624,9 +624,9 @@ Same as replace. Only even-numbered vector elements are replaced.
 \vv
 
 Same as replace. Only odd-numbered vector elements are replaced.
+\vv
 
-
-\subsubsection{set\_len}
+\subsection{set\_len}
 \label{table:setLenInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -647,7 +647,7 @@ If the output vector is longer than the input vector then the extra elements wil
 This instruction cannot have a mask.
 \vv
 
-\subsubsection{set\_num}
+\subsection{set\_num}
 \label{table:setNumInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -666,7 +666,7 @@ This instruction differs from set\_len by multiplying the length by the operand 
  This instruction cannot have a mask.
 
 
-\subsubsection{shift\_down}
+\subsection{shift\_down}
 \label{table:shiftDownInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -688,7 +688,7 @@ This instruction differs from shift\_reduce by indicating the shift count as a n
 This instruction cannot have a mask.
 \vv
 
-\subsubsection{shift\_expand}
+\subsection{shift\_expand}
 \label{table:shiftExpandInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -706,7 +706,7 @@ The length of a vector is expanded by the specified number of bytes by adding ze
 This instruction cannot have a mask.
 \vv
 
-\subsubsection{shift\_reduce}
+\subsection{shift\_reduce}
 \label{table:shiftReduceInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -724,7 +724,7 @@ The length of a vector is reduced by the specified number of bytes by removing b
 This instruction cannot have a mask.
 \vv
 
-\subsubsection{shift\_up}
+\subsection{shift\_up}
 \label{table:shiftUpInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -746,7 +746,7 @@ This instruction differs from shift\_expand by indicating the shift count as a n
 This instruction cannot have a mask.
 \vv
 
-\subsubsection{sign\_extend}
+\subsection{sign\_extend}
 \label{table:signExtendInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -765,7 +765,7 @@ Sign-extend smaller integer to 64 bits.
 \vv
 The input can be an 8-bit, 16-bit or 32-bit integer. This integer is sign-extended to produce a 64-bit output in a general purpose register or a scalar in a vector register. If the input is a vector then only the first element in each 64-bit block of the input vector is used. Floating point types cannot be used.
 
-\subsubsection{sign\_extend\_add}
+\subsection{sign\_extend\_add}
 \label{table:signExtendAddInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -794,7 +794,7 @@ This instruction will not generate traps in case of signed or unsigned overflow.
 \vv
 
 
-\subsubsection{vec2gp}
+\subsection{vec2gp}
 \label{table:vec2gpInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -810,10 +810,10 @@ Copy value of first element of vector register RS to general purpose register RD
 \vv
 
 
-\subsection{Data read and write instructions}
+\section{Data read and write instructions}
 \vv
 
-\subsubsection{address}
+\subsection{address}
 \label{table:addressInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -831,8 +831,7 @@ Gives the address of a data object in static memory.
 The value must be shifted two places to the right if used as the target for a jump or call instruction, because code addresses are based on 32-bit words rather than bytes.
 \vv
 
-
-\subsubsection{clear}
+\subsection{clear}
 \label{table:clearInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -852,7 +851,7 @@ It may be advantageous to clear vector registers after use. This will mean that 
 \vv
 
 
-\subsubsection{extract\_store}
+\subsection{extract\_store}
 \label{table:extractStoreInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -869,7 +868,7 @@ Extract one element from vector RD, starting at offset RT$\cdot$OS, with size OS
 (OS = operand size).
 
 
-\subsubsection{fence}
+\subsection{fence}
 \label{table:fenceInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -897,11 +896,11 @@ Options indicated by IM1:
 \end{longtable}
 \vv
 
-\subsubsection{move}
+\subsection{move}
 The move instruction, described at page \pageref{table:moveInstruction}
 can read a register from a memory operand.
 
-\subsubsection{pop}
+\subsection{pop}
 \label{table:popInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -935,7 +934,7 @@ See the push instruction on page \pageref{table:pushInstruction} for more detail
 \vv
 
 
-\subsubsection{prefetch}
+\subsection{prefetch}
 \label{table:prefetchInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -949,7 +948,7 @@ Different variants (not yet defined) can be specified by option bits in IM3 for 
 \vv
 
 
-\subsubsection{push}
+\subsection{push}
 \label{table:pushInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -987,7 +986,7 @@ See also the pop instruction on page \pageref{table:popInstruction} for more det
 \vv
 
 
-\subsubsection{store}
+\subsection{store}
 \label{table:storeInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1019,9 +1018,9 @@ Masked operation with a mask of zero will leave the corresponding memory element
 \vv
 
 
-\subsection{General arithmetic instructions}
+\section{General arithmetic instructions}
 
-\subsubsection{abs}
+\subsection{abs}
 \label{table:absInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1053,7 +1052,7 @@ The handling of overflow for signed integers is controlled by the constant IM1 a
 \vv
 
 
-\subsubsection{add}
+\subsection{add}
 \label{table:addInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1086,9 +1085,9 @@ Addition.
 \vv
 
 If you want to add a 64-bit constant to a general purpose register, and triple size instructions are not supported, then add the lower half first using the zero-extended version, and then add the upper half using the shifted version.
+\vv
 
-
-\subsubsection{add\_add}
+\subsection{add\_add}
 \label{table:addAddInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1128,8 +1127,7 @@ There is no sign change if there are no option bits.
 This instruction may be supported for integer operands or floating point or both.
 \vv
 
-
-\subsubsection{compare} \label{compare}
+\subsection{compare} \label{compare}
 \label{table:compareInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1200,8 +1198,7 @@ This option is controlled by option bits 4-5:
 \end{longtable}
 \vv
 
-
-\subsubsection{div}
+\subsection{div}
 \label{table:divInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1252,7 +1249,7 @@ Overflow occurs by division of INT\_MIN by -1. The result will wrap around to gi
 \vv
 
 
-\subsubsection{div\_rev}
+\subsection{div\_rev}
 \label{table:divRevInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1271,7 +1268,7 @@ The rounding mode is controlled in the same way as for the div instruction.
 \vv
 
 
-\subsubsection{div\_u}
+\subsection{div\_u}
 \label{table:divUInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1293,7 +1290,7 @@ Division by zero gives UINT\_MAX.
 \vv
 
 
-\subsubsection{div\_ex}
+\subsection{div\_ex}
 \label{table:divExInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1308,7 +1305,7 @@ elements of RT with size OS. The truncated results are stored in the even-number
 \vv
 
 
-\subsubsection{div\_ex\_u}
+\subsection{div\_ex\_u}
 \label{table:divExUInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1322,7 +1319,7 @@ Divide vector of double-size unsigned integers RS by unsigned integers RT. RS ha
 \vv
 
 
-\subsubsection{max}
+\subsection{max}
 \label{table:maxInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1347,7 +1344,7 @@ The handling of floating point NAN operands follows the definition of the maximu
 \vv
 
 
-\subsubsection{max\_abs}
+\subsection{max\_abs}
 \label{table:maxAbsInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1369,7 +1366,7 @@ NAN values are treated in the same way as for the max instruction.
 \vv
 
 
-\subsubsection{max\_u}
+\subsection{max\_u}
 \label{table:maxUInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1388,7 +1385,7 @@ max\_u(src1,src2) = src1 \textgreater{} src2 ? src1 : src2
 \vv
 
 
-\subsubsection{min}
+\subsection{min}
 \label{table:minInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1413,7 +1410,7 @@ The handling of floating point NAN operands follows the definition of the minimu
 \vv
 
 
-\subsubsection{min\_abs}
+\subsection{min\_abs}
 \label{table:minAbsInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1435,7 +1432,7 @@ NAN values are treated in the same way as for the min instruction.
 \vv
 
 
-\subsubsection{min\_u}
+\subsection{min\_u}
 \label{table:minUInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1454,7 +1451,7 @@ min\_u(src1,src2) = src1 \textless{} src2 ? src1 : src2
 \vv
 
 
-\subsubsection{mul}
+\subsection{mul}
 \label{table:mulInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1479,7 +1476,7 @@ The same instruction can be used for signed and unsigned integers.
 \vv
 
 
-\subsubsection{mul\_add, mul\_add2}
+\subsection{mul\_add, mul\_add2}
 \label{table:mulAddInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1523,7 +1520,7 @@ Support for integer operands is optional. Support for floating point operands is
 \vv
 
 
-\subsubsection{mul\_ex}
+\subsection{mul\_ex}
 \label{table:mulExInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1542,7 +1539,7 @@ Multiply even-numbered signed integer vector elements to double size result. The
 \vv
 
 
-\subsubsection{mul\_ex\_u}
+\subsection{mul\_ex\_u}
 \label{table:mulExUInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1561,7 +1558,7 @@ Multiply even-numbered unsigned integer vector elements to double size result. T
 \vv
 
 
-\subsubsection{mul\_hi}
+\subsection{mul\_hi}
 \label{table:mulHiInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1583,7 +1580,7 @@ dest = (src1 $\cdot$ src2) $>>$ OS
 \vv
 
 
-\subsubsection{mul\_hi\_u}
+\subsection{mul\_hi\_u}
 \label{table:mulHiUInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1604,7 +1601,7 @@ dest = (src1 $\cdot$ src2) $>>$ OS
 \vv
 
 
-\subsubsection{mul\_2pow}
+\subsection{mul\_2pow}
 \label{table:mul2PosInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1630,7 +1627,7 @@ This instruction has the same op1 code as shift\_left, but applies to floating p
 \vv
 
 
-\subsubsection{rem}
+\subsection{rem}
 \label{table:remInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1654,7 +1651,7 @@ An integer modulo zero gives zero.
 \vv
 
 
-\subsubsection{rem\_u}
+\subsection{rem\_u}
 \label{table:remUInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1673,7 +1670,7 @@ An integer modulo zero gives zero.
 \vv
 
 
-\subsubsection{round}
+\subsection{round}
 \label{table:roundInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1692,7 +1689,7 @@ The rounding mode is specified in bit 0-1 of IM1. See table \ref{table:maskBits}
 \vv
 
 
-\subsubsection{roundp2}
+\subsection{roundp2}
 \label{table:roundP2Instruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1726,7 +1723,7 @@ bit 5 & 0: returns 0 if the result overflows.\newline
 \vv
 
 
-\subsubsection{round2n}
+\subsection{round2n}
 \label{table:round2nInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1746,7 +1743,7 @@ n is a signed integer constant in IM1.
 \vv
 
 
-\subsubsection{sqrt}
+\subsection{sqrt}
 \label{table:sqrtInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1759,7 +1756,7 @@ Square root.
 \vv
 
 
-\subsubsection{sub}
+\subsection{sub}
 \label{table:subInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1781,7 +1778,7 @@ Subtraction.
 \vv
 
 
-\subsubsection{sub\_rev}
+\subsection{sub\_rev}
 \label{table:subRevInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1803,15 +1800,15 @@ dest = src2 - src1.
 \vv
 
 
-\subsection{Arithmetic instructions with carry, overflow check, or saturation}
+\section{Arithmetic instructions with carry, overflow check, or saturation}
 These instructions do not generate traps on overflow because they provide alternative ways of handling overflow.
 \vv
 
-\subsubsection{abs}
+\subsection{abs}
 see page \pageref{table:absInstruction}.
 \vv
 
-\subsubsection{add\_c}
+\subsection{add\_c}
 \label{table:addCInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1830,7 +1827,7 @@ Longer vectors are not supported. See page
 \pageref{highPrecisionArithmetic} for an alternative for longer vectors.
 \vv
 
-\subsubsection{add\_oc}
+\subsection{add\_oc}
 \label{table:addOcInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1856,7 +1853,7 @@ bit 1. Signed integer overflow.
 The values are propagated so that the overflow result of the operation is OR'ed with the corresponding values of both input operands.
 \vv
 
-\subsubsection{add\_ss}
+\subsection{add\_ss}
 \label{table:addSsInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1870,7 +1867,7 @@ Add signed integers with saturation.
 Overflow and underflow produces INT\_MAX and INT\_MIN.
 \vv
 
-\subsubsection{add\_us}
+\subsection{add\_us}
 \label{table:addUsInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1884,7 +1881,7 @@ Add unsigned integers with saturation.
 Overflow produces UINT\_MAX.
 \vv
 
-\subsubsection{compress\_ss}
+\subsection{compress\_ss}
 \label{table:compressSsInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1900,7 +1897,7 @@ Same as compress (see page \pageref{table:compressInstruction}). Integers are tr
 Masks cannot be used and overflow traps cannot be enabled for this instruction.
 \vv
 
-\subsubsection{compress\_us}
+\subsection{compress\_us}
 \label{table:compressUsInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1917,7 +1914,7 @@ Masks cannot be used and overflow traps cannot be enabled for this instruction.
 \vv
 
 
-\subsubsection{div\_oc}
+\subsection{div\_oc}
 \label{table:divOcInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1931,7 +1928,7 @@ Divide signed integers with overflow check.
 See add\_oc for options.
 \vv
 
-\subsubsection{mul\_oc}
+\subsection{mul\_oc}
 \label{table:mulOcInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1945,7 +1942,7 @@ Multiply integers with overflow check.
 See add\_oc for options.
 \vv
 
-\subsubsection{mul\_ss}
+\subsection{mul\_ss}
 \label{table:mulSsInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1959,7 +1956,7 @@ Multiply signed integers with saturation.
 Overflow and underflow produces INT\_MAX and INT\_MIN.
 \vv
 
-\subsubsection{mul\_us}
+\subsection{mul\_us}
 \label{table:mulUsInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1973,7 +1970,7 @@ Multiply unsigned integers with saturation.
 Overflow produces UINT\_MAX.
 \vv
 
-\subsubsection{sub\_b}
+\subsection{sub\_b}
 \label{table:subBInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -1992,7 +1989,7 @@ Longer vectors are not supported. See page
 \pageref{highPrecisionArithmetic} for an alternative for longer vectors.
 \vv
 
-\subsubsection{sub\_oc}
+\subsection{sub\_oc}
 \label{table:subOcInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2006,7 +2003,7 @@ Subtract integers with overflow check.
 See add\_oc for options.
 \vv
 
-\subsubsection{sub\_ss}
+\subsection{sub\_ss}
 \label{table:subSsInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2020,7 +2017,7 @@ Subtract signed integers with saturation.
 Overflow and underflow produces INT\_MAX and INT\_MIN.
 \vv
 
-\subsubsection{sub\_us}
+\subsection{sub\_us}
 \label{table:subUsInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2034,9 +2031,9 @@ Subtract unsigned integers with saturation.
 Overflow and underflow produces UINT\_MAX and 0.
 \vv
 
-\subsection{Logic and bit manipulation instructions}
+\section{Logic and bit manipulation instructions}
 
-\subsubsection{and}
+\subsection{and}
 \label{table:andInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2063,7 +2060,7 @@ Floating point operands are treated as integers.
 Do not use a floating point type with a constant operand unless you want the operand to be interpreted as floating point.
 \vv
 
-\subsubsection{or}
+\subsection{or}
 \label{table:orInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2090,7 +2087,7 @@ Floating point operands are treated as integers.
 Do not use a floating point type with a constant operand unless you want the operand to be interpreted as floating point.
 \vv
 
-\subsubsection{xor}
+\subsection{xor}
 \label{table:xorInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2117,7 +2114,7 @@ Floating point operands are treated as integers.
 Do not use a floating point type with a constant operand unless you want the operand to be interpreted as floating point.
 \vv
 
-\subsubsection{bit\_reverse byte\_reverse}
+\subsection{bit\_reverse byte\_reverse}
 \label{table:bitReverseInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2135,7 +2132,7 @@ IM1 = 1: Reverse the order of bits in each element of a vector.
 \vv
 
 
-\subsubsection{bits2bool}
+\subsection{bits2bool}
 \label{table:bits2boolInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2157,7 +2154,7 @@ The length in bytes of the result vector is specified by a general purpose regis
 This instruction cannot have a fallback register.
 \vv
 
-\subsubsection{bitscan}
+\subsection{bitscan}
 \label{table:bitscanInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2187,7 +2184,7 @@ bit 4 & 0: returns  0 if the input is 0.\newline
 \vv
 
 
-\subsubsection{bool\_reduce}
+\subsection{bool\_reduce}
 \label{table:boolReduceInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2208,7 +2205,7 @@ This instruction cannot have a mask.
 \vv
 
 
-\subsubsection{bool2bits}
+\subsection{bool2bits}
 \label{table:bool2bitsInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2228,7 +2225,7 @@ This instruction cannot have a mask.
 \vv
 
 
-\subsubsection{category\_reduce}
+\subsection{category\_reduce}
 \label{table:categoryReduceInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2262,7 +2259,7 @@ This instruction cannot have a mask.
 \vv
 
 
-\subsubsection{clear\_bit}
+\subsection{clear\_bit}
 \label{table:clearBitInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2281,7 +2278,7 @@ Floating point operands are treated as integers.
 \vv
 
 
-\subsubsection{set\_bit}
+\subsection{set\_bit}
 \label{table:setBitInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2297,7 +2294,7 @@ dest = src1 $|$ (1 $<<$ src2)
 \vv
 
 
-\subsubsection{toggle\_bit}
+\subsection{toggle\_bit}
 \label{table:toggleBitInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2313,12 +2310,12 @@ dest = src1 \^{} (1 $<<$ src2)
 \vv
 
 
-\subsubsection{compare}
+\subsection{compare}
 See page \pageref{table:compareInstruction}
 \vv
 
 
-\subsubsection{fp\_category}
+\subsection{fp\_category}
 \label{table:fpCategoryInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2354,7 +2351,7 @@ Any floating point value will belong to one, and only one, of these categories.
 \vv
 
 
-\subsubsection{make\_mask}
+\subsection{make\_mask}
 \label{table:makeMaskInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2370,7 +2367,7 @@ Make a mask from the bits of the 32-bit integer constant src2. Each bit of the c
 The length of the output is the same as the length of src1. If there are more than 32 elements in the vector then the bit pattern of src2 is repeated.
 \vv
 
-\subsubsection{make\_sequence}
+\subsection{make\_sequence}
 \label{table:makeSequenceInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2387,7 +2384,7 @@ The first element is equal to the immediate operand IM1, the next element is IM1
 \vv
 
 
-\subsubsection{mask\_length}
+\subsection{mask\_length}
 \label{table:maskLengthInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2420,7 +2417,7 @@ This instruction can have a mask but not a fallback register. The fallback value
 \vv
 
 
-\subsubsection{move\_bits}
+\subsection{move\_bits}
 \label{table:moveBitsInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2462,7 +2459,7 @@ int16 r0 = move\_bits(r1, r2, 8, 8, 4) // = 0x1B34 \\
 \vv
 
 
-\subsubsection{popcount}
+\subsection{popcount}
 \label{table:popcountInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2480,7 +2477,7 @@ The popcount instruction counts the number of 1-bits in an integer. It can also 
 \vv
 
 
-\subsubsection{rotate}
+\subsection{rotate}
 \label{table:rotateInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2496,7 +2493,7 @@ Rotate the bits of src1 left if src2 is positive, or right if src2 is negative.
 \vv
 
 
-\subsubsection{shift\_left}
+\subsection{shift\_left}
 \label{table:shiftLeftInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2517,7 +2514,7 @@ This instruction has the same op1 code as mul\_2pow, but applies to integer oper
 \vv
 
 
-\subsubsection{shift\_right\_s}
+\subsection{shift\_right\_s}
 \label{table:shiftRightSInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2537,7 +2534,7 @@ The result is 0 or -1 if src2 is outside the range 0 $\leq$ src2 $<$ number\_of\
 \vv
 
 
-\subsubsection{shift\_right\_u}
+\subsection{shift\_right\_u}
 \label{table:shiftRightUInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2556,7 +2553,7 @@ The result is zero if src2 is outside the range 0 $\leq$ src2 $<$ number\_of\_bi
 \vv
 
 
-\subsubsection{funnel\_shift}
+\subsection{funnel\_shift}
 \label{table:funnelShiftInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2592,7 +2589,7 @@ A funnel shift in the opposite direction can be made by swapping the first two o
 \vv
 
 
-\subsubsection{select\_bits}
+\subsection{select\_bits}
 \label{table:selectBitsInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2611,7 +2608,7 @@ This instruction combines bits from the first two source operands, using the thi
 \vv
 
 
-\subsubsection{test\_bit}
+\subsection{test\_bit}
 \label{table:testBitInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2686,7 +2683,7 @@ The remaining bits are copied from the mask register if option bit 5 is set, or 
 \vv
 
 
-\subsubsection{test\_bits\_and}
+\subsection{test\_bits\_and}
 \label{table:testBitsAndInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2711,7 +2708,7 @@ The remaining bits are copied from the mask register if option bit 5 is set, or 
 \vv
 
 
-\subsubsection{test\_bits\_or}
+\subsection{test\_bits\_or}
 \label{table:testBitsOrInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2736,7 +2733,7 @@ The remaining bits are copied from the mask register if option bit 5 is set, or 
 \vv
 
 
-\subsubsection{truth\_tab3}
+\subsection{truth\_tab3}
 \label{table:truthTab3Instruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -2776,7 +2773,7 @@ This instruction can also be used for manipulating masks where only bit 0 contai
 \vv
 
 
-\subsection{Combined arithmetic/logic and branch instructions with integer operands}
+\section{Combined arithmetic/logic and branch instructions with integer operands}
 \label{descriptionOfControlTransferInstructions}
 These instructions are doing an arithmetic or logic operation and a conditional jump
 depending on the result. Each instruction can be coded in a number of different formats
@@ -2791,7 +2788,7 @@ The destination operand, if any, should preferably be the same as the first sour
 \vv
 
 
-\subsubsection{add/jump\_zero}
+\subsection{add/jump\_zero}
 \label{table:addJumpZeroInstruction}
 \begin{tabular}{|p{16mm}|p{12mm}|p{60mm}|p{50mm}|}
 \hline
@@ -2804,7 +2801,7 @@ all & 17 & add/jump\_nzero & integer\\ \hline
 Add two integer operands and jump if the result is zero.
 
 
-\subsubsection{add/jump\_neg}
+\subsection{add/jump\_neg}
 \label{table:addJumpNegInstruction}
 \begin{tabular}{|p{16mm}|p{12mm}|p{60mm}|p{50mm}|}
 \hline
@@ -2819,7 +2816,7 @@ Add two integer operands and jump if the signed result is negative.
 The result will wrap around in the case of overflow and jump if the result has the sign bit set.
 
 
-\subsubsection{add/jump\_pos}
+\subsection{add/jump\_pos}
 \label{table:addJumpPosInstruction}
 \begin{tabular}{|p{16mm}|p{12mm}|p{60mm}|p{50mm}|}
 \hline
@@ -2834,7 +2831,7 @@ Add two integer operands and jump if the signed result is positive.
 The result will wrap around in the case of overflow and jump if the result is not zero and does not have the sign bit set.
 
 
-\subsubsection{add/jump\_overflow}
+\subsection{add/jump\_overflow}
 \label{table:addJumpOverflInstruction}
 \begin{tabular}{|p{16mm}|p{12mm}|p{60mm}|p{50mm}|}
 \hline
@@ -2848,7 +2845,7 @@ Add two signed integer operands and jump if the result overflows.
 \vv
 
 
-\subsubsection{add/jump\_carry}
+\subsection{add/jump\_carry}
 \label{table:addJumpCarryInstruction}
 \begin{tabular}{|p{16mm}|p{12mm}|p{60mm}|p{50mm}|}
 \hline
@@ -2862,7 +2859,7 @@ Add two unsigned integer operands and jump if the operation produces a carry.
 \vv
 
 
-\subsubsection{increment\_compare/jump\_above/below}
+\subsection{increment\_compare/jump\_above/below}
 \label{table:addJumpInstruction}
 \begin{tabular}{|p{16mm}|p{12mm}|p{60mm}|p{50mm}|}
 \hline
@@ -2881,7 +2878,7 @@ The result will wrap around from INT\_MAX to INT\_MIN in case of overflow.
 \vv
 
 
-\subsubsection{sub/jump\_zero}
+\subsection{sub/jump\_zero}
 \label{table:subJumpZeroInstruction}
 \begin{tabular}{|p{20mm}|p{12mm}|p{56mm}|p{50mm}|}
 \hline
@@ -2897,7 +2894,7 @@ Subtract two integer operands and jump if the result is zero.
 Immedate constants are not supported. The assembler will automatically convert a sub/jump\_zero instruction to an add/jump\_zero instruction with the negative constant.
 \vv
 
-\subsubsection{sub/jump\_neg}
+\subsection{sub/jump\_neg}
 \label{table:subJumpNegInstruction}
 \begin{tabular}{|p{20mm}|p{12mm}|p{56mm}|p{50mm}|}
 \hline
@@ -2915,7 +2912,7 @@ The result will wrap around in the case of overflow and jump if the result has t
 Immedate constants are not supported. The assembler will automatically convert a sub/jump\_neg instruction to an add/jump\_neg instruction with the negative constant.
 \vv
 
-\subsubsection{sub/jump\_pos}
+\subsection{sub/jump\_pos}
 \label{table:subJumpPosInstruction}
 \begin{tabular}{|p{20mm}|p{12mm}|p{56mm}|p{50mm}|}
 \hline
@@ -2933,7 +2930,7 @@ The result will wrap around in the case of overflow and jump if the result is no
 Immedate constants are not supported. The assembler will automatically convert a sub/jump\_pos instruction to an add/jump\_pos instruction with the negative constant.
 \vv
 
-\subsubsection{sub/jump\_overflow}
+\subsection{sub/jump\_overflow}
 \label{table:subJumpOverflInstruction}
 \begin{tabular}{|p{20mm}|p{12mm}|p{56mm}|p{50mm}|}
 \hline
@@ -2949,7 +2946,7 @@ Subtract two signed integer operands and jump if the result overflows.
 Immedate constants are not supported. The assembler will automatically convert a sub/jump\_overflow instruction to an add/jump\_overflow instruction with the negative constant.
 \vv
 
-\subsubsection{sub/jump\_borrow}
+\subsection{sub/jump\_borrow}
 \label{table:subJumpBorrowInstruction}
 \begin{tabular}{|p{20mm}|p{12mm}|p{56mm}|p{50mm}|}
 \hline
@@ -2965,7 +2962,7 @@ Subtract two unsigned integer operands and jump if the operation produces a borr
 Immedate constants are not supported. The assembler will automatically convert a sub/jump\_borrow instruction to an add/jump\_borrow instruction with the negative constant.
 \vv
 
-\subsubsection{sub\_maxlen/jump\_pos}
+\subsection{sub\_maxlen/jump\_pos}
 \label{table:subMaxlenJumpPosInstruction}
 \begin{tabular}{|p{24mm}|p{12mm}|p{52mm}|p{50mm}|}
 \hline
@@ -2983,7 +2980,7 @@ This instruction makes it easy to implement the type of vector loop described on
 \vv
 
 
-\subsubsection{and/jump\_zero}
+\subsection{and/jump\_zero}
 \label{table:andJumpZeroInstruction}
 \begin{tabular}{|p{16mm}|p{12mm}|p{60mm}|p{50mm}|}
 \hline
@@ -3005,7 +3002,7 @@ All operands are treated as integers.
 Floating point operands are treated as unsigned integer scalars in vector registers.
 \vv
 
-\subsubsection{or/jump\_zero}
+\subsection{or/jump\_zero}
 \label{table:orJumpZeroInstruction}
 \begin{tabular}{|p{16mm}|p{12mm}|p{60mm}|p{50mm}|}
 \hline
@@ -3027,7 +3024,7 @@ All operands are treated as integers.
 Floating point operands are treated as unsigned integer scalars in vector registers.
 \vv
 
-\subsubsection{xor/jump\_zero}
+\subsection{xor/jump\_zero}
 \label{table:xorJumpZeroInstruction}
 \begin{tabular}{|p{16mm}|p{12mm}|p{60mm}|p{50mm}|}
 \hline
@@ -3049,7 +3046,7 @@ All operands are treated as integers.
 Floating point operands are treated as unsigned integer scalars in vector registers.
 
 
-\subsubsection{test\_bit/jump\_true}
+\subsection{test\_bit/jump\_true}
 \label{table:testBitJumpTrueInstruction}
 \begin{tabular}{|p{16mm}|p{12mm}|p{60mm}|p{50mm}|}
 \hline
@@ -3074,7 +3071,7 @@ Floating point operands are treated as integer scalars in vector registers.
 \vv
 
 
-\subsubsection{test\_bits\_and/jump\_true}
+\subsection{test\_bits\_and/jump\_true}
 \label{table:testBitsAndJumpInstruction}
 \begin{tabular}{|p{16mm}|p{12mm}|p{60mm}|p{50mm}|}
 \hline
@@ -3099,7 +3096,7 @@ Floating point operands are treated as integer scalars in vector registers.
 \vv
 
 
-\subsubsection{test\_bits\_or/jump\_true}
+\subsection{test\_bits\_or/jump\_true}
 \label{table:testBitsOrJumpInstruction}
 \begin{tabular}{|p{16mm}|p{12mm}|p{60mm}|p{50mm}|}
 \hline
@@ -3124,7 +3121,7 @@ Floating point operands are treated as integer scalars in vector registers.
 \vv
 
 
-\subsubsection{integer compare and branch instructions}
+\subsection{integer compare and branch instructions}
 int64 compare(r1, r2), jump\_equal target
 \vv
 
@@ -3150,7 +3147,7 @@ Overflow cannot occur.
 \vv
 
 
-\subsection{floating point branch instructions}
+\section{floating point branch instructions}
 The conditional jump instructions use general purpose registers for integer operands with at most 64 bits, and vector registers when a floating point type is specified. Only the first element of a floating point vector is used.
 \vv
 
@@ -3158,7 +3155,7 @@ Addition and subtraction instructions with conditional branching do not support 
 \vv
 
 
-\subsubsection{floating point compare and branch instructions}
+\subsection{floating point compare and branch instructions}
 double compare(v1, v2), jump\_above target
 \vv
 
@@ -3209,12 +3206,12 @@ The fp\_category/jump\_true instruction tests if the value of the first operand 
 \vv
 
 
-\subsection{Unconditional and indirect jump, call, and return instructions}
+\section{Unconditional and indirect jump, call, and return instructions}
 Control transfer instructions are available in a number of different formats, described on 
 page \pageref{table:jumpInstructionFormats}.
 
 
-\subsubsection{Direct jump}
+\subsection{Direct jump}
 \label{table:jumpInstruction}
 \begin{tabular}{|p{14mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3229,7 +3226,7 @@ page \pageref{table:jumpInstructionFormats}.
 Unconditional jump.
 
 
-\subsubsection{Direct function call}
+\subsection{Direct function call}
 \label{table:callInstruction}
 \begin{tabular}{|p{14mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3247,7 +3244,7 @@ Function call.
 The return address is stored on the call stack. The calling conventions are described in chapter \ref{chap:functionCallingConventions}.
 
 
-\subsubsection{Indirect jump}
+\subsection{Indirect jump}
 
 \label{table:indirectJumpInstruction}
 \begin{tabular}{|p{14mm}|p{12mm}|p{110mm}|}
@@ -3261,7 +3258,7 @@ The return address is stored on the call stack. The calling conventions are desc
 \vv
 
 
-\subsubsection{Indirect call}
+\subsection{Indirect call}
 \label{table:IndirectCallInstruction}
 \begin{tabular}{|p{14mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3274,7 +3271,7 @@ The return address is stored on the call stack. The calling conventions are desc
 \vv
 
 
-\subsubsection{Relative and multi-way jump and call}
+\subsection{Relative and multi-way jump and call}
 \label{table:multiwayJumpCallInstructions}
 \begin{tabular}{|p{14mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3308,7 +3305,7 @@ These instructions cannot have a mask and will not generate overflow traps in ca
 \vv
 
 
-\subsubsection{return}
+\subsection{return}
 \label{table:returnInstruction}
 \begin{tabular}{|p{14mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3323,7 +3320,7 @@ Return from function call. The return address is taken from the call stack.
 Return instructions do not need a stack offset when the calling conventions specified in chapter \ref{chap:functionCallingConventions} are used.
 
 
-\subsubsection{breakpoint}
+\subsection{breakpoint}
 \label{table:breakpointInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3338,7 +3335,7 @@ This instruction is used as a debug breakpoint.
 It is the same as trap(1). The complete instruction code word is 0x7FE00001.
 \vv
 
-\subsubsection{filler}
+\subsection{filler}
 \label{table:fillerInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3354,14 +3351,14 @@ All fields are filled with ones. The complete instruction code word is 0x7FFFFFF
 \vv
 
 
-\subsubsection{System call, system return, and traps}
+\subsection{System call, system return, and traps}
 See page \pageref{table:sysCallInstruction}.
 \vv
 
 
-\subsection{Miscellaneous instructions}
+\section{Miscellaneous instructions}
 
-\subsubsection{address}
+\subsection{address}
 \label{table:addressInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3377,7 +3374,7 @@ Calculate an address relative to a pointer by adding a 32-bit sign-extended cons
 \vv
 
 
-\subsubsection{compare\_swap}
+\subsection{compare\_swap}
 \label{table:compareSwapInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3404,7 +3401,7 @@ Further atomic instructions can be implemented if needed, preferably with the sa
 \vv
 
 
-\subsubsection{nop}
+\subsection{nop}
 \label{table:nopInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3424,7 +3421,7 @@ The processor is allowed to skip NOPs as fast as it can at an early stage in the
 \vv
 
 
-\subsubsection{undef}
+\subsection{undef}
 \label{table:undefInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3436,7 +3433,7 @@ multi & 63 & \\ \hline
 Undefined code. Guaranteed to generate trap (interrupt) in all future implementations
 \vv
 
-\subsubsection{userdef}
+\subsection{userdef}
 \label{table:userdefInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3449,11 +3446,11 @@ Reserved for user-defined instructions.
 \vv
 
 
-\subsection{System instructions}
+\section{System instructions}
 These instructions cannot have a mask.
 \vv
 
-\subsubsection{input}
+\subsection{input}
 
 \label{table:inputInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
@@ -3486,7 +3483,7 @@ Masks are not necessarily supported.
 \vv
 
 
-\subsubsection{output}
+\subsection{output}
 \label{table:outputInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3518,7 +3515,7 @@ Masks are not necessarily supported.
 \vv
 
 
-\subsubsection{read\_capabilities, write\_capabilities}
+\subsection{read\_capabilities, write\_capabilities}
 \label{table:readCapabilitiesInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3580,7 +3577,7 @@ Capabilities registers 12-15 can be increased for the purpose of emulation. The 
 \vv
 
 
-\subsubsection{read\_memory\_map, write\_memory\_map}
+\subsection{read\_memory\_map, write\_memory\_map}
 \label{table:readMemoryMapInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3607,7 +3604,7 @@ Write a vector register to memory map. RD = vector register source. RT-RS = inte
 \vv
 
 
-\subsubsection{read\_call\_stack, write\_call\_stack}
+\subsection{read\_call\_stack, write\_call\_stack}
 \label{table:readCallStackInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3639,7 +3636,7 @@ Privileged instruction.
 \vv
 
 
-\subsubsection{read\_perf}
+\subsection{read\_perf}
 \label{table:readPerfInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3703,7 +3700,7 @@ The perf16 register is useful for detecting errors when error traps are disabled
 \vv
 
 
-\subsubsection{read\_perfs}
+\subsection{read\_perfs}
 \label{table:readPerfInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3716,7 +3713,7 @@ This is the same as the read\_perf instruction, but serializing. The pipeline is
 \vv
 
 
-\subsubsection{read\_spec, write\_spec}
+\subsection{read\_spec, write\_spec}
 \label{table:readSpecInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3753,7 +3750,7 @@ datap    & spec2  & Data section pointer \\
 \vv
 
 
-\subsubsection{read\_spev}
+\subsection{read\_spev}
 \label{table:readSpevInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3785,7 +3782,7 @@ spec48 & Name of processor. The output is a zero-terminated UTF-8 string contain
 \end{longtable}
 \vv
 
-\subsubsection{read\_sys, write\_sys}
+\subsection{read\_sys, write\_sys}
 \label{table:readSysInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3800,7 +3797,7 @@ Read or write system register. Details are not defined yet. These instructions a
 \vv
 
 
-\subsubsection{sys\_call}
+\subsection{sys\_call}
 \label{systemCallInstruction}
 System calls use ID numbers rather than addresses to identify system functions. 
 The ID is the combination of a module ID identifying a particular system module or device driver and a function ID identifying a particular function within this module. The module ID and the function ID are both 16 or 32 bits, so that the combined system call ID is up to 64 bits.
@@ -3831,7 +3828,7 @@ The sys\_call instruction can indicate a block of memory to be shared with the s
 Parameters for system functions are transferred in registers, following the same calling conventions as normal functions. The registers used for function parameters are usually different from the registers in the RD, RS and RT fields. Function parameters that do not fit into registers must reside in the shared memory block.
 
 
-\subsubsection{sys\_return}
+\subsection{sys\_return}
 \label{table:sysCallInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
@@ -3842,7 +3839,7 @@ Parameters for system functions are transferred in registers, following the same
 
 Return from system call.
 
-\subsubsection{trap}
+\subsection{trap}
 \label{traps}
 \label{table:trapInstruction}
 \begin{tabular}{|p{12mm}|p{12mm}|p{30mm}|p{80mm}|}
@@ -3858,7 +3855,7 @@ Traps work like interrupts. The unconditional trap has an 8-bit interrupt number
 
 A trap instruction with all 1's in all fields (opcode 0x7FFFFFFF) can be used as filler in unused parts of code memory.
 
-\subsubsection{conditional trap}
+\subsection{conditional trap}
 \label{table:conditionalTrapInstructions}
 \begin{tabular}{|p{12mm}|p{12mm}|p{30mm}|p{80mm}|}
 \hline
@@ -3884,16 +3881,16 @@ Compare/trap\_uabove will generate a trap if RD $>$ IM3. This is useful for chec
 \section{Common operations that have no dedicated instruction}
 This section discusses some common operations that are not implemented as single instructions, and how to code these operations in software.
 
-\subsubsection{Change sign}
+\subsection{Change sign}
 For integer operands, do a reverse subtract from zero. For floating point operands, use the toggle\_bit instruction on the sign bit.
 
-\subsubsection{Not}
+\subsection{Not}
 To invert all bits in an integer, do an XOR with -1. To invert a Boolean, do an XOR with 1.
 
-\subsubsection{Rotate through carry}
+\subsection{Rotate through carry}
 Rotates through carry are rarely used, and common implementations can be very inefficient. A left rotate through carry can be replaced by an add\_c with the same register in both source operands.
 
-\subsubsection{Horizontal vector add} \label{horizontalVectorAdd}
+\subsection{Horizontal vector add} \label{horizontalVectorAdd}
 See example \ref{exampleHorizontalAdd}.
 \vv
 
