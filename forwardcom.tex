@@ -4,7 +4,8 @@
 \documentclass[11pt,a4paper,oneside,openright]{report}
 \usepackage[bindingoffset=5mm,left=20mm,right=20mm,top=20mm,bottom=20mm,footskip=10mm]{geometry}
 \usepackage[utf8x]{inputenc}
-\usepackage{hyperref}
+%\usepackage{hyperref}
+\usepackage[bookmarksopen=0,bookmarksdepth=2]{hyperref} %bookmarks depth higher than TOC depth 
 \usepackage[english]{babel}
 \usepackage{listings}
 \usepackage{subfiles}
@@ -19,6 +20,7 @@
 \setmainfont{Arial}[Ligatures=NoCommon]
 \setsansfont{Arial}
 \renewcommand{\familydefault}{\sfdefault}
+\setcounter{tocdepth}{1}
 
 % modify style
 \newtheorem{example}{Example}[chapter]  % example numbering
