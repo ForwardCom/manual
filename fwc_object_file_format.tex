@@ -87,8 +87,8 @@ We do not need a hardware register to measure heap size. This information can be
 
 These proposals can eliminate or reduce memory fragmentation in many cases so that we only need a small memory map which can be stored on the CPU chip. Each process and each thread will have its own memory map. However, we cannot completely eliminate memory fragmentation and the need for virtual memory translation because of the complications discussed on page \pageref{memoryManagement}.
 
-\section{Exception handling, stack unrolling, and debug information} \label{exceptionHandling}
-Executable files must contain information about the stack frame of each function for the sake of exception handling and stack unrolling for programming languages that support structured exception handling. 
+\section{Exception handling, stack unwinding, and debug information} \label{exceptionHandling}
+Executable files must contain information about the stack frame of each function for the sake of exception handling and stack unwinding for programming languages that support structured exception handling. 
 It should also be used for programming languages that do not support structured exception handling in order to facilitate stack tracing by a debugger. 
 \vv
 

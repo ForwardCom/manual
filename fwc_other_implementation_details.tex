@@ -107,7 +107,7 @@ The call stack can be implemented as a rolling register stack on the chip. The c
 Spilling of the call stack will be extremely rare, even for programs with recursive functions, if the on-chip call stack has a reasonable size.
 \vv
 
-The pointer for the call stack should not be a general purpose register because the programmer will rarely need to access it directly. Direct manipulation of the call stack is only needed in a stack unroll event (after an exception or long jump) or a task switch.
+The pointer for the call stack should not be a general purpose register because the programmer will rarely need to access it directly. Direct manipulation of the call stack is only needed in a stack unwinding event (after an exception or long jump) or a task switch.
 \vv
 
 A function does not have easy access to the return address that it was called from. Information about the caller may be supplied explicitly as a function parameter in the rare case that it is needed. There is a security advantage in hiding the return address inside the chip. This prevents overwriting return addresses in case of program errors or malicious buffer overflow attacks.
