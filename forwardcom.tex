@@ -16,11 +16,13 @@
 \usepackage{color}
 \usepackage[T1]{fontenc} % fix problem with underscore not searchable
 \usepackage{fontspec}
+\usepackage{tocloft}  % adjust TOC format
 \defaultfontfeatures{Mapping=tex-text, Ligatures=NoCommon}
 \setmainfont{Arial}[Ligatures=NoCommon]
 \setsansfont{Arial}
 \renewcommand{\familydefault}{\sfdefault}
 \setcounter{tocdepth}{1}
+\advance\cftsecnumwidth 0.5em\relax  % fix TOC format problem
 
 % modify style
 \newtheorem{example}{Example}[chapter]  % example numbering

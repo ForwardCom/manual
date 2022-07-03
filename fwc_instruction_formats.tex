@@ -196,7 +196,7 @@ RU & Source register & r0 – r31 or v0 – v31. Source register or fallback. \\
 \hline
 Mask & mask register & 0-6 means that a general purpose register or vector register is used for mask and option bits. 7 means no mask.  \\
 \hline
-IM1 IM2 IM3 IM4 & Immediate data & 8, 16, 24, or 32 bits immediate operand or address offset or option bits. Adjacent IM fields can be merged to make a larger constant. \\
+IM1 IM2 IM3 IM4 & Immediate data & 8, 16, 24, or 32 bits immediate operand or address offset or option bits. Adjacent IM fields can be merged to make a larger constant. IM3 in E formats is mainly used for option bits.  \\
 \hline
 \end{longtable}
 \vv
@@ -527,7 +527,7 @@ Instructions with a memory operand always use an address relative to a base poin
 Single-size instructions with a memory operand (formats 0.4 - 0.9) can use any of the registers r0-r31 as base pointer. r31 is the stack pointer.
 \vv
 
-Larger instructions with a memory operand and an offset field of at least 16 bits (formats 2.0.x, 2.1, 2.2.x, 2.4, 2.9, 3.0.x, 3.2.x) can use the same registers, except r28 - r30,  which are replaced by the thread pointer (THREADP), data section pointer (DATAP), and instruction pointer (IP), respectively.
+Larger instructions with a memory operand and an offset field of at least 16 bits (formats 2.0.x, 2.1, 2.2.x, 2.4, 2.5, 2.5.2, 2.9, 3.0.x, 3.2.x) can use the same registers, except r28 - r30,  which are replaced by the thread pointer (THREADP), data section pointer (DATAP), and instruction pointer (IP), respectively.
 \vv
 
 The instruction pointer may be used for addressing data in a read-only data section. This works in the following way. The address of the end of the current instruction is used as a reference point. This is the same as the address of the next instruction. The reason for using the end of the instruction as reference point is that it makes relocation in the linker independent of the instruction length in most cases. This address is multiplied by 4 when used as a data address because the instruction pointer is addressing 32 bit word units while data pointers are addressing byte units.
@@ -607,7 +607,7 @@ An instruction can be made compact by using the smallest size that fits the actu
 
 
 \subsection{Mask register and fallback register} \label{MaskAndFallback}
-The 3-bit mask field in formats with templates of type A or E indicates a mask register. Register r0-r6 can be used as masks if the destination is a general purpose register. Vector register v0-v6 can be used as masks if the destination is a vector register. A value of 7 in the mask field means no mask and unconditional execution using the options specified in the numeric control register.
+The 3-bit mask field in formats with templates of type A or E indicates a mask register. Register r0-r6 can be used as masks if the destination is a general purpose register. Vector register v0-v6 can be used as masks if the destination is a vector register. A value of 7 in the mask field means no mask and unconditional execution using the options specified in the numeric control register. Jump, call, return, and branch instructions cannot have a mask.
 \vv
 
 If the mask is a vector register then it is interpreted as a vector with the same element size as indicated by the OT field. Each element of the mask register is applied to the corresponding element of the result.
@@ -621,7 +621,7 @@ If the instruction format has more than one vacant register field, then the fiel
 \vv
 
 Register r31 (stack pointer) and v31 cannot be used as fallback register. Instead, the fallback value will be zero if a register number of 31 is indicated. 
-Register r31 and v31 should not be used as first source register if it is also used as feedback because this would cause ambiguity about the fallback value. (The fallback value will not be zero in this case).
+Register r31 and v31 should not be used as first source register if it is also used as fallback because this would cause ambiguity about the fallback value. (The fallback value will not be zero in this case).
 \vv
 
 A memory write has no fallback register. Instead, the value of the memory operand will be unchanged if the mask has a zero in bit 0.
@@ -682,7 +682,7 @@ The same NUMCONTR value is applied to all vector elements.
 Bit 0 of NUMCONTR is always 1.
 \vv
 
-The instruction-specific option bits (bit 18-23) may be used for various options in specific instructions. The option bits in the mask are considered zero in vector operands with an 8-bit or 16-bit operand type because each mask element has too few bits in this case. 
+The instruction-specific option bits (bit 18-23) may be used in the future for various options in specific instructions. The option bits in the mask are considered zero in vector operands with an 8-bit or 16-bit operand type because each mask element has too few bits in this case. 
 \vv
 
 \section{Format for jump, call and branch instructions}
@@ -700,7 +700,7 @@ The jumps, calls, branches, and multiway branches will use the following formats
 \hline
 \bfseries Format & \bfseries IL & \bfseries Mode & \bfseries OP1 & \bfseries Tem-plate & \bfseries Description \\
 \hline
-1.6 A & 1 & 6 & OPJ & B & Multiway jump and calls with three register operands.  \\
+1.6 A & 1 & 6 & OPJ & A & Multiway jump and calls with three register operands.  \\
 \hline
 1.6 B & 1 & 6 & OPJ & B & Short jump with two register operands (RD, RS) and 8 bit offset  (IM1).  \\
 \hline
@@ -744,7 +744,7 @@ a 24-bit jump offset (IM2), and a memory operand with base RS and 32-bit address
 The jump, call, and branch instructions have signed offsets of 8, 16, 24, or 32 bits relative to the instruction pointer. Or, more precisely, relative to the end of the instruction. This offset is multiplied by the instruction word size (= 4 bytes) to cover an address range of $\pm$ 512 bytes for short conditional jumps with 8 bits offset, $\pm$ 128 kilobytes for jumps and calls with 16 bits offset, $\pm$ 32 megabytes for 24 bits offset, and $\pm$ 8 gigabytes for 32 bits offsets.
 \vv
 
-The OPJ field defines the operation and jump condition. This field has 6 bits in the single size version and 8 bits in the longer format versions. The two extra bits in the longer versions are reserved for future use.
+The OPJ field defines the operation and jump condition. This field has 6 bits in the single size version and 8 bits in the longer format versions. The two extra bits in the longer versions are reserved for future use. It is not possible to use a mask for additional jump conditions.
 \vv
 
 The versions with template C and C2 have no OT field. The operand type is 32-bit integer when there is no OT field, unless otherwise noted. It is not possible to use formats with template C or C2 with other operand types. 

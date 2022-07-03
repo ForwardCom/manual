@@ -2372,7 +2372,7 @@ The length of the output is the same as the length of src1. If there are more th
 \begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-1.3 B &  4 & all vectors \\ \hline
+1.3 B &  3 & all vectors \\ \hline
 \end{tabular}
 \vv
 
@@ -3816,13 +3816,17 @@ Format & Operand type & Register operands & Module ID & Function ID \\
 \hline
 1.6 A & 64 bit & 3 & RT bit 32-63 & RT bit 0-31 \\
 \hline
+
+2.5.1 B & 32 bit & 2  & IM2 bit 16-31 & IM2 bit 0-15 \\
+\hline
+
 2.5.7 C & 64 bit & 0  & IM3 bit 0-31 & IM1,IM2 bit 0-15 \\
 \hline
 3.1.2 B & 64 bit & 2  & IM3 bit 0-31 & IM2 bit 0-31 \\
 \hline
 \end{longtable}
 
-The sys\_call instruction can indicate a block of memory to be shared with the system function. The address of the memory block is pointed to by the register specified in RD and the length is in register RS. This memory block, which the caller must have access rights to, is shared with the system function. The system function will get the same access rights to this block as the calling thread has, i. e. read access and/or write access. This is useful for fast transfer of data between the caller and the system function. No other memory is accessible to both the caller and the called function. If the RD and RS fields are both r0 then no memory block is shared. If RD and RS are both SP then all the application's data memory is shared. The sys\_call instruction in format 2.5.7 has no register operands and no shared memory block. System calls cannot have a mask.
+The sys\_call instruction can indicate a block of memory to be shared with the system function. The address of the memory block is pointed to by the register specified in RS and the length is in register RD. This memory block, which the caller must have access rights to, is shared with the system function. The system function will get the same access rights to this block as the calling thread has, i. e. read access and/or write access. This is useful for fast transfer of data between the caller and the system function. No other memory is accessible to both the caller and the called function. If the RS and RD fields are both r0 then no memory block is shared. If RS and RD are both SP then all the application's data memory is shared. The sys\_call instruction in format 2.5.7 has no register operands and no shared memory block. System calls cannot have a mask.
 \vv
 
 Parameters for system functions are transferred in registers, following the same calling conventions as normal functions. The registers used for function parameters are usually different from the registers in the RD, RS and RT fields. Function parameters that do not fit into registers must reside in the shared memory block.

@@ -373,7 +373,7 @@ add           & 2.9 A &  4  & Add 32-bit constant to high part of general purpos
 and           & 2.9 A &  5  & AND high part of general purpose register with 32-bit constant. RD = RT \& (IM2 \textless\textless{} 32). \\
 or            & 2.9 A &  6  & OR high part of general purpose register with 32-bit constant. RD = RT \textbar{} (IM2 \textless\textless{} 32). \\
 xor           & 2.9 A &  7  & XOR high part of general purpose register with 32-bit constant. RD = RT \^{} (IM2 \textless\textless{} 32). \\
-address       & 2.9 A & 32  & RD = RT + IM2, RT can be THREADP (28), DATAP (29) or IP (30). \\
+address       & 2.9 A & 32  & RD = RS + IM2, RS can be THREADP (28), DATAP (29) or IP (30). \\
 \hline
 \end{longtable}
 
