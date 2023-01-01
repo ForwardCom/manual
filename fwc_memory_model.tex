@@ -52,16 +52,16 @@ This model allows the program to access up to 8 GB of CODE, 2 GB of CONST, 2 GB 
 A pointer to the CONST section may be provided in the thread environment block in order to access CONST data in case  the CONST section is placed with a distance of more than 2 GB from IP or DATAP or if the CONST section is relocated independently of CODE and DATA.
 \vv
 
-\subsection{Padding space} \label{PaddingSpace}
+\section{Padding space} \label{PaddingSpace}
 %\label{extraSpaceAtEndOfData}
 Any read/writeable data section that is not followed by another readable section may have an unused space at the end, at least the size of the maximum vector length. The purpose of this extra space is to make it possible for the pop instruction to read more than necessary when restoring a vector of unknown length, and to make 
 it possible to search for the end of a zero-terminated string without having to read only a single byte at a time. This does not apply to IP-addressed read-only data sections that contain no strings, because a variable-size unused space between the constant section and the code section would make it necessary to recalculate relative addresses when a program is loaded on a system with a different maximum vector length, which would reduce the advantage of position-independent code.
 \vv
 
-An alternative solution is to allow vector reads that begin in a readable section to extend past the end of the readable section without raising an exception. The vector part that is outside the permitted section must get the value zero. It remains to be investigated which of these two solutions is most efficient.
+An alternative solution is to allow vector reads that begin in a readable section to extend past the end of the readable section without raising an exception. The vector part that is outside the permitted section must get the value zero. This method has the advantage that the space is independent of the maximum vector length. It remains to be investigated which of these two solutions is most efficient.
 \vv
 
-\subsection{Stack direction} \label{StackDirection}
+\section{Stack direction} \label{StackDirection}
 Most microprocessor systems have the data stack growing backwards. This also applies to the ForwardCom system, but mainly for a different reason. When a vector register is saved on the stack by the push instruction, it is stored as the length followed by the amount of data indicated by the length. When the vector register is restored using the pop instruction, it is necessary to read the length followed by the data. The stack pointer must point to the low end where the length is stored, otherwise it would be impossible to find where the length is stored. 
 \vv
 

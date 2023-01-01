@@ -9,14 +9,17 @@ This chapter gives an overview of the most important features of the ForwardCom 
 
 \section{A fully orthogonal instruction set}
 The ForwardCom instruction set is fully orthogonal in all respects. 
+Orthogonal means that any combination of operand type, addressing mode, etc. is possible for the same instruction. 
+\vv
+
 Where other instruction sets have a large number of different instructions for different register types, operand types, operand sizes, addressing modes, etc., ForwardCom has fewer instructions, but many variants of each instruction. This modular design makes the hardware implementation much simpler.
-The same instruction can use integer operands of all sizes and floating point operands of all precisions. It can use register operands, memory operands or immediate operands. It can use many different addressing modes. Instructions can be coded in short forms with two operands where the same register is used for destination and source operand, or longer forms with three operands. It can work with scalars or vectors of any size. It can have predication or masks for conditional execution, and it can have optional flag inputs for determining rounding mode, exception control and other details, where appropriate. Data constants of all types can be included in the instructions and compressed in various ways to reduce the instruction size.
+The same instruction can use integer operands of all sizes and floating point operands of all precisions. It can use register operands, memory operands or immediate operands. It can use many different addressing modes. Instructions can be coded in short forms with two operands where the same register is used for destination and source operand, or longer forms with three operands. It can work with scalars or vectors of any size. It can have predication or masks for conditional execution, and it can have optional flag inputs for determining rounding mode, exception control, and other details, where appropriate. Data constants of all types can be included in the instructions and compressed in various ways to reduce the instruction size.
 
 \subsubsection{Rationale}
 The orthogonality is implemented by a standardized modular design that makes the hardware implementation simpler. It also makes compilation simpler and more flexible and makes it easier for the compiler to convert linear code to vector code.
 \vv
 
-The support for immediate constants of all types is an improvement over current systems. Most current systems store floating point constants in a data segment and access them through a 32-bit address in the instruction code. This is a waste of data cache space and causes many cache misses because the data are scattered around in different sections. Replacing a 32-bit address with a 32-bit immediate constant makes the code more efficient without increasing the code size. Extensions to allow 64-bit immediate constants are possible at the cost of having instructions with triple size.
+The support for immediate constants of all types is an improvement over current systems. Most current systems store floating point constants in a data segment and access them through a 32-bit address in the instruction code. This is a waste of data cache space and causes many cache misses because the data are scattered around in different sections. Replacing a 32-bit address with a 32-bit immediate constant makes the code more efficient without increasing the code size. 64-bit immediate constants  are also possible at the cost of using instructions with triple size.
 
 \section{Instruction size}
 The ForwardCom instruction set uses a 32-bit word size for code. 
@@ -24,17 +27,20 @@ An instruction can consist of one, two, or three 32-bit words.
 It is possible to add future extensions with instruction sizes of four or more words, but there is currently no need for this.
 
 \subsubsection{Rationale}
-A CISC architecture with many different instruction sizes is inefficient in superscalar processors where we want to execute several instructions per clock cycle. The decoding front end is often a bottleneck, especially in the x86 architecture. The decoder has to determine the length of the first instruction before it knows where the next instruction begins. The ``instruction length decoding'' is a fundamentally serial process which makes it difficult to decode multiple instructions per clock cycle. Modern x86 microprocessors have an extra ``micro-operations cache'' after the decoder in order to circumvent this bottleneck.
+A CISC architecture with many different instruction sizes is inefficient in superscalar processors where we want to execute several instructions per clock cycle. The decoding front end is a serious bottleneck, especially in the x86 architecture. The decoder has to determine the length of the first instruction before it knows where the next instruction begins. The ``instruction length decoding'' is a fundamentally serial process which makes it difficult to decode multiple instructions per clock cycle. Modern x86 microprocessors have an extra ``micro-operations cache'' after the decoder in order to circumvent this bottleneck.
 \vv
 
-Here, it is desired to have as few different instruction sizes as possible and to make it easy to determine the length of each instruction. We want a small instruction size for the most common simple instructions, but we also need a larger instruction size in order to accommodate things like a larger register set, instructions with multiple operands, vector operations with advanced features, 32-bit address offsets, and large immediate constants. This proposal is a compromise between code compactness, easy decoding, and space for advanced features.
+Here, it is desired to have as few different instruction sizes as possible and to make it easy to determine the length of each instruction. We want a small instruction size for the most common simple instructions, but we also need a larger instruction size in order to accommodate things like a large register set, instructions with multiple operands, vector operations with advanced features, 32-bit address offsets, and large immediate constants. This design is a compromise between code compactness, easy decoding, and space for advanced features.
 The instruction size is indicated by only two bits. A decoder can find the instruction boundaries in n words by means of a simple Boolean function of 2n inputs.
 
 \section{Register set}
-There are 32 general purpose registers (r0--r31) of 64 bits each, and 32 vector registers (v0--v31) of variable length. The maximum vector length is different for different hardware implementations. The general purpose registers can be used for integers of up to 64 bits as well as for pointers. The vector registers can be used for scalars and vectors of integers and floating point numbers. 
+There are 32 general purpose registers (r0--r31) of 32 or 64 bits each. Small embedded systems can use 32-bit registers while larger systems preferably have 64-bit registers. Attempts to execute a 64-bit instruction on a hardware that has only 32-bit registers will not cause an error, but only the lower 32 bits of the result will be stored. For example, pointer arithmetics using 64-bit instructions will work on both 32-bit and 64-bit systems without modifying the code.
 \vv
 
-The following special registers are defined and visible at the application program level. All have 64 bits:
+The ForwardCom design has 32 vector registers (v0--v31) of variable length. The maximum vector length is different for different hardware implementations. The general purpose registers can be used for integers of up to 64 bits as well as for pointers. The vector registers can be used for scalars and vectors of integers and floating point numbers.
+\vv
+
+The following special registers are defined and visible at the application program level.
 
 \begin{itemize}
 \item Instruction pointer (IP)
@@ -50,7 +56,7 @@ The stack pointer is identical to r31. The other special registers cannot be acc
 There is no dedicated flags register. Registers r0--r6 and v0--v6 can be used for masks, predicates and floating point option flags to control attributes such as rounding mode and exception control.
 \vv
 
-The unused part of a register is always set to zero. This means that integer operations with an operand size smaller than 64 bits and vector operations with a vector length smaller than the maximum will always set the unused bits of the destination register to zero.
+Any unused part of a register is always set to zero. This means that integer operations with an operand size smaller than 64 bits and vector operations with a vector length smaller than the maximum will always set any unused bits of the destination register to zero.
 
 \subsubsection{Rationale}
 The number of registers is a compromise between code density and flexibility. The cost of spilling registers to memory is usually important only in the critical innermost loop, which is unlikely to need more than 32 registers.
@@ -66,7 +72,10 @@ The reason for handling floating point scalars in the vector registers rather th
 A library function with variable-length vectors as input and output can be used for both scalars and vectors, and the compiler can easily vectorize code that contains such library function calls.
 
 \section{Vector support}
-A vector register can contain signed or unsigned integers of 8, 16, 32, 64, and optionally 128 bits, or floating point numbers of single and double precision. There is limited support for floating point numbers in half precision and optional support for quadruple precision. All elements of a vector must have the same type. The elements of a vector are processed in parallel. For example, a vector addition will produce the sum of two vectors in a single operation.
+A vector register can contain signed or unsigned integers of 8, 16, 32, 64, and optionally 128 bits, or floating point numbers with single and double precision. There is optional support for floating point numbers with half precision and quadruple precision. 
+\vv
+
+All elements of a vector must have the same type. The elements of a vector are processed in parallel. For example, a vector addition will produce the sum of two vectors in a single operation.
 \vv
 
 The vector registers have variable length. Each vector register has extra bits for storing the length of the vector. The maximum vector length depends on the hardware. 
@@ -76,7 +85,7 @@ For example, if the hardware supports a maximum vector length of 64 bytes and a 
 Some instructions need to specify the length of a vector explicitly, for example when reading a vector from memory. These instructions use a general purpose register for specifying the vector length. The length is usually indicated as the number of bytes, not the number of vector elements.
 \vv
 
-The maximum length supported by the processor must be a power of 2. The actual length specified does not need to be a power of 2. If the specified length is longer than the maximum length, then the maximum length is used.
+The maximum vector length supported by the processor must be a power of 2. The actual length specified does not need to be a power of 2. If the specified length is longer than the maximum length, then the maximum length is used.
 \vv
 
 The contents of a vector register can arbitrarily be interpreted as any of the types and element sizes supported. For example, the hardware does not prevent the application of integer instructions on a vector that contains floating point data. It is the responsibility of the programmer that the code makes sense.
@@ -112,7 +121,8 @@ J and jumps back if the result is positive.
 Most current systems have fixed vector lengths. If different processors have different vector lengths then you have to compile the code separately for each vector length. Every time a new processor with longer vectors comes on the market, you have to compile a new version of the code for the new vector length, using newly defined extensions to the instruction set. It usually takes several years for the new software to be developed and to penetrate the mainstream market. It is so costly for software producers to develop, test, and maintain different versions of their code for each vector length that this is rarely done.
 \vv
 
-A further problem with current systems is that it is impossible to save a vector register in a way that is guaranteed to be compatible with future processors with longer vectors. This is no problem with the ForwardCom design because the vector length is stored in the vector register itself. Instructions are provided for saving and restoring vectors of variable length and for storing only the part of a vector register that is actually used.
+A further problem with current systems is that it is impossible to save a vector register in a way that is guaranteed to be compatible with future processors with longer vectors. Each new extension has historically involved new previously unknown instructions. 
+This is no problem with the ForwardCom design because the vector length is stored in the vector register itself. Instructions are provided for saving and restoring vectors of variable length and for storing only the part of a vector register that is actually used.
 \vv
 
 The ForwardCom design makes it possible to take advantage of a new processor with longer vector registers immediately without recompiling the code. The loop method described above makes this easy and very efficient. You do not need different versions of the code for different processors.
@@ -130,16 +140,14 @@ The ForwardCom design has no practical limit to the vector length that a micropr
 The maximum length of vector registers will be different for different processors. The maximum length must be a power of 2. It can be as large as desired and should be at least 16 bytes. Each instruction can use a smaller length, which does not need to be a power of 2.
 \vv
 
-The maximum length may be different for different element sizes. For example, the maximum length for 32-bit integers can be 32 bytes to contain eight integers, while the maximum length for 8-bit integers could be 16 bytes to contain 16 smaller numbers. However, the maximum length must be the same for different types with the same element size. For example, the maximum length for double precision floating point numbers must be the same as for 64-bit integers because loops are likely to contain both types when integer vectors are used as masks for floating point vectors. The maximum length for a 32-bit element size cannot be less than for any other element size or operand type. This rule guarantees that it is possible to save a complete vector using a 32-bit operand type.
+The maximum vector length may be different for different element sizes, but it is recommended to have the same maximum length for all operand types and element sizes.  The maximum vector length must be the same for different types with the same element size. For example, the maximum length for double precision floating point numbers must be the same as for 64-bit integers because loops are likely to contain both types when integer vectors are used as masks for floating point vectors. The maximum length for a 32-bit element size cannot be less than for any other element size or operand type. This rule guarantees that it is possible to save a complete vector using a 32-bit operand type.
 \vv
 
 The maximum vector length should generally be the same for all instructions for the same data type, but there may be exceptions for instructions that are particularly expensive to implement. 
 \vv
 
-It is possible for an application program or the operating system to reduce the maximum vector length. This can be useful if a smaller vector length is more appropriate for a particular purpose.
-\vv
-
-It is also possible to increase the apparent maximum vector length for purposes of emulation. Virtual vector registers that are bigger than what the hardware supports may be emulated through traps (synchronous interrupts) in order to verify the functionality of a program on processors with a longer maximum vector length than is currently available.
+It may be possible for an application program or the operating system to reduce the maximum vector length. This can be useful if a smaller vector length is more appropriate for a particular purpose. 
+It may also be possible to increase the apparent maximum vector length for purposes of testing and emulation.
 \vv
 
 When an instruction specifies a longer vector than the maximum, then the maximum length is used (unless the emulation of larger vectors is activated). This is necessary for the efficient implementation of vector loops as described above on page \pageref{vectorLoops}.
@@ -168,7 +176,7 @@ All memory addressing is relative to a base pointer. Memory operands are address
 Address = Base pointer + Index * Scale + Offset
 \end{lstlisting}
 
-Where Base pointer is a 64-bit base pointer, Index is a 64-bit index register, Scale is a scale factor, and Offset is a constant. A base pointer is always present; the other elements are optional. 
+Where Base pointer is a 64-bit pointer, Index is a 64-bit index register, Scale is a scale factor, and Offset is a constant. A base pointer is always present; the other elements are optional. Small embedded systems may use 32-bit registers rather than 64 bits.
 \vv
 
 The base pointer can be a general purpose register or it can be the 
@@ -209,5 +217,5 @@ Addressing with a negative index is useful for the efficient implementation of v
 The addressing modes specified here will cover all common applications, including arrays, vectors, structures, classes, and stack frames.
 \vv
 
-Support for addressing modes with both base pointer, index, and direct offset is optional because this requires two adders in the address-calculation stage in the pipeline which might limit the maximum clock frequency.
+%Support for addressing modes with both base pointer, index, and direct offset is optional because this requires two adders in the address-calculation stage in the pipeline which might limit the maximum clock frequency.
 \end{document}

@@ -13,7 +13,7 @@
 \subsection{broad}
 
 \label{table:broadInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A &  6 & vector and g.p. register \\ \hline
@@ -38,7 +38,7 @@ This instruction can have a mask but not a fallback register. The fallback value
 \subsection{broadcast\_max}
 
 \label{table:broadcastMaxInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.3 B & 19 & vector and 8-bit signed constant \\ \hline
@@ -54,7 +54,7 @@ Broadcast a small constant to all elements of a vector with maximum length.
 
 \subsection{compress}
 \label{table:compressInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.3 B & 6 & vectors \\ \hline
@@ -115,7 +115,7 @@ NANs are converted by preserving the least significant bits of the payload and t
 
 \subsection{compress\_sparse}
 \label{table:compressSparseInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 8 & vectors. Optional \\ \hline
@@ -141,7 +141,7 @@ This instruction cannot have a fallback register.
 
 \subsection{concatenate}
 \label{table:concatenateInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 2.2.6 & 0.1 & vectors \\ \hline
@@ -161,7 +161,7 @@ This instruction cannot have a mask.
 
 \subsection{expand}
 \label{table:expandInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.3 B & 7 & vectors \\ \hline
@@ -194,7 +194,7 @@ bit 0-1 & integer options: \newline
 
 \subsection{expand\_sparse}
 \label{table:expandSparseInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 9 & vectors. Optional \\ \hline
@@ -228,7 +228,7 @@ times the element size. This instruction cannot have a fallback register.
 
 \subsection{extract}
 \label{table:extractInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A &  5 & vectors  \\ \hline
@@ -253,8 +253,8 @@ This instruction cannot have a mask.
 
 
 \subsection{float2int}
-\label{table:extractInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\label{table:float2intInstruction}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.3 B & 12 & vectors  \\ \hline
@@ -300,7 +300,7 @@ To check if the result is exact: Compare the results for round down and round up
 
 \subsection{get\_len}
 \label{table:getLenInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 0 & vectors  \\ \hline
@@ -314,7 +314,7 @@ This instruction cannot have a mask.
 
 \subsection{get\_num}
 \label{table:getNumInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 1 & vectors  \\ \hline
@@ -328,7 +328,7 @@ This instruction cannot have a mask.
 
 \subsection{gp2vec}
 \label{table:gp2vecInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.3 B & 0 & g.p register in, vector register out \\ \hline
@@ -345,7 +345,7 @@ scalar in vector register RD.
 
 \subsection{insert}
 \label{table:insertInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 4 & vectors \\
@@ -371,7 +371,7 @@ This instruction cannot have a mask.
 
 \subsection{insert\_hi}
 \label{table:insertHiInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 2.9 & 1 & general purpose register, 32-bit immediate constant \\ \hline
@@ -386,17 +386,17 @@ float v0 = insert\_hi(v1, 2.1)
 Insert 32-bit constant into the high part of a
 general purpose register, leaving the low part
 unchanged. \\
-dest = (src1 \& 0xFFFFFFFF) $|$ (IM2 $<<$ 32).
+dest = (src1 \& 0xFFFFFFFF) $|$ (IM6 $<<$ 32).
 \vv
 
 Make a vector of two elements. A constant is inserted into the second element, leaving the first element unchanged.\\
-dest[0] = src1[0], dest[1] = IM2.
+dest[0] = src1[0], dest[1] = IM6.
 \vv
 
 
 \subsection{int2float}
 \label{table:int2floatInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.3 B & 13 & vectors \\ \hline
@@ -425,7 +425,7 @@ Options are coded in IM1:
 
 \subsection{interleave}
 \label{table:interleaveInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 2.2.6 & 2.1 & vectors. Optional \\ \hline
@@ -443,7 +443,7 @@ This instruction can have a mask but not a fallback register. The fallback value
 
 \subsection{load\_hi}
 \label{table:loadHiInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 2.5 & 0 & vector. 32 bit immediate constant \\ \hline
@@ -453,12 +453,12 @@ This instruction can have a mask but not a fallback register. The fallback value
 float v0 = load\_hi(1.2)
 \vv
 
-Make vector of two elements. dest[0] = 0, dest[1] = IM2.
+Make vector of two elements. dest[0] = 0, dest[1] = IM6.
 \vv
 
 \subsection{move}
 \label{table:moveInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi &  2 & all types \\ \hline
@@ -470,8 +470,8 @@ multi &  2 & all types \\ \hline
 1.4 C &  0 & vector register 16-bit scalar = 16-bit constant. Optional  \\ \hline
 1.4 C &  8 & vector register 32-bit scalar = 8-bit sign extended constant with left shift. Optional \\ \hline
 1.4 C &  9 & vector register 64-bit scalar = 8-bit sign extended constant with left shift. Optional \\ \hline
-1.4 C & 32 & vector register single precision scalar = half precision immediate constant. Optional \\ \hline
-1.4 C & 33 & vector register double precision scalar = half precision immediate constant. Optional \\ \hline
+1.4 C & 32 & vector register single precision scalar = float16 immediate constant. Optional \\ \hline
+1.4 C & 33 & vector register double precision scalar = float16 immediate constant. Optional \\ \hline
 \end{tabular}
 \vv
 
@@ -484,7 +484,7 @@ The move instruction with an immediate operand is the preferred method for setti
 
 \subsection{permute}
 \label{table:permuteInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 2.2.6 & 1.1 & vectors \\ \hline
@@ -524,7 +524,7 @@ Finally, permute instructions can be used for gathering and scattering data with
 
 \subsection{read\_insert}
 \label{table:readInsertInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 2.5 A & 32 & vectors. Optional \\ \hline
@@ -536,13 +536,13 @@ int32 v0 = read\_insert(v0, r1, [r2+0x8, scalar])
 
 Replace one element in vector RD, starting
 at offset RT$\cdot$OS, with scalar memory operand
-[RS+IM2].
+[RS+IM6].
 
 (OS = operand size).
 
 \subsection{repeat\_block}
 \label{table:repeatBlockInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 2.2.7 & 8.1 & vectors. Optional \\ \hline
@@ -552,7 +552,7 @@ at offset RT$\cdot$OS, with scalar memory operand
 float v0 = repeat\_block(v1, r2, 8) 
 \vv
 
-Repeat a block of data to make a longer vector. This is the same as broadcast, but with a larger block of data. v1 is an input vector containing a data block to repeat. A constant (IM2) is the length in bytes of the block to repeat. This must be a multiple of 4. r2 is the length in bytes of the result vector. This instruction is useful for matrix multiplication.
+Repeat a block of data to make a longer vector. This is the same as broadcast, but with a larger block of data. v1 is an input vector containing a data block to repeat. A constant (IM4) is the length in bytes of the block to repeat. This must be a multiple of 4. r2 is the length in bytes of the result vector. This instruction is useful for matrix multiplication.
 \vv
 
 This instruction cannot have a mask.
@@ -560,7 +560,7 @@ This instruction cannot have a mask.
 
 \subsection{repeat\_within\_blocks}
 \label{table:repeatWithinBlockInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 2.2.7 & 9.1 & vectors. Optional \\ \hline
@@ -570,7 +570,7 @@ This instruction cannot have a mask.
 float v0 = repeat\_within\_blocks(v1, r2, 8) 
 \vv
 
-This divides a vector into blocks and broadcasts the first element of each block to the rest of the block. The block size is given by a constant (IM2). This must be a multiple of the operand size, and at least 4 bytes. There may be a maximum limit to the block size. r2 is the length in bytes of the resulst vector. This instruction is useful for matrix multiplication.
+This divides a vector into blocks and broadcasts the first element of each block to the rest of the block. The block size is given by a constant (IM4). This must be a multiple of the operand size, and at least 4 bytes. There may be a maximum limit to the block size. r2 is the length in bytes of the resulst vector. This instruction is useful for matrix multiplication.
 \vv
 
 For example, if the input vector contains (0,1,2,3,4,5,6,7,8) and the block size is 3 times the operand size, then the result will be (0,0,0,3,3,3,6,6,6).
@@ -581,7 +581,7 @@ This instruction cannot have a mask.
 
 \subsection{replace}
 \label{table:replaceInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 2.6 & 3 & vectors and 32-bit immediate constant \\ \hline
@@ -604,7 +604,7 @@ When used with a mask, the elements of src1 are selectively replaced. Elements t
 
 \subsection{replace\_even}
 \label{table:replaceEvenInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 2.6 & 4 & vectors and 32-bit immediate constant \\ \hline
@@ -616,7 +616,7 @@ Same as replace. Only even-numbered vector elements are replaced.
 
 \subsection{replace\_odd}
 \label{table:replaceOddInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 2.6 & 5 & vectors and 32-bit immediate constant \\ \hline
@@ -628,7 +628,7 @@ Same as replace. Only odd-numbered vector elements are replaced.
 
 \subsection{set\_len}
 \label{table:setLenInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 & 2 & vectors \\ \hline
@@ -649,7 +649,7 @@ This instruction cannot have a mask.
 
 \subsection{set\_num}
 \label{table:setNumInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 & 3 & vectors \\ \hline
@@ -668,7 +668,7 @@ This instruction differs from set\_len by multiplying the length by the operand 
 
 \subsection{shift\_down}
 \label{table:shiftDownInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 & 19 & vectors \\ \hline
@@ -690,7 +690,7 @@ This instruction cannot have a mask.
 
 \subsection{shift\_expand}
 \label{table:shiftExpandInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 & 16 & vectors \\ \hline
@@ -708,7 +708,7 @@ This instruction cannot have a mask.
 
 \subsection{shift\_reduce}
 \label{table:shiftReduceInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 & 17 & vectors \\ \hline
@@ -726,7 +726,7 @@ This instruction cannot have a mask.
 
 \subsection{shift\_up}
 \label{table:shiftUpInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 & 18 & vectors \\ \hline
@@ -748,7 +748,7 @@ This instruction cannot have a mask.
 
 \subsection{sign\_extend}
 \label{table:signExtendInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 4 & general purpose and integer scalar \\ \hline
@@ -767,7 +767,7 @@ The input can be an 8-bit, 16-bit or 32-bit integer. This integer is sign-extend
 
 \subsection{sign\_extend\_add}
 \label{table:signExtendAddInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 5 & general purpose registers \\ \hline
@@ -796,7 +796,7 @@ This instruction will not generate traps in case of signed or unsigned overflow.
 
 \subsection{vec2gp}
 \label{table:vec2gpInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.3 B & 1 & vector register in, g.p. register out \\ \hline
@@ -815,7 +815,7 @@ Copy value of first element of vector register RS to general purpose register RD
 
 \subsection{address}
 \label{table:addressInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 2.9 A & 32 & general purpose register \\ \hline
@@ -833,7 +833,7 @@ The value must be shifted two places to the right if used as the target for a ju
 
 \subsection{clear}
 \label{table:clearInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.3 B & 58 & vector. Optional \\ \hline
@@ -853,7 +853,7 @@ It may be advantageous to clear vector registers after use. This will mean that 
 
 \subsection{extract\_store}
 \label{table:extractStoreInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 2.5 A & 40 & vector. Optional \\ \hline
@@ -863,14 +863,14 @@ It may be advantageous to clear vector registers after use. This will mean that 
 int32 [r3+8, scalar] = extract\_store(v1, r2)
 \vv
 
-Extract one element from vector RD, starting at offset RT$\cdot$OS, with size OS into memory operand [RS+IM2].
+Extract one element from vector RD, starting at offset RT$\cdot$OS, with size OS into memory operand [RS+IM6].
 
 (OS = operand size).
 
 
 \subsection{fence}
 \label{table:fenceInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 2.5 B & 16 & memory operand and immediate. Optional \\ \hline
@@ -880,7 +880,7 @@ Extract one element from vector RD, starting at offset RT$\cdot$OS, with size OS
 int32   fence([r1], 2)
 \vv
 
-Memory fence at address [RS+IM2].
+Memory fence at address [RS+IM6].
 \vv
 
 Options indicated by IM1:
@@ -902,7 +902,7 @@ can read a register from a memory operand.
 
 \subsection{pop}
 \label{table:popInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.8 B & 57 & general purpose registers. Optional \\ 
@@ -911,32 +911,59 @@ can read a register from a memory operand.
 \vv
 
 \begin{lstlisting}[frame=none]
-pop(r5)         // pop 64-bit register r5 off the stack
-pop(r1, r2, 6)  // pop registers r2-r6 from stack pointed to by r1
-pop(v5)         // pop vector register v5 off the stack
-pop(v5, 9)      // pop vector registers v5-v9 off the stack
+// pop 64-bit register r5 off the general stack:
+pop(r5)
+// pop 32-bit registers r2-r6 from stack pointed to by r1:
+int32 pop(r1, r2, 6)
+// read 16-bit registers r2-r6 from FIFO buffer pointed to by r1:
+int16 pop(r1, r2, 6+0x40)
+// pop vector registers v0-v31 off the general stack:
+pop(v0, 31)
 \end{lstlisting}
 \vv
 
-The pop instruction can pop one or more registers from a stack. The registers are popped in reverse order.
+The pop instruction can pop one or more registers from a stack. It is possible to have multiple data stacks. 
+The pop instruction can restore values saved by the push instruction described on page \pageref{table:pushInstruction}.
 \vv
 
-An optional first register (RD) indicates a stack pointer. The default stack pointer (SP) is used if not specified. An optional last operand is an index of the last register to pop. The syntax for the POP instruction has no equal sign. The operand size is 64 bits by default. A different operand type is allowed only for general purpose registers.
+An optional first register indicates a stack pointer. The default stack pointer (SP) is used if not specified. An optional last operand is an index of the last register to pop. Note that the last register is specified as an integer, not a register name.  The syntax for the POP instruction has no equal sign.
 \vv
 
-The stack is growing backwards by default. The last register is read from the address pointed to by the stack pointer. Then the stack pointer is incremented by the amount that was occupied by the register. This is 8 bytes by default for a general purpose register or a variable amount for a vector register. This process is repeated if multiple registers are popped. Registers are pushed in forward order and popped in reverse order.
+The operand size indicates the size of each stack space for general purpose registers. The stack pointer is incremented by the specified size for each general purpose register popped. Allowed operand sizes are int8, int16, int32, and int64. The default size is 64 bits. The stack pointer is incremented by 8 bytes when int64 is specified, even if the processor supports only int32. The operand size indicates the stack granularity and alignment for vector registers.
 \vv
 
-It is possible to make a forward-growing stack for general purpose registers by adding 0x80 to the last operand. A stack containing vector registers cannot grow forwards because the pop instruction needs to read the vector length stored at the beginning of each field before it can read the rest of the vector.
+\textbf{FILO MODE} (First In Last Out) \\
+The stack is growing backwards by default. If registers r1, r2, r3 have been stored by the push instruction while decrementing the stack pointer, then they can be restored in the reverse order (r3, r2, r1) while incrementing the stack pointer. The  register with the highest index is read from the lowest address. The stack pointer is incremented by the amount that was occupied by each register. The size occupied by a vector register depends on how much of the vector register is actually used, i.e. the length. The precise length occupied by a vector register is implementation-dependent.
 \vv
 
-See the push instruction on page \pageref{table:pushInstruction} for more details.
+\textbf{FIFO MODE} (First In First Out) \\
+The pop instruction always increments the pointer by the specified register size after each read. If the values have been stored in FIFO mode then it is convenient to restore the registers in the forward order (e.g. r1, r2, r3, ...) rather than the reverse order. 
+It is possible to read the registers in the forward order by adding 0x40 to the last operand. This may be used as a read-and-increment-pointer instruction.
+\vv
+
+\textbf{Vector registers}\\
+Vector registers are stored in an implementation-dependent way by the push instruction. The stored image includes information about the actual vector length. 
+See the description of the push instruction on page \pageref{table:pushInstruction} for more details. Vector registers stored with the push instruction can be restored by the pop instruction.
+\vv
+
+
+\textbf{Error conditions}\\
+An error occurs if the last register has a lower index than the first register.
+\vv
+
+An error also occurs if the pointer register itself is popped.
+\vv
+
+Alignment errors may occur if different register sizes are mixed on the same stack.
+\vv
+
+It is not possible to interrupt the pop operation until it is finished. Any external interrupt will be postponed until all registers have been popped and the stack pointer has been updated.
 \vv
 
 
 \subsection{prefetch}
 \label{table:prefetchInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 3 & memory operand. Optional \\ \hline
@@ -944,13 +971,13 @@ multi & 3 & memory operand. Optional \\ \hline
 \vv
 
 Prefetch memory operand into cache for later read or write.
-Different variants (not yet defined) can be specified by option bits in IM3 for formats with E template.
+Different variants (not yet defined) can be specified by option bits in IM5 for formats with E template.
 \vv
 
 
 \subsection{push}
 \label{table:pushInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.8 B & 56 & general purpose register. Optional \\ 
@@ -959,44 +986,67 @@ Different variants (not yet defined) can be specified by option bits in IM3 for 
 \vv
 
 \begin{lstlisting}[frame=none]
-push(r5)           // push 64-bit register r5 on the stack
-push(r1, r2, 6)    // push registers r2-r6 on stack pointed to by r1
-push(r1, r2, 0x86) // push registers r2-r6 on forward growing stack r1
-push(v5, 9)        // push vector registers v5-v9 on the stack
+// push 64-bit register r5 on the general stack:
+push(r5)
+// push 32-bit registers r2-r6 on stack pointed to by r1:
+int32 push(r1, r2, 6)
+// store 16-bit registers r2-r6 in forward order to buffer r1:
+int16 push(r1, r2, 6+0x80)
+// push vector registers v0-v31 on the general stack:
+push(v0, 31)
 \end{lstlisting}
 \vv
 
-The push instruction can push one or more registers on a stack. 
+The push instruction can push the values of one or more registers on a stack. It is possible to have multiple data stacks. 
+The values can be restored by the pop instruction described on page \pageref{table:popInstruction}.
 \vv
 
-An optional first register (RD) indicates a stack pointer. The default stack pointer (SP) is used if not specified. An optional last operand is an index of the last register to push. The syntax for the PUSH instruction has no equal sign. The operand size is 64 bits by default. A different operand type is allowed only for general purpose registers.
+An optional first register indicates a stack pointer. The default stack pointer (SP) is used if not specified. An optional last operand is an index of the last register to push. Note that the last register is specified as an integer, not a register name. The syntax for the PUSH instruction has no equal sign.
 \vv
 
+The operand size indicates the size of each stack space for general purpose registers. The stack pointer is decremented (or incremented) by the specified size for each general purpose register pushed. Allowed operand sizes are int8, int16, int32, and int64. The default size is 64 bits. The stack pointer is adjusted by 8 bytes when int64 is specified, even if the processor supports only int32. The operand size indicates the stack granularity and alignment for vector registers.
+\vv
+
+\textbf{FILO MODE} (First In Last Out) \\
 The stack is growing backwards by default. 
-The stack pointer is decremented by the amount that will be occupied by the register. The first register is then stored to the address pointed to by the stack pointer. This size is 8 bytes for a full general purpose register or a variable amount for a vector register. This process is repeated if multiple registers are pushed.
+The stack pointer is decremented by the specified register size before storing each register. The last register is stored at the lowest address. 
+The size occupied by a vector register depends on how much of the vector register is actually used, i.e. the length. The precise length occupied by a vector register is implementation-dependent.
+\vv
+ 
+\textbf{FIFO MODE} (First In First Out) \\
+It is possible to make a forward-growing buffer for general purpose registers by adding 0x80 to the last operand. This may be used as a store-and-increment-pointer instruction. The pointer is incremented by the specified size after each store.
 \vv
 
-It is possible to make a forward-growing stack for general purpose registers by adding 0x80 to the last operand. This may be used as an increment-pointer-and-store instruction. A stack containing vector registers cannot grow forwards because a later pop instruction needs to read the vector length stored at the beginning of each field before it can read the rest of the vector.
+\textbf{Vector registers}\\
+Vector registers are stored in an implementation-dependent way by the push instruction. The stored image includes information about the actual vector length. 
+The microprocessor may compress the data or it may insert extra space for optimal alignment of memory access. The programmer should make no assumption about how the vector elements are stored. A pushed vector register can only be restored by a pop instruction on the same or an identical microprocessor that pushed it. If the memory image is moved before restoring, it must be moved by a multiple of the maximum vector lenth. The maximum amount of memory occupied by a pushed vector register is 8 bytes plus the maximum vector length. An empty vector register occupies at most 8 bytes.
 \vv
 
-Note that vector registers are stored in an implementation-dependent way by the push instruction. The microprocessor may compress the data or it may insert extra space for optimal alignment of memory access. The programmer should make no assumption about how the vector elements are stored. A pushed vector register can only be restored by a pop instruction on the same or an identical microprocessor that pushed it. If the memory image is moved before restoring, it must be moved by a multiple of the maximum vector lenth. The maximum amount of memory occupied by a pushed vector register is 8 bytes plus the maximum vector length.
+\textbf{Error conditions}\\
+An error occurs if the last register has a lower index than the first register.
 \vv
 
-See also the pop instruction on page \pageref{table:popInstruction} for more details.
+An error also occurs if the pointer register itself is pushed.
+\vv
+
+Alignment errors may occur if different register sizes are mixed on the same stack.
+\vv
+
+It is not possible to interrupt the push operation until it is finished. Any external interrupt will be postponed until all registers have been pushed and the stack pointer has been updated.
 \vv
 
 
 \subsection{store}
 \label{table:storeInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi &  1 & memory operand and g.p. or vector register \\ \hline
-2.5 B &  8 & memory operand and 32-bit constant. Optional \\ \hline
+2.5 B &  8 & memory operand and 32-bit constant \\ \hline
 \end{tabular}
 \vv
 
-int32 [r0+r1*4] = r1\\ 
+int32 [r0+r1*4] = r2\\ 
 float [r0, length = r1] = v2 \\
 float [r0 + 0x10] = 2.5
 \vv
@@ -1022,7 +1072,7 @@ Masked operation with a mask of zero will leave the corresponding memory element
 
 \subsection{abs}
 \label{table:absInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.8 B &  0 & g.p. registers \\ \hline
@@ -1032,7 +1082,6 @@ Masked operation with a mask of zero will leave the corresponding memory element
 
 int32 r0 = abs(r1, 1)
 \vv
-
 
 Absolute value of signed number.
 \vv
@@ -1054,7 +1103,7 @@ The handling of overflow for signed integers is controlled by the constant IM1 a
 
 \subsection{add}
 \label{table:addInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi &  8 & all standard types \\ \hline
@@ -1068,9 +1117,9 @@ multi & 44 & float16. Optional \\ \hline
 1.4 C &  1 & vector of 16-bit integer elements and broadcast 16 bit integer constant. Optional \\ \hline
 1.4 C & 10 & vector of 32-bit integer elements and broadcast 8-bit sign-extended constant shifted left by another constant. Optional \\ \hline
 1.4 C & 11 & vector of 64-bit integer elements and broadcast 8-bit sign-extended constant shifted left by another constant. Optional \\ \hline
-1.4 C & 34 & single precision floating point vector and broadcast half precision floating point constant. Optional \\ \hline
-1.4 C & 35 & double precision floating point vector and broadcast half precision floating point constant. Optional \\ \hline
-1.4 C & 40 & half precision floating point vector and broadcast half precision floating point constant. Optional \\ \hline
+1.4 C & 34 & single precision floating point vector and broadcast float16 constant. Optional \\ \hline
+1.4 C & 35 & double precision floating point vector and broadcast float16 constant. Optional \\ \hline
+1.4 C & 40 & float16 vector and broadcast float16 constant. Optional \\ \hline
 \end{tabular}
 \vv
 
@@ -1089,7 +1138,7 @@ If you want to add a 64-bit constant to a general purpose register, and triple s
 
 \subsection{add\_add}
 \label{table:addAddInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 51 & all types. Optional \\ \hline
@@ -1129,10 +1178,11 @@ This instruction may be supported for integer operands or floating point or both
 
 \subsection{compare} \label{compare}
 \label{table:compareInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-multi &  7 & all types \\ \hline
+multi &  6 & float16 \\ \hline
+multi &  7 & all other types \\ \hline
 \end{tabular}
 \vv
 
@@ -1170,7 +1220,7 @@ The compare instruction compares two source operands and generates a boolean sca
 Option bit 3 indicates how to threat floating point NAN inputs. A compare operation is considered unordered if at least one floating point input operand is NAN. The translation of high level language operators to ordered and unordered compare operations are listed on page \pageref{table:floatCompareJumpInstructions}.
 \vv
 
-The result is indicated in bit 0 of the destination register. It is 1 for true and 0 for false. The remaining bits are copied from a mask register, or zero if there is no mask register. The number of mask bits available is implementation dependent.
+The result is indicated in bit 0 of the destination register. It is 1 for true and 0 for false. The remaining bits are copied from a mask register, or zero if there is no mask register. The number of mask bits available depends on the hardware implementation (typically 16 or 32).
 \vv
 
 The condition code is zero (indicating compare for equal) if there are no option bits. 
@@ -1200,7 +1250,7 @@ This option is controlled by option bits 4-5:
 
 \subsection{div}
 \label{table:divInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 14 & all types. Optional for integer vectors \\ \hline
@@ -1208,14 +1258,14 @@ multi & 14 & all types. Optional for integer vectors \\ \hline
 \vv
 
 int32 r0 = r1 / r2 \\
-int32 r0 = div(r1, r2), options = 4\\
-float v0 = v1 / [r2 + 8, length = r5]
+int32 r0 = div(r1, r2), options = 3\\
+float v0 = v1 / [r2, length = r5]
 \vv
 
 Signed division.
 
 \vv
-This instruction has multiple rounding modes. The rounding mode for integer operands is controlled by option bits (IM3) as follows:
+This instruction has multiple rounding modes. The rounding mode for integer operands is controlled by option bits (IM5) as follows:
 
 \begin{longtable} {|p{25mm}|p{80mm}|}
 \caption{division instructions} 
@@ -1223,35 +1273,36 @@ This instruction has multiple rounding modes. The rounding mode for integer oper
 \endfirsthead
 \endhead
 \hline
-\bfseries Option bits 0-3 & \bfseries Meaning   \\
+\bfseries Option bits 0-1 & \bfseries Meaning   \\
 \hline
- 0 0 0 0 & Truncate towards zero (default) \\
+ 0 0 & Truncate towards zero (default) \\
+ 0 1 & Down \\
+ 1 0 & Up \\
+ 1 1 & Nearest or even \\
 \hline
- 0 1 0 0 & Nearest or even \\
- 0 1 0 1 & Down \\
- 0 1 1 0 & Up \\
- 0 1 1 1 & Truncate towards zero \\
-\hline
-other values & Not allowed \\ 
+other values & Reserved for future use \\ 
 \hline
 \end{longtable}
-Truncation is always used with integer operands when there are no option bits.
+Truncation is used with integer operands if there are no option bits.
 
 \vv
 The rounding mode for floating point operands is controlled by the mask or numeric control register. Option bits must be zero for floating point operands.
 
 \vv
 Division of floating point operands by zero gives $\pm$INF (or NAN if exceptions are enabled).
+\vv
 
-Division of integer operands by zero gives INT\_MAX or INT\_MIN.
-
+Division of integer values by zero gives the maximum or minimum possible value, i.e. INT\_MAX or INT\_MIN, according to the sign of the dividend. 
 Overflow occurs by division of INT\_MIN by -1. The result will wrap around to give INT\_MIN.
+\vv
+
+Float16 operands can be used if option bit 5 is set and operand type is 1 (optional).
 \vv
 
 
 \subsection{div\_rev}
 \label{table:divRevInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 16 & all types. Optional for integer vectors \\ \hline
@@ -1267,10 +1318,27 @@ Same as div, with the two source operands swapped.
 The rounding mode is controlled in the same way as for the div instruction.
 \vv
 
+\subsection{div\_rev\_u}
+\label{table:divRevUInstruction}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+multi & 17 & all integer types. Optional for integer vectors \\ \hline
+\end{tabular}
+\vv
+
+uint32 r0 = 10 / r2 \\
+uint32 v0 = div\_rev(v1, v2), options = 4
+\vv
+
+Unsigned integer division. Same as div\_u, with the two source operands swapped.
+
+The rounding mode is controlled in the same way as for the div instruction, see page \pageref{table:DivInstructions}
+\vv
 
 \subsection{div\_u}
 \label{table:divUInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 15 & all integer types. Optional for integer vectors \\ \hline
@@ -1286,13 +1354,13 @@ Unsigned integer division.
 The rounding mode is controlled in the same way as for the div instruction, see page \pageref{table:DivInstructions}
 
 \vv
-Division by zero gives UINT\_MAX.
+Division by zero gives the maximum possible value, i.e. UINT\_MAX.
 \vv
 
 
 \subsection{div\_ex}
 \label{table:divExInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 24 & Integer vectors. Optional for more than one element \\ \hline
@@ -1307,7 +1375,7 @@ elements of RT with size OS. The truncated results are stored in the even-number
 
 \subsection{div\_ex\_u}
 \label{table:divExUInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 25 & Integer vectors. Optional for more than one element \\ \hline
@@ -1321,147 +1389,118 @@ Divide vector of double-size unsigned integers RS by unsigned integers RT. RS ha
 
 \subsection{max}
 \label{table:maxInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-multi & 22 & all types \\ \hline
+multi & 21 & all types \\ \hline
 \end{tabular}
 \vv
 
 int32 r0 = max(r1, r2) \\
-float v0 = max(v1, v2)
+float v0 = max(v1, v2), options = 2
 \vv
 
-Get the maximum of two numbers:
-
-max(src1,src2) = src1 \textgreater{} src2 ? src1 : src2
+Get the highest of two numbers.
 \vv
 
-Integer operands are treated as signed.
-\vv
-
-The handling of floating point NAN operands follows the definition of the maximum function in the 2019 revision of the IEEE floating point standard 754, which guarantees the propagation of NANs, unlike the 1985 and 2008 versions of the standard.
-\vv
-
-
-\subsection{max\_abs}
-\label{table:maxAbsInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{longtable} {|p{16mm}|p{50mm}|p{50mm}|}
+\caption{Option bits for max} 
+%\label{table:OptionBitsForMax} \\
+\endfirsthead
+\endhead
 \hline
-\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-multi & 23 & all floating point types \\ \hline
-\end{tabular}
-\vv
-
-float v0 = max\_abs(v1, v2)
-\vv
-
-Gives the maximum of the absolute values of two floating point numbers.
-\vv
-
-max\_abs(src1, src2) = max(abs(src1), abs(src2))
-\vv
-
-NAN values are treated in the same way as for the max instruction.
-\vv
-
-
-\subsection{max\_u}
-\label{table:maxUInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\bfseries Option bits & \bfseries Integer operands & \bfseries floating point operands   \\
 \hline
-\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-multi & 23 & all integer types \\ \hline
-\end{tabular}
+bit 0 &  & 0: NANs propagate \newline 1: get src2 if src1 is NAN \\
+\hline
+bit 1 &  & max(abs(src1), abs(src2)) \\
+\hline
+bit 3 & unsigned &  \\
+\hline
+bit 5 &  & float16 (optional) \\
+\hline
+\end{longtable}
+
+
+Floating point NAN values are propagated if option bit 0 is 0 (in accordance with the 2019 revision of the IEEE-754 floating point standard). 
+Setting option bit 0 to one makes the instruction equivalent to the high-level language code:  max(src1,src2) = src1 $>$ src2 ? src1 : src2. This is useful when compiling high-level language code. The instruction will give src2 if src1 is NAN in this case. 
+%\textgreater{}
 \vv
 
-uint32 r0 = max\_u(r1, r2)
+Option bit 1 gives the maximum of absolute values for floating point operands.
 \vv
 
-Gives the maximum of two unsigned integers.
+Integer operands are treated as signed if option bit 3 is 0, or unsigned if option bit 3 is 1.
 \vv
 
-max\_u(src1,src2) = src1 \textgreater{} src2 ? src1 : src2
+Float16 operands can be used with option bit 5 set and operand type = 1.
 \vv
 
 
 \subsection{min}
 \label{table:minInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 20 & all types \\ \hline
 \end{tabular}
 \vv
 
-int32 r0 = min(r1, r2)\\
-float v0 = min(v1, v2)
+int32 r0 = min(r1, r2) \\
+float v0 = min(v1, v2), options = 4
 \vv
 
-Get the minimum of two numbers:
-
-min(src1,src2) = src1 \textless{} src2 ? src1 : src2
+Get the smallest of two numbers.
 \vv
 
-Integer operands are treated as signed.
-\vv
-
-The handling of floating point NAN operands follows the definition of the minimum function in the 2019 revision of the IEEE floating point standard 754, which guarantees the propagation of NANs, unlike the 1985 and 2008 versions of the standard.
-\vv
-
-
-\subsection{min\_abs}
-\label{table:minAbsInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{longtable} {|p{16mm}|p{50mm}|p{50mm}|}
+\caption{Option bits for min} 
+\endfirsthead
+\endhead
 \hline
-\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-multi & 21 & all floating point types \\ \hline
-\end{tabular}
-\vv
-
-float v0 = min\_abs(v1, v2)
-\vv
-
-Gives the minimum of the absolute values of two floating point numbers.
-\vv
-
-min\_abs(src1, src2) = min(abs(src1), abs(src2))
-\vv
-
-NAN values are treated in the same way as for the min instruction.
-\vv
-
-
-\subsection{min\_u}
-\label{table:minUInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\bfseries Option bits & \bfseries Integer operands & \bfseries floating point operands   \\
 \hline
-\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-multi & 21 & all integer types \\ \hline
-\end{tabular}
+bit 0 &  & 0: NANs propagate \newline 1: get src2 if src1 is NAN \\
+\hline
+bit 1 &  & min(abs(src1), abs(src2)) \\
+\hline
+bit 2 & return zero if either operand is negative & return zero if either operand is negative \\
+\hline
+bit 3 & unsigned & \\
+\hline
+bit 5 &  & float16 (optional) \\
+\hline
+\end{longtable}
+
+
+Floating point NAN values are propagated if option bit 0 is 0 (in accordance with the 2019 revision of the IEEE-754 floating point standard). 
+Setting option bit 0 to one makes the instruction equivalent to the high-level language code:  min(src1,src2) = src1 $<${} src2 ? src1 : src2. This is useful when compiling high-level language code. The instruction will give src2 if src1 is NAN in this case.
 \vv
 
-uint32 r0 = min\_u(r1, r2)
+Option bit 1 gives the minimum of absolute values for floating point operands.
 \vv
 
-Gives the minimum of two unsigned integers.
+Option bit 2 sets a lower limit of 0. This will clamp src1 to the interval from 0 to src2.
 \vv
 
-min\_u(src1,src2) = src1 \textless{} src2 ? src1 : src2
+Integer operands are treated as signed if option bit 3 is 0, or unsigned if option bit 3 is 1.
+\vv
+
+Float16 operands can be used with option bit 5 set and operand type = 1.
 \vv
 
 
 \subsection{mul}
 \label{table:mulInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 11 & all standard types \\ \hline
 multi & 46 & float16. Optional \\ \hline
 1.1 C &  8 & general purpose register and 16-bit sign-extended integer constant \\ \hline
-1.4 C & 36 & single precision floating point vector and broadcast half-precision floating point constant. Optional \\ \hline
-1.4 C & 37 & double precision floating point vector and broadcast half-precision floating point constant. Optional \\ \hline
-1.4 C & 41 & half precision floating point vector and broadcast half-precision floating point constant. Optional \\ \hline
+1.4 C & 36 & single precision floating point vector and broadcast float16 constant. Optional \\ \hline
+1.4 C & 37 & double precision floating point vector and broadcast float16 constant. Optional \\ \hline
+1.4 C & 41 & half precision floating point vector and broadcast float16 constant. Optional \\ \hline
 \end{tabular}
 \vv
 
@@ -1478,13 +1517,11 @@ The same instruction can be used for signed and unsigned integers.
 
 \subsection{mul\_add, mul\_add2}
 \label{table:mulAddInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 49 & mul\_add: dest = $\pm$ src1 $\cdot$ src2 $\pm$ src3. All types. Optional \\ 
-multi & 50 & mul\_add2: dest = $\pm$ src1 $\cdot$ src3 $\pm$ src2. All types. Optional \\
-multi & 48 & mul\_add. float16. Optional \\ \hline
-\hline
+multi & 50 & mul\_add2: dest = $\pm$ src1 $\cdot$ src3 $\pm$ src2. All types. Optional \\ \hline
 \end{tabular}
 \vv
 
@@ -1509,6 +1546,8 @@ bit 1 & change sign of product in odd-numbered vector elements \\
 bit 2 & change sign of addend in even-numbered vector elements \\
 bit 3 & change sign of addend in odd-numbered vector elements \\
 \hline
+bit 5 & float16 operands (optional). \\
+\hline
 \end{longtable}
 
 \vv
@@ -1522,7 +1561,7 @@ Support for integer operands is optional. Support for floating point operands is
 
 \subsection{mul\_ex}
 \label{table:mulExInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 26 & integer vectors \\ \hline
@@ -1541,7 +1580,7 @@ Multiply even-numbered signed integer vector elements to double size result. The
 
 \subsection{mul\_ex\_u}
 \label{table:mulExUInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 27 & integer vectors \\ \hline
@@ -1560,7 +1599,7 @@ Multiply even-numbered unsigned integer vector elements to double size result. T
 
 \subsection{mul\_hi}
 \label{table:mulHiInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 12 & integer vectors \\ \hline
@@ -1576,13 +1615,16 @@ High part of signed integer product.
 
 dest = (src1 $\cdot$ src2) $>>$ OS
 
-(Signed, OS = operand size in bits).
+where OS is the operand size in bits.
+\vv
+
+A 32-bit operand size is used if 64 bits is specified on a hardware that has only 32-bit registers.
 \vv
 
 
 \subsection{mul\_hi\_u}
 \label{table:mulHiUInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 13 & integer vectors \\ \hline
@@ -1597,13 +1639,16 @@ High part of unsigned integer product.
 
 dest = (src1 $\cdot$ src2) $>>$ OS
 
-(Unsigned, OS = operand size in bits).
+where OS is the operand size in bits.
+\vv
+
+A 32-bit operand size is used if 64 bits is specified on a hardware that has only 32-bit registers.
 \vv
 
 
 \subsection{mul\_2pow}
-\label{table:mul2PosInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\label{table:mul2PowInstruction}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 32 & all floating point types \\ \hline
@@ -1629,50 +1674,48 @@ This instruction has the same op1 code as shift\_left, but applies to floating p
 
 \subsection{rem}
 \label{table:remInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-multi & 18 & all types. Optional for vectors of more than one element \\ \hline
+multi & 18 & g.p. registers. Optional for vectors \\ \hline
 \end{tabular}
 \vv
 
-int32 r0 = r1 \% r2 \\
-float v0 = rem(v1, v2)
+int32 r0 = r1 \% r2
 \vv
 
-Modulo. 
+For integer operands, the rem instruction gives the remainder of integer division (according to the C++11 standard). 
+This is defined as rem(a,b) = a - a / b * b. 
 
+This implies that rem(a,0) = a, and that rem(a,b) is negative only if a is negative.
 \vv
-Signed with integer operands or floating point operands.
 
-\vv
-A floating point number modulo zero gives NAN.
-An integer modulo zero gives zero.
+The operation for floating point operands is not defined yet. 
 \vv
 
 
 \subsection{rem\_u}
 \label{table:remUInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-multi & 19 & integers. Optional for vectors of more than one element \\ \hline
+multi & 19 & g.p. registers. Optional for vectors \\ \hline
 \end{tabular}
 \vv
 
 uint32 r0 = r1 \% r2
 \vv
 
-Unsigned modulo or remainder.
-
+Unsigned remainder.
 \vv
-An integer modulo zero gives zero.
+
+An integer a modulo zero gives a.
 \vv
 
 
 \subsection{round}
 \label{table:roundInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.3 B & 14 & floating point vectors \\ \hline
@@ -1691,7 +1734,7 @@ The rounding mode is specified in bit 0-1 of IM1. See table \ref{table:maskBits}
 
 \subsection{roundp2}
 \label{table:roundP2Instruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.8 B &  3 & g.p. registers \\ \hline
@@ -1725,7 +1768,7 @@ bit 5 & 0: returns 0 if the result overflows.\newline
 
 \subsection{round2n}
 \label{table:round2nInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.3 B & 15 & vector registers. Optional \\ \hline
@@ -1745,7 +1788,7 @@ n is a signed integer constant in IM1.
 
 \subsection{sqrt}
 \label{table:sqrtInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 28 & floating point vectors. Optional \\ \hline
@@ -1755,10 +1798,13 @@ n is a signed integer constant in IM1.
 Square root.
 \vv
 
+Float16 operands can be used if operand type is 1 (optional).
+\vv
+
 
 \subsection{sub}
 \label{table:subInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi &  9 & all standard types \\ \hline
@@ -1780,7 +1826,7 @@ Subtraction.
 
 \subsection{sub\_rev}
 \label{table:subRevInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 10 & all types \\ \hline
@@ -1810,7 +1856,7 @@ see page \pageref{table:absInstruction}.
 
 \subsection{add\_c}
 \label{table:addCInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 42 & integer vectors with two elements. Optional \\ \hline
@@ -1829,7 +1875,7 @@ Longer vectors are not supported. See page
 
 \subsection{add\_oc}
 \label{table:addOcInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 38 & vector registers. Optional \\ \hline
@@ -1855,7 +1901,7 @@ The values are propagated so that the overflow result of the operation is OR'ed 
 
 \subsection{add\_ss}
 \label{table:addSsInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 32 & integer vectors. Optional \\ \hline
@@ -1869,7 +1915,7 @@ Overflow and underflow produces INT\_MAX and INT\_MIN.
 
 \subsection{add\_us}
 \label{table:addUsInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 33 & integer vectors. Optional \\ \hline
@@ -1883,7 +1929,7 @@ Overflow produces UINT\_MAX.
 
 \subsection{compress\_ss}
 \label{table:compressSsInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 5 & integer vectors. Optional \\ \hline
@@ -1899,7 +1945,7 @@ Masks cannot be used and overflow traps cannot be enabled for this instruction.
 
 \subsection{compress\_us}
 \label{table:compressUsInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 6 & integer vectors. Optional \\ \hline
@@ -1916,7 +1962,7 @@ Masks cannot be used and overflow traps cannot be enabled for this instruction.
 
 \subsection{div\_oc}
 \label{table:divOcInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 41 & vector registers. Optional \\ \hline
@@ -1930,7 +1976,7 @@ See add\_oc for options.
 
 \subsection{mul\_oc}
 \label{table:mulOcInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 40 & vector registers. Optional \\ \hline
@@ -1944,7 +1990,7 @@ See add\_oc for options.
 
 \subsection{mul\_ss}
 \label{table:mulSsInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 36 & integer vectors. Optional \\ \hline
@@ -1958,7 +2004,7 @@ Overflow and underflow produces INT\_MAX and INT\_MIN.
 
 \subsection{mul\_us}
 \label{table:mulUsInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 37 & integer vectors. Optional \\ \hline
@@ -1972,7 +2018,7 @@ Overflow produces UINT\_MAX.
 
 \subsection{sub\_b}
 \label{table:subBInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 43 & integer vectors with two elements. Optional \\ \hline
@@ -1991,7 +2037,7 @@ Longer vectors are not supported. See page
 
 \subsection{sub\_oc}
 \label{table:subOcInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 39 & vector registers. Optional \\ \hline
@@ -2005,7 +2051,7 @@ See add\_oc for options.
 
 \subsection{sub\_ss}
 \label{table:subSsInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 34 & integer vectors. Optional \\ \hline
@@ -2019,7 +2065,7 @@ Overflow and underflow produces INT\_MAX and INT\_MIN.
 
 \subsection{sub\_us}
 \label{table:subUsInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 35 & integer vectors. Optional \\ \hline
@@ -2035,7 +2081,7 @@ Overflow and underflow produces UINT\_MAX and 0.
 
 \subsection{and}
 \label{table:andInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 26 & all types \\ \hline
@@ -2116,7 +2162,7 @@ Do not use a floating point type with a constant operand unless you want the ope
 
 \subsection{bit\_reverse byte\_reverse}
 \label{table:bitReverseInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.3 B & 20 & vectors \\ \hline
@@ -2134,7 +2180,7 @@ IM1 = 1: Reverse the order of bits in each element of a vector.
 
 \subsection{bits2bool}
 \label{table:bits2boolInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 12 & integer vectors \\ \hline
@@ -2156,7 +2202,7 @@ This instruction cannot have a fallback register.
 
 \subsection{bitscan}
 \label{table:bitscanInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.8 B &  2 & general purpose registers \\ \hline
@@ -2186,28 +2232,46 @@ bit 4 & 0: returns  0 if the input is 0.\newline
 
 \subsection{bool\_reduce}
 \label{table:boolReduceInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.3 B & 26 & integer vectors \\ \hline
 \end{tabular}
 \vv
 
-int32 v0 = bool\_reduce(v1)
+int32 v0 = bool\_reduce(v1, 2)
 \vv
 
 A boolean vector is reduced by combining bit 0 of all elements.
-
-The output is a scalar integer where bit 0 is the AND combination of all the bits, and bit 1 is the OR combination of all the bits. The remaining bits are reserved for future use.
 \vv
 
+The boolean function is determined by the immediate operand as follows:
+\begin{longtable} {|p{20mm}|p{75mm}|}
+\caption{Control byte for bool\_reduce} 
+\label{table:ControlByteForBoolReduce} \\
+\endfirsthead
+\endhead
+\hline
+\bfseries Immediate operand & \bfseries Boolean function  \\
+\hline
+0 & AND. Output is true if all elements are true \\
+\hline
+1 & NAND. Output is true if at least one element is false \\
+\hline
+2 & OR. Output is true if at least one element is true \\
+\hline
+3 & NOR. Output is true if all elements are false \\
+\hline
+\end{longtable}
+
+The output is a vector with one element. The element size is the same as for the input operand. Bit 0 contains the boolean result. The other bits will be zero. 
 This instruction cannot have a mask.
 \vv
 
 
 \subsection{bool2bits}
 \label{table:bool2bitsInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.3 B & 25 & integer vectors \\ \hline
@@ -2225,43 +2289,9 @@ This instruction cannot have a mask.
 \vv
 
 
-\subsection{category\_reduce}
-\label{table:categoryReduceInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
-\hline
-\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-1.3 B & 26 & floating point vectors \\ \hline
-\end{tabular}
-\vv
-
-float v0 = category\_reduce(v1)
-\vv
-
-A floating point vector is analyzed and each element is classified as belonging to one of the eight categories listed below. Each bit in the output indicates that at least one element in RT belongs to the corresponding category.
-\vv
-
-\begin{tabular}{|p{24mm}|p{115mm}|}
-\hline
-\bfseries Bit number & \bfseries Category \\ \hline
-0 & at least one element is NAN \\
-1 & at least one element is zero \\
-2 & at least one element is negative subnormal \\
-3 & at least one element is positive subnormal \\
-4 & at least one element is negative normal \\
-5 & at least one element is positive normal \\
-6 & at least one element is negative infinity \\
-7 & at least one element is positive infinity \\
-\hline
-\end{tabular}
-\vv
-
-This instruction cannot have a mask.
-\vv
-
-
 \subsection{clear\_bit}
 \label{table:clearBitInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 36 & all types \\ \hline
@@ -2280,7 +2310,7 @@ Floating point operands are treated as integers.
 
 \subsection{set\_bit}
 \label{table:setBitInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 37 & all integer types \\ \hline
@@ -2296,7 +2326,7 @@ dest = src1 $|$ (1 $<<$ src2)
 
 \subsection{toggle\_bit}
 \label{table:toggleBitInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 38 & all types \\ \hline
@@ -2317,26 +2347,26 @@ See page \pageref{table:compareInstruction}
 
 \subsection{fp\_category}
 \label{table:fpCategoryInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.3 B & 17 & floating point vectors \\ \hline
 \end{tabular}
 \vv
 
-float v0 = fp\_category(v1, 1)
+float v0 = fp\_category(v1, 0x30)
 \vv
 
-The input is a floating point vector. The output is a boolean vector where bit 0 of each element indicates if the input RS belongs to any of the categories indicated by the bits in the immediate operand IM1. The remaining bits of the output are taken from the numeric control register. The number of NUMCONTR bits available is implementation dependent.
-Any floating point value will belong to one, and only one, of these categories. 
+The input is a floating point vector. The output is a boolean vector where bit 0 of each element indicates if the input vector belongs to any of the categories indicated by the bits in the immediate operand IM1. Any floating point value will belong to one, and only one, of these categories. 
+\vv
 
-\begin{longtable} {|p{20mm}|p{90mm}|}
-\caption{Meaning of bits in fp\_category} 
+\begin{longtable} {|p{24mm}|p{90mm}|}
+\caption{Control bits for fp\_category} 
 \label{table:fpCategoryInstructionBits} \\
 \endfirsthead
 \endhead
 \hline
-\bfseries Bit number & \bfseries Meaning  \\
+\bfseries Bit number & \bfseries Category  \\
 \hline
 0 & $\pm$ NAN \\
 1 & $\pm$ Zero \\
@@ -2350,10 +2380,55 @@ Any floating point value will belong to one, and only one, of these categories.
 \end{longtable}
 \vv
 
+The remaining bits of the output are taken from the numeric control register. The number of NUMCONTR bits available is implementation dependent. This instruction cannot have a mask.
+\vv
+
+Float16 operands can be used with operand type = 1.
+\vv
+
+
+\subsection{fp\_category\_reduce}
+\label{table:fpCategoryReduceInstruction}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
+\hline
+\bfseries format & \bfseries opcode & \bfseries operands \\ \hline
+1.3 B & 27 & floating point vectors \\ \hline
+\end{tabular}
+\vv
+
+float v0 = fp\_category\_reduce(v1, 0xC1)
+\vv
+
+A floating point vector is analyzed and each element is classified as belonging to one of the eight categories listed below. The output is true if at least one vector element belongs to any of the categories indicated by the bits in the immediate operand. \\
+For example, category\_reduce(v1, 0xC1) will give true if at least one element of the vector is not a finite value.
+\vv
+
+\begin{tabular}{|p{24mm}|p{115mm}|}
+\hline
+\bfseries Bit number & \bfseries Category \\ \hline
+0 & at least one element is NAN \\
+1 & at least one element is $\pm$ zero \\
+2 & at least one element is negative subnormal \\
+3 & at least one element is positive subnormal \\
+4 & at least one element is negative normal \\
+5 & at least one element is positive normal \\
+6 & at least one element is negative infinity \\
+7 & at least one element is positive infinity \\
+\hline
+\end{tabular}
+\vv
+
+The output is a boolean vector with one element. The element size is the same as for the input operand. Bit 0 contains the result. The other bits will be zero. 
+This instruction cannot have a mask.
+\vv
+
+Float16 operands can be used with operand type = 1.
+\vv
+
 
 \subsection{make\_mask}
 \label{table:makeMaskInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 2.6 &  2 & integer vectors \\ \hline
@@ -2369,7 +2444,7 @@ The length of the output is the same as the length of src1. If there are more th
 
 \subsection{make\_sequence}
 \label{table:makeSequenceInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.3 B &  3 & all vectors \\ \hline
@@ -2386,7 +2461,7 @@ The first element is equal to the immediate operand IM1, the next element is IM1
 
 \subsection{mask\_length}
 \label{table:maskLengthInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 2.2.7 & 1.1 & integer vectors \\ \hline
@@ -2405,10 +2480,10 @@ bit 0 = 0: bit 0 will be 1 in the first n bytes in the output and 0 in the rest.
 bit 0 = 1: bit 0 will be 0 in the first n bytes in the output and 1 in the rest. \\
 bit 1 = 1: copy remaining bits from input vector v1 into each vector element. \\
 bit 2 = 1: copy remaining bits from the numeric control register. \\
-bit 4 = 1: broadcast remaining bits from a constant (IM2) into all 32-bit words of the result. \\
-\hspace{17mm} Bit 1-7 of IM2 go to bit 1-7 of the result. \\
-\hspace{17mm} Bit 8-11 of IM2 go to bit 20-23 of the result. \\
-\hspace{17mm} Bit 12-15 of IM2 go to bit 26-29 of the result. \\
+bit 4 = 1: broadcast remaining bits from a constant (IM4) into all 32-bit words of the result. \\
+\hspace{17mm} Bit 1-7 of IM4 go to bit 1-7 of the result. \\
+\hspace{17mm} Bit 8-11 of IM4 go to bit 20-23 of the result. \\
+\hspace{17mm} Bit 12-15 of IM4 go to bit 26-29 of the result. \\
 Output bits that are not set by any of these options will be zero. 
 If multiple options are specified, the results will be OR'ed.
 
@@ -2419,7 +2494,7 @@ This instruction can have a mask but not a fallback register. The fallback value
 
 \subsection{move\_bits}
 \label{table:moveBitsInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 2.0.7 & 0.1 & general purpose registers. Optional \\ \hline
@@ -2461,7 +2536,7 @@ int16 r0 = move\_bits(r1, r2, 8, 8, 4) // = 0x1B34 \\
 
 \subsection{popcount}
 \label{table:popcountInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.8 B &  4 & general purpose registers. Optional \\ \hline
@@ -2479,7 +2554,7 @@ The popcount instruction counts the number of 1-bits in an integer. It can also 
 
 \subsection{rotate}
 \label{table:rotateInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 33 & all integer types \\ \hline
@@ -2495,7 +2570,7 @@ Rotate the bits of src1 left if src2 is positive, or right if src2 is negative.
 
 \subsection{shift\_left}
 \label{table:shiftLeftInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 32 & all integer types \\ \hline
@@ -2516,7 +2591,7 @@ This instruction has the same op1 code as mul\_2pow, but applies to integer oper
 
 \subsection{shift\_right\_s}
 \label{table:shiftRightSInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 34 & all integer types \\ \hline
@@ -2536,7 +2611,7 @@ The result is 0 or -1 if src2 is outside the range 0 $\leq$ src2 $<$ number\_of\
 
 \subsection{shift\_right\_u}
 \label{table:shiftRightUInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 35 & all integer types \\ \hline
@@ -2555,7 +2630,7 @@ The result is zero if src2 is outside the range 0 $\leq$ src2 $<$ number\_of\_bi
 
 \subsection{funnel\_shift}
 \label{table:funnelShiftInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 53 & all integer types \\ \hline
@@ -2591,7 +2666,7 @@ A funnel shift in the opposite direction can be made by swapping the first two o
 
 \subsection{select\_bits}
 \label{table:selectBitsInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 52 & all integer types \\ \hline
@@ -2610,7 +2685,7 @@ This instruction combines bits from the first two source operands, using the thi
 
 \subsection{test\_bit}
 \label{table:testBitInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 39 & all integer types \\ \hline
@@ -2624,7 +2699,7 @@ result = (src1 $>>$ src2) \& 1.
 \vv
 
 The result is indicated in bit 0 of the destination register. 
-The remaining bits of the output may be taken from a mask register or numeric control register. The number of mask or NUMCONTR bits available is implementation dependent.
+The remaining bits of the output may be taken from a mask register or numeric control register.
 \vv
 
 A fallback register can be used as an operand for an extra boolean operation, with or without a mask. Only bit 0 of the fallback register is used. 
@@ -2679,13 +2754,13 @@ Option bit 2 inverts the result, bit 3 inverts the fallback, and bit 4 inverts t
 \vv
 
 The value of mask is 1 if there is no mask register. 
-The remaining bits are copied from the mask register if option bit 5 is set, or from the numeric control register if there is no mask and bit 5 is set. The remaining bits are zero if option bit 5 is not set. The number of mask or NUMCONTR bits available is implementation dependent.
+The remaining bits are copied from the mask register if option bit 5 is set, or from the numeric control register if there is no mask and bit 5 is set. The remaining bits are zero if option bit 5 is not set. The number of mask or NUMCONTR bits available depends on the hardware implementation (typically 16 or 32 bits).
 \vv
 
 
 \subsection{test\_bits\_and}
 \label{table:testBitsAndInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 40 & all integer types \\ \hline
@@ -2704,13 +2779,13 @@ The remaining bits of the output may be taken from a mask register or numeric co
 A fallback register can be used as an operand for an extra boolean operation, with or without a mask. Only bit 0 of the fallback register is used. These options are controlled by option bits 0-4 in the same way as for test\_bit, as indicated in table \ref{table:AlternativeMaskUseForTestBit}.
 \vv
 
-The remaining bits are copied from the mask register if option bit 5 is set, or from the numeric control register if there is no mask and bit 5 is set. The remaining bits are zero if option bit 5 is not set. The number of mask or NUMCONTR bits available is implementation dependent.
+The remaining bits are copied from the mask register if option bit 5 is set, or from the numeric control register if there is no mask and bit 5 is set. The remaining bits are zero if option bit 5 is not set. The number of mask or NUMCONTR bits available depends on the hardware implementation (typically 16 or 32 bits).
 \vv
 
 
 \subsection{test\_bits\_or}
 \label{table:testBitsOrInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 41 & all integer types \\ \hline
@@ -2729,17 +2804,17 @@ The remaining bits of the output may be taken from a mask register or numeric co
 A fallback register can be used as an operand for an extra boolean operation, with or without a mask. Only bit 0 of the fallback register is used. These options are controlled by option bits 0-4 in the same way as for test\_bit, as indicated in table \ref{table:AlternativeMaskUseForTestBit}.
 \vv
 
-The remaining bits are copied from the mask register if option bit 5 is set, or from the numeric control register if there is no mask and bit 5 is set. The remaining bits are zero if option bit 5 is not set. The number of mask or NUMCONTR bits available is implementation dependent.
+The remaining bits are copied from the mask register if option bit 5 is set, or from the numeric control register if there is no mask and bit 5 is set. The remaining bits are zero if option bit 5 is not set. The number of mask or NUMCONTR bits available depends on the hardware implementation (typically 16 or 32 bits).
 \vv
 
 
 \subsection{truth\_tab3}
 \label{table:truthTab3Instruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-2.0.6 & 8.1 & general purpose registers. optional \\ \hline
-2.2.6 & 8.1 & integer vectors. optional \\ \hline
+2.0.6 & 48.1 & general purpose registers. optional \\ \hline
+2.2.6 & 48.1 & integer vectors. optional \\ \hline
 \end{tabular}
 \vv
 
@@ -2860,7 +2935,7 @@ Add two unsigned integer operands and jump if the operation produces a carry.
 
 
 \subsection{increment\_compare/jump\_above/below}
-\label{table:addJumpInstruction}
+\label{table:incrementCompareJumpInstructions}
 \begin{tabular}{|p{16mm}|p{12mm}|p{60mm}|p{50mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries instruction & \bfseries operands \\ \hline
@@ -3295,7 +3370,7 @@ Relative pointers to jump or call addresses are stored in memory as signed offse
 This instruction works as follows. Calculate the address of a table entry as the base pointer plus the offset (unscaled) or the index (RT) scaled by the operand size. Read a relative pointer from this address, sign-extend to 64 bits, and scale by 4. Then add the reference point (RD). Jump or call to the calculated address. The array index (RT) is scaled by the operand size, while the table entries are scaled by the instruction word size (4). The reference point must be aligned by 4.
 \vv
 
-This instruction in format 1.6A has base pointer in RS, scaled index in RT, and reference point in RD. Format 2.5.2B has base pointer in RS, unscaled index in IM2 and reference point in RD.
+This instruction in format 1.6A has base pointer in RS, scaled index in RT, and reference point in RD. Format 2.5.2B has base pointer in RS, unscaled index in IM6 and reference point in RD.
 \vv
 
 A table of pointers used by the table-based jump\_relative and call\_relative instructions is preferably placed in the constant data section (CONST). This makes it possible to use the table base as reference point. This also improves security by giving read-only access to the table.
@@ -3337,7 +3412,7 @@ It is the same as trap(1). The complete instruction code word is 0x7FE00001.
 
 \subsection{filler}
 \label{table:fillerInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.7 C & 63 & \\ \hline
@@ -3360,7 +3435,7 @@ See page \pageref{table:sysCallInstruction}.
 
 \subsection{address}
 \label{table:addressInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 2.9 B & 32 & g.p. registers \\ \hline
@@ -3376,7 +3451,7 @@ Calculate an address relative to a pointer by adding a 32-bit sign-extended cons
 
 \subsection{compare\_swap}
 \label{table:compareSwapInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 2.5 A & 18 & g. p. registers and memory operand with 32 bit offset. Optional \\ \hline
@@ -3403,7 +3478,7 @@ Further atomic instructions can be implemented if needed, preferably with the sa
 
 \subsection{nop}
 \label{table:nopInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi &  0 & \\ \hline
@@ -3423,19 +3498,19 @@ The processor is allowed to skip NOPs as fast as it can at an early stage in the
 
 \subsection{undef}
 \label{table:undefInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 63 & \\ \hline
 \end{tabular}
 \vv
 
-Undefined code. Guaranteed to generate trap (interrupt) in all future implementations
+Undefined code. Guaranteed to generate error trap or error halt in all implementations.
 \vv
 
 \subsection{userdef}
 \label{table:userdefInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 multi & 56-62 & any types \\ \hline
@@ -3453,7 +3528,7 @@ These instructions cannot have a mask.
 \subsection{input}
 
 \label{table:inputInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.8 B & 62 & general purpose registers \\ \hline
@@ -3485,7 +3560,7 @@ Masks are not necessarily supported.
 
 \subsection{output}
 \label{table:outputInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.8 B & 63 & general purpose registers \\ \hline
@@ -3517,7 +3592,7 @@ Masks are not necessarily supported.
 
 \subsection{read\_capabilities, write\_capabilities}
 \label{table:readCapabilitiesInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.8 B & 34 & read\_capabilities(capabilities register, constant) \\ \hline
@@ -3579,7 +3654,7 @@ Capabilities registers 12-15 can be increased for the purpose of emulation. The 
 
 \subsection{read\_memory\_map, write\_memory\_map}
 \label{table:readMemoryMapInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 60 & vector = read\_memory\_map(base, index) \\ \hline
@@ -3606,7 +3681,7 @@ Write a vector register to memory map. RD = vector register source. RT-RS = inte
 
 \subsection{read\_call\_stack, write\_call\_stack}
 \label{table:readCallStackInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 58 & read\_call\_stack(r1, r2) \\
@@ -3638,7 +3713,7 @@ Privileged instruction.
 
 \subsection{read\_perf}
 \label{table:readPerfInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.8 B & 36 & performance counter register, constant \\ \hline
@@ -3701,8 +3776,8 @@ The perf16 register is useful for detecting errors when error traps are disabled
 
 
 \subsection{read\_perfs}
-\label{table:readPerfInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\label{table:readPerfSInstruction}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.8 B & 37 & performance counter register, constant \\ \hline
@@ -3715,7 +3790,7 @@ This is the same as the read\_perf instruction, but serializing. The pipeline is
 
 \subsection{read\_spec, write\_spec}
 \label{table:readSpecInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.8 B & 32 & read\_spec(special register, constant)\\ \hline
@@ -3752,7 +3827,7 @@ datap    & spec2  & Data section pointer \\
 
 \subsection{read\_spev}
 \label{table:readSpevInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.2 A & 56 & special vector register, general purpose register \\ \hline
@@ -3784,7 +3859,7 @@ spec48 & Name of processor. The output is a zero-terminated UTF-8 string contain
 
 \subsection{read\_sys, write\_sys}
 \label{table:readSysInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.8 B & 38 & read\_sys(system register, constant) \\ \hline
@@ -3817,12 +3892,12 @@ Format & Operand type & Register operands & Module ID & Function ID \\
 1.6 A & 64 bit & 3 & RT bit 32-63 & RT bit 0-31 \\
 \hline
 
-2.5.1 B & 32 bit & 2  & IM2 bit 16-31 & IM2 bit 0-15 \\
+2.5.1 B & 32 bit & 2  & IM6 bit 16-31 & IM6 bit 0-15 \\
 \hline
 
-2.5.7 C & 64 bit & 0  & IM3 bit 0-31 & IM1,IM2 bit 0-15 \\
+2.5.7 C & 64 bit & 0  & IM6 bit 0-31 & IM1,IM2 bit 0-15 \\
 \hline
-3.1.2 B & 64 bit & 2  & IM3 bit 0-31 & IM2 bit 0-31 \\
+3.1.2 B & 64 bit & 2  & IM7 bit 0-31 & IM6 bit 0-31 \\
 \hline
 \end{longtable}
 
@@ -3833,8 +3908,8 @@ Parameters for system functions are transferred in registers, following the same
 
 
 \subsection{sys\_return}
-\label{table:sysCallInstruction}
-\begin{tabular}{|p{12mm}|p{12mm}|p{110mm}|}
+\label{table:sysReturnInstruction}
+\begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
 1.7 C & 62 & \\ \hline
@@ -3865,7 +3940,7 @@ A trap instruction with all 1's in all fields (opcode 0x7FFFFFFF) can be used as
 \hline
 \bfseries format & \bfseries opcode & \bfseries instruction & \bfseries immediate operand \\ \hline
 2.5.5C & 63 & compare, trap\_uabove & limit \\ \hline
-%2.5.5 C & 63 & conditional trap & IM2 = interrupt number, IM3 = operand \\ \hline
+%2.5.5 C & 63 & conditional trap & IM2 = interrupt number, IM6 = operand \\ \hline
 \end{tabular}
 \vv
 
@@ -3874,11 +3949,11 @@ Conditional traps are currently not supported.
 
 The conditional trap generates a trap if the specified condition is true.\\
 IM2 contains the interrupt number. \\
-IM3 contains an immediate operand
+IM6 contains an immediate operand
 %the condition code OPJ, specified in table \ref{table:controlTransferInstructions}.
 \vv
 
-Compare/trap\_uabove will generate a trap if RD $>$ IM3. This is useful for checking if an array index exceeds the upper bound. The lower bound does not have to be checked because we use unsigned compare. 
+Compare/trap\_uabove will generate a trap if RD $>$ IM6. This is useful for checking if an array index exceeds the upper bound. The lower bound does not have to be checked because we use unsigned compare. 
 \vv
 
 
@@ -3913,7 +3988,7 @@ All three types are implemented, where type 1 is the most common.
 Nop instructions with nonzero values in unused fields are type 3. These instructions are ignored.
 \vv
 
-Prefetch and fence instructions with no memory operand, with nonzero values in unused fields, or with undefined values in IM3 are type 3. These instructions are ignored.
+Prefetch and fence instructions with no memory operand, with nonzero values in unused fields, or with undefined values in IM6 are type 3. These instructions are ignored.
 \vv
 
 Unused bits in masks and numeric control register are type 3. These bits are ignored.
@@ -3935,6 +4010,58 @@ All other opcodes not explicitly defined are type 1. These may be used for futur
 \vv
 
 Small systems with no operating system and no trap support should define alternative behavior.
+\vv
+
+\section{Proposed new instructions}
+This section describes proposals for new single-format instructions. The descriptions are preliminary and not certain to be implemented.
+\vv
+
+\subsection{Augmented addition}
+This instruction will produce the difference between the exact sum of two floating point numbers and the same sum rounded to the current precision (float or double). Augmented addition is defined in the IEEE754-2019 standard.
+\vv
+
+This instruction is useful for high precision math.
+\vv
+
+No instruction for augmented multiplication is proposed because the mul\_add instruction can produce the same result.
+\vv
+
+\subsection{Long integer addition}
+This instruction will treat vector registers of any length as large integers. The instruction will calculate the sum or difference of two such large integers. A third operand is a single-bit carry input.
+\vv
+
+Instructions with multiple outputs are best avoided in ForwardCom for reasons of hardware design. Instead you will need two instructions for producing the sum and the carry out bit, respectively. 
+\vv
+
+The following option bits are provided:
+\begin{itemize}
+\item subtract or add
+\item use or ignore carry in
+\item produce sum or carry out
+\end{itemize}
+\vv
+
+This instruction is useful for arbitrary precision math.
+\vv
+
+\subsection{Dot product}
+This instruction will calculate a floating point expression of the form $\pm$ a0 $*$ b0 $\pm$ a1 * b1, where a0 is a vector element with even index, and a1 is the following vector element with odd index. b0 and b1 are similar elements of a second vector. Intermediate values are calculated with extra precision.
+\vv
+
+The main purpose of this instruction is to solve a precision problem that occurs in complex number math and elsewhere. A modern compiler will likely code an expression like the above using a fused multiply-and-add instruction. This will make the calculation asymmetric because one multiplication has higher precision than the other. The consequence is that X*Y and Y*X may produce different results, where X and Y are complex numbers. The proposed instruction solves this problem by calculating both multiplications with the same high precision.
+\vv
+
+The following option bits are provided:
+\begin{itemize}
+\item change the sign of a0
+\item change the sign of a1
+\item swap b0 and b1
+\item store the result in y0 or y1, where y0,y1 are elements of the result vector. The other element of y will receive a corresponding element of a third source vector c0,c1
+\end{itemize}
+\vv
+
+This instruction will be useful for complex number multiplication and division, as well as dot products and other applications, with high precision.
+\vv
 
  
 \end{document}

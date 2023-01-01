@@ -4,7 +4,7 @@
 \RaggedRight
 
 \chapter{Instruction lists}\label{chap:InstructionLists}
-The ForwardCom instructions are listed in a comma-separated file instruction\_list.csv. This file is intended for use by assemblers, disassemblers, debuggers and emulators. The list is preliminary and subject to possible changes. Please remember to keep the lists in this document and the list in the instruction\_list.cvs file synchronized.
+The ForwardCom instructions are listed in a comma-separated file instruction\_list.csv. This file is intended for use by assemblers, disassemblers, debuggers and emulators. The list is subject to possible future changes. Please remember to keep the lists in this document and the list in the instruction\_list.cvs file synchronized.
 \vv
 
 The instruction list file has the following fields:
@@ -40,16 +40,15 @@ F0:  Can have mask register, but not fallback register.\newline
 F1:  Can have fallback register without mask register.\newline
 I2:  Immediate source operand is integer regardless of specified operand type.\newline
 M0:  Memory operand is destination.\newline
-%M1:  E formats with a memory operand use IM3 as an extra immediate operand.\newline (obsolete)
-On: n bits of IM3 in E template format used for options (IM3 can be used for shift count only if it is not used for options).\newline
+On: n bits of IM5 in E template format used for options (IM5 can be used for shift count only if it is not used for options).\newline
 R0:  Destination is a general purpose register.\newline
 R1:  First source operand is a general purpose register.\newline
 R2:  Second source operand is a general purpose register.\newline
 RL:  RT is a general purpose register specifying vector length.\newline
 U0:  Integer operands are unsigned.\newline
-U3:  Integer operands are unsigned if option bit 3 is set.\newline \hspace{6mm}
-     (compare instruction).\newline
-H0:  Half precision floating point instruction.\newline
+U3:  Integer operands are unsigned if option bit 3 is set.\newline
+H0:  Half precision floating point if OT = 1.\newline
+H5:  Half precision floating point if option bit 5 is set.\newline
 X0:  Source register can be a special pointer (threadp, datap, ip).\newline
 X1:  Source register is special register.\newline
 X2:  Source register is capabilities register.\newline
@@ -263,53 +262,53 @@ List of multi-format instructions}
 \hline
 \bfseries Instruction & \bfseries OP1 & \bfseries Source ope-rands & \bfseries Description \\
 \hline
-nop          &  0 & 0 & No operation. \\
-store        &  1 & 1 & Store value to memory. \\
-move         &  2 & 1 & Copy value. \\
-prefetch     &  3 & 1 & Prefetch from memory. \\
-sign\_extend &  4 & 1 & Sign-extend smaller integer to 64 bits. \\
-sign\_extend\_ add & 5 & 2 & Sign-extend smaller integer to 64 bits and add 64-bit register. \\
-compare      &  7 & 2 & Compare. Uses condition codes, see p. \pageref{table:conditionCodesForCompareInstruction}. \\
-add          &  8 & 2 & src1 + src2. \\
-sub          &  9 & 2 & src1 - src2. \\
-sub\_rev     & 10 & 2 & src2 - src1. \\
-mul          & 11 & 2 & src1 $\cdot$ src2. \\ 
-mul\_hi      & 12 & 2 & (src1 $\cdot$ src2) $>>$ OS, signed (integer only). \\
-mul\_hi\_u   & 13 & 2 & (src1 $\cdot$ src2) $>>$ OS, unsigned (integer only). \\
-div          & 14 & 2 & src1 / src2, signed division (optional for integer vectors). \\
-div\_u       & 15 & 2 & src1 / src2, unsigned integer division (optional for vectors). \\
-div\_rev     & 16 & 2 & src2 / src1, signed division (optional for integer vectors). \\
-rem          & 18 & 2 & Modulo or remainder, signed (optional for integer vectors). \\
-rem\_u       & 19 & 2 & Modulo or remainder, unsigned (optional for integer vectors). \\
-min          & 20 & 2 & Signed minimum. \\
-min\_u       & 21 & 2 & Minimum. unsigned for integers, abs for f.p. \\
-max          & 22 & 2 & Signed maximum. \\
-max\_u       & 23 & 2 & Maximum. unsigned for integers, abs for f.p. \\
-and          & 26 & 2 & src1 \& src2. \\
-or           & 27 & 2 & src1 \textbar{} src2. \\
-xor          & 28 & 2 & src1 \^{} src2. \\
-mul\_2pow    & 32 & 2 & src1 * $2^{src2}$. Multiply by integer power of 2. Floating point only. \\
-shift\_left  & 32 & 2 & src1 $<<$ src2. Shift left. Integer only. \\
-rotate       & 33 & 2 & Rotate left if src2 positive, right if negative. \\
-shift\_right\_s & 34 & 2 & src1 $>>$ src2. Integer shift right with sign extension.\\
-shift\_right\_u & 35 & 2 & src1 $>>$ src2. Integer shift right with zero extension.\\
-clear\_bit   & 36 & 2 & Clear bit. src1 \& \~{} (1 $<<$ src2). \\
-set\_bit     & 37 & 2 & Set bit. src1 \textbar{} (1 $<<$ src2). \\
-toggle\_bit  & 38 & 2 & Toggle bit. src1 \^{} (1 $<<$ src2). \\
-test\_bit    & 39 & 2 & Test single bit. (src1 $>>$ src2) \& 1. \\
-test\_bits\_and & 40 & 2 & Test if all indicated bits are 1. (src1 \& src2) == src2 \\test\_bits\_or   & 41 & 2 & Test if at least one indicated bit is 1. (src1 \& src2) != 0 \\
-add          & 44 & 2 & src1 + scr2 (float16. optional). \\
-sub          & 45 & 2 & src1 - scr2 (float16. optional). \\
-mul          & 46 & 2 & src1 * scr2 (float16. optional). \\
-mul\_add     & 48 & 3 & $\pm$ src1 $\cdot$ src2 $\pm$ src3 (float16. optional). \\
-mul\_add     & 49 & 3 & $\pm$ src1 $\cdot$ src2 $\pm$ src3 (optional). \\
-mul\_add2    & 50 & 3 & $\pm$ src1 $\cdot$ src3 $\pm$ src2 (optional). \\
-add\_add     & 51 & 3 & $\pm$ src1 $\pm$ src2 $\pm$ src3 (optional). \\
-select\_bits & 52 & 3 & src1 \& src3 \textbar{} src2 \& \~{}src3 \\
-funnel\_shift & 53 & 3 & Concatenate src1 and src2 and shift right by src3. \\
+nop          &  0 & 0 & No operation. p. \pageref{table:nopInstruction}\\
+store        &  1 & 1 & Store value to memory. p. \pageref{table:storeInstruction}\\
+move         &  2 & 1 & Copy value. p. \pageref{table:moveInstruction}\\
+prefetch     &  3 & 1 & Prefetch from memory. p. \pageref{table:prefetchInstruction} \\
+sign\_extend &  4 & 1 & Sign-extend smaller integer to 64 bits. p. \pageref{table:signExtendInstruction}\\
+sign\_extend\_ add & 5 & 2 & Sign-extend smaller integer to 64 bits and add 64-bit register. p. \pageref{table:signExtendAddInstruction} \\
+compare      &  6 & 2 & Compare (float16 only. optional). p. \pageref{table:compareInstruction} \\
+compare      &  7 & 2 & Compare (all other types). p. \pageref{table:compareInstruction}. \\
+add          &  8 & 2 & src1 + src2. p. \pageref{table:addInstruction} \\
+sub          &  9 & 2 & src1 - src2. p. \pageref{table:subInstruction}\\
+sub\_rev     & 10 & 2 & src2 - src1. p. \pageref{table:subRevInstruction}\\
+mul          & 11 & 2 & src1 $\cdot$ src2. p. \pageref{table:mulInstruction}\\ 
+mul\_hi      & 12 & 2 & (src1 $\cdot$ src2) $>>$ OS, signed (integer only). p. \pageref{table:mulHiInstruction}\\
+mul\_hi\_u   & 13 & 2 & (src1 $\cdot$ src2) $>>$ OS, unsigned (integer only). p. \pageref{table:mulHiUInstruction}\\
+div          & 14 & 2 & src1 / src2, signed division (optional for integer vectors). p. \pageref{table:divInstruction} \\
+div\_u       & 15 & 2 & src1 / src2, unsigned integer division (optional for vectors). p. \pageref{table:divUInstruction}\\
+div\_rev     & 16 & 2 & src2 / src1, signed division (optional for integer vectors). p. \pageref{table:divRevInstruction} \\
+div\_rev\_u  & 17 & 2 & src2 / src1, unsigned division (optional for integer vectors). p. \pageref{table:divRevUInstruction}\\
+rem          & 18 & 2 & Modulo or remainder, signed (optional for integer vectors). p. \pageref{table:remInstruction}\\
+rem\_u       & 19 & 2 & Modulo or remainder, unsigned (optional for integer vectors). p. \pageref{table:remUInstruction} \\
+min          & 20 & 2 & Minimum of two numbers. p. \pageref{table:minInstruction} \\
+max          & 21 & 2 & Maximum of two numbers. p. \pageref{table:maxInstruction}  \\
+and          & 26 & 2 & Bitwise and. src1 \& src2. p. \pageref{table:andInstruction}\\
+or           & 27 & 2 & Bitwise or. src1 \textbar{} src2. p. \pageref{table:orInstruction}\\
+xor          & 28 & 2 & Bitwise exclusive or. src1 \^{} src2. p. \pageref{table:xorInstruction}\\
+mul\_2pow    & 32 & 2 & src1 * $2^{src2}$. Multiply by integer power of 2. Floating point only. p. \pageref{table:mul2PowInstruction}\\
+shift\_left  & 32 & 2 & src1 $<<$ src2. Shift left. Integer only. p. \pageref{table:shiftLeftInstruction}\\
+rotate       & 33 & 2 & Rotate left if src2 positive, right if negative. p. \pageref{table:rotateInstruction}\\
+shift\_right\_s & 34 & 2 & src1 $>>$ src2. Integer shift right with sign extension. p. \pageref{table:shiftRightSInstruction}\\
+shift\_right\_u & 35 & 2 & src1 $>>$ src2. Integer shift right with zero extension. p. \pageref{table:shiftRightUInstruction}\\
+clear\_bit   & 36 & 2 & Clear bit. src1 \& \~{} (1 $<<$ src2). p. \pageref{table:clearBitInstruction}\\
+set\_bit     & 37 & 2 & Set bit. src1 \textbar{} (1 $<<$ src2). p. \pageref{table:setBitInstruction}\\
+toggle\_bit  & 38 & 2 & Toggle bit. src1 \^{} (1 $<<$ src2). p. \pageref{table:toggleBitInstruction}\\
+test\_bit    & 39 & 2 & Test single bit. (src1 $>>$ src2) \& 1. p. \pageref{table:testBitInstruction}\\
+test\_bits\_and & 40 & 2 & Test if all indicated bits are 1. (src1 \& src2) == src2. p. \pageref{table:testBitsAndInstruction} \\
+test\_bits\_or  & 41 & 2 & Test if at least one indicated bit is 1. (src1 \& src2) != 0. p. \pageref{table:testBitsOrInstruction} \\
+add          & 44 & 2 & src1 + scr2 (float16 only. optional). p. \pageref{table:addInstruction}\\
+sub          & 45 & 2 & src1 - scr2 (float16 only. optional). p. \pageref{table:subInstruction}\\
+mul          & 46 & 2 & src1 * scr2 (float16 only. optional). p. \pageref{table:mulInstruction}\\
+mul\_add     & 49 & 3 & $\pm$ src1 $\cdot$ src2 $\pm$ src3 (optional). p. \pageref{table:mulAddInstruction}\\
+mul\_add2    & 50 & 3 & $\pm$ src1 $\cdot$ src3 $\pm$ src2 (optional). p. \pageref{table:mulAddInstruction}\\
+add\_add     & 51 & 3 & $\pm$ src1 $\pm$ src2 $\pm$ src3 (optional). p. \pageref{table:addAddInstruction}\\
+select\_bits & 52 & 3 & src1 \& src3 \textbar{} src2 \& \~{}src3 p. \pageref{table:selectBitsInstruction}\\
+funnel\_shift & 53 & 3 & Concatenate src1 and src2 and shift right by src3. p. \pageref{table:funnelShiftInstruction}\\
 userdef56 - userdef62
-             & 56-62 & 2 & Reserved for user-defined instructions. \\
-undef        & 63 & 2 & Undefined code. Generates trap. \\
+             & 56-62 & 2 & Reserved for user-defined instructions. p. \pageref{table:userdefInstruction} \\
+undef        & 63 & 2 & Undefined code. Generates error or trap. p. \pageref{table:undefInstruction} \\
 \hline
 \end{longtable}
 
@@ -325,55 +324,53 @@ These instructions are mostly available in only one or a few formats.
 \hline
 \bfseries Instruction & \bfseries Format &\bfseries OP1 & \bfseries Description \\
 \hline
-move          & 1.1 C &  0 & Move 16-bit sign-extended constant to 32-bit general purpose register. \\
-move          & 1.1 C &  1 & Move 16-bit sign-extended constant to 64-bit general purpose register. \\
-move          & 1.1 C &  3 & Move 16-bit zero-extended constant to 64-bit general purpose register. \\
-move          & 1.1 C & 4  & RD = IM2 \textless\textless{} IM1. Sign-extend IM2 to 32 bits and shift left by the unsigned value IM1. \\
-move          & 1.1 C & 5  & RD = IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits and shift left by the unsigned value IM1. \\
-add           & 1.1 C &  6  & Add 16-bit sign-extended constant to 32-bit general purpose register.. \\
-mul           & 1.1 C &  8  & Multiply 32-bit general purpose register by 16-bit sign-extended constant. \\
-add           & 1.1 C & 10  & RD += IM2 \textless\textless{} IM1. Sign-extend IM2 to 32 bits, shift left by the unsigned value IM1, add to RD. \\
-add           & 1.1 C & 11  & RD += IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits, shift left by the unsigned value IM1, add to RD. \\
-and           & 1.1 C & 12  & RD \&= IM2 \textless\textless{} IM1. Sign-extend IM2 to 32 bits, shift left by the unsigned value IM1, AND with RD. \\
-and           & 1.1 C & 13  & RD \&= IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits, shift left by the unsigned value IM1, AND with RD. \\
-or            & 1.1 C & 14  & RD \textbar{}= IM2 \textless\textless{} IM1. Sign-extend IM2 to 32 bits, shift left by the unsigned value IM1, OR with RD. \\
-or            & 1.1 C & 15  & RD \textbar{}= IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits, shift left by the unsigned value IM1, OR with RD. \\
-xor           & 1.1 C & 16  & RD \^{}= IM2 \textless\textless{} IM1. Sign-extend IM2 to 32 bits, shift left by the unsigned value IM1, XOR with RD. \\
-xor           & 1.1 C & 17  & RD \^{}= IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits, shift left by the unsigned value IM1, XOR with RD. \\
-add           & 1.1 C & 18  & RD += (IM1,IM2) \textless\textless{} 16. Shift 16-bit zero-extended constant left by 16 and add to 32-bit general purpose register. \\
+move          & 1.1 C &  0 & Move 16-bit sign-extended constant to 32-bit general purpose register. p. \pageref{table:moveInstruction}\\
+move          & 1.1 C &  1 & Move 16-bit sign-extended constant to 64-bit general purpose register. p. \pageref{table:moveInstruction} \\
+move          & 1.1 C &  3 & Move 16-bit zero-extended constant to 64-bit general purpose register. p. \pageref{table:moveInstruction} \\
+move          & 1.1 C & 4  & RD = IM2 $<<$ IM1. Sign-extend IM2 to 32 bits and shift left by the unsigned value IM1. p. \pageref{table:moveInstruction} \\
+move          & 1.1 C & 5  & RD = IM2 $<<$ IM1. Sign-extend IM2 to 64 bits and shift left by the unsigned value IM1. p. \pageref{table:moveInstruction} \\
+add           & 1.1 C &  6  & Add 16-bit sign-extended constant to 32-bit general purpose register. p. \pageref{table:addInstruction} \\
+mul           & 1.1 C &  8  & Multiply 32-bit general purpose register by 16-bit sign-extended constant. p. \pageref{table:mulInstruction} \\
+add           & 1.1 C & 10  & RD += IM2 $<<$ IM1. Sign-extend IM2 to 32 bits, shift left by the unsigned value IM1, add to RD. p. \pageref{table:addInstruction}\\
+add           & 1.1 C & 11  & RD += IM2 $<<$ IM1. Sign-extend IM2 to 64 bits, shift left by the unsigned value IM1, add to RD. p. \pageref{table:addInstruction} \\
+and           & 1.1 C & 12  & RD \&= IM2 $<<$ IM1. Sign-extend IM2 to 32 bits, shift left by the unsigned value IM1, AND with RD. p. \pageref{table:andInstruction} \\
+and           & 1.1 C & 13  & RD \&= IM2 $<<$ IM1. Sign-extend IM2 to 64 bits, shift left by the unsigned value IM1, AND with RD. p. \pageref{table:andInstruction} \\
+or            & 1.1 C & 14  & RD \textbar{}= IM2 $<<$ IM1. Sign-extend IM2 to 32 bits, shift left by the unsigned value IM1, OR with RD. p. \pageref{table:orInstruction} \\
+or            & 1.1 C & 15  & RD \textbar{}= IM2 $<<$ IM1. Sign-extend IM2 to 64 bits, shift left by the unsigned value IM1, OR with RD. p. \pageref{table:orInstruction} \\
+xor           & 1.1 C & 16  & RD \^{}= IM2 $<<$ IM1. Sign-extend IM2 to 32 bits, shift left by the unsigned value IM1, XOR with RD. p. \pageref{table:xorInstruction} \\
+xor           & 1.1 C & 17  & RD \^{}= IM2 $<<$ IM1. Sign-extend IM2 to 64 bits, shift left by the unsigned value IM1, XOR with RD. p. \pageref{table:xorInstruction} \\
+add           & 1.1 C & 18  & RD += (IM1,IM2) $<<$ 16. Shift 16-bit zero-extended constant left by 16 and add to 32-bit general purpose register. p. \pageref{table:addInstruction} \\
+abs           & 1.8 B &  0  & Absolute value of integer. IM1 determines handling of overflow: 0: wrap around, 1: saturate, 2: zero. p. \pageref{table:absInstruction} \\
+bitscan       & 1.8 B &  2 & Bit scan forward or reverse. Find index to first or last set bit. p. \pageref{table:bitscanInstruction} \\
+roundp2       & 1.8 B &  3 & Round up or down to nearest power of 2. p. \pageref{table:roundP2Instruction} \\
+popcount      & 1.8 B &  4 & Count the number of bits that are 1. p. \pageref{table:popcountInstruction}\\
+read\_spec    & 1.8 B & 32  & Read special register RS into g. p. register RD. p. \pageref{table:readSpecInstruction} \\
+write\_spec   & 1.8 B & 33  & Write g. p. register RS to special register RD. p. \pageref{table:readSpecInstruction} \\
+read\_capabi-lities & 1.8 B & 34  & Read capabilities register RS into g. p. register RD. p. \pageref{table:readCapabilitiesInstruction} \\
+write\_capabi-lities & 1.8 B & 35  & Write g. p. register RS to capabilities register RD. p. \pageref{table:writeCapabilitiesInstruction} \\
+read\_perf    & 1.8 B & 36  & Read performance counter. p. \pageref{table:readPerfInstruction} \\
+read\_perfs   & 1.8 B & 37  & Read performance counter, serializing. p. \pageref{table:readPerfSInstruction} \\
+read\_sys     & 1.8 B & 38  & Read system register RS into g. p. register RD. p. \pageref{table:readSysInstruction} \\
+write\_sys    & 1.8 B & 39  & Write g. p. register RS to system register RD. p. \pageref{table:readSysInstruction} \\
+push          & 1.8 B & 56  & Push g. p. register RS to stack with pointer RD. p. \pageref{table:pushInstruction} \\
+pop           & 1.8 B & 57  & Pop g. p. register RS from stack with pointer RD. p. \pageref{table:popInstruction} \\
+input         & 1.8 B & 62  & Read RD from input port with address IM1 or RS (privileged instruction). p. \pageref{table:inputInstruction} \\
+output        & 1.8 B & 63  & Write RD to output port with address IM1 or RS (privileged instruction). p. \pageref{table:outputInstruction} \\
 
-abs           & 1.8 B &  0  & Absolute value of integer. IM1 determines handling of overflow: 0: wrap around, 1: saturate, 2: zero. \\
-%shift\_add    & 1.8 B &  1  & Shift and add. RD += RS \textless\textless{} IM1 \\
-bitscan       & 1.8 B &  2 & Bit scan forward or reverse. Find index to first or last set bit. \\
-roundp2       & 1.8 B &  3 & Round up or down to nearest power of 2. \\
-popcount      & 1.8 B &  4 & Count the number of bits that are 1.\\
-read\_spec    & 1.8 B & 32  & Read special register RS into g. p. register RD. \\
-write\_spec   & 1.8 B & 33  & Write g. p. register RS to special register RD. \\
-read\_capabi-lities & 1.8 B & 34  & Read capabilities register RS into g. p. register RD. \\
-write\_capabi-lities & 1.8 B & 35  & Write g. p. register RS to capabilities register RD. \\
-read\_perf    & 1.8 B & 36  & Read performance counter. \\
-read\_perfs   & 1.8 B & 37  & Read performance counter, serializing. \\
-read\_sys     & 1.8 B & 38  & Read system register RS into g. p. register RD. \\
-write\_sys    & 1.8 B & 39  & Write g. p. register RS to system register RD. \\
-push          & 1.8 B & 56  & Push g. p. register RS to stack with pointer RD. \\
-pop           & 1.8 B & 57  & Pop g. p. register RS from stack with pointer RD. \\
-input         & 1.8 B & 62  & Read RD from input port with address IM1 or RS. (privileged instruction) \\
-output        & 1.8 B & 63  & Write RD to output port with address IM1 or RS. (privileged instruction) \\
+truth\_tab3   & 2.0.6 E & 48.1 & Boolean function of three inputs, given by a truth table. p. \pageref{table:truthTab3Instruction} \\
 
-truth\_tab3   & 2.0.6 E & 8.1 & Boolean function of three inputs, given by a truth table. \\
+move\_bits    & 2.0.7 E & 0.1 & Replace one or more contiguous bits at one position of RS with contiguous bits from another position of RT. Optional. p. \pageref{table:moveBitsInstruction} \\
 
-move\_bits    & 2.0.7 E & 0.1 & Replace one or more contiguous bits at one position of RS with contiguous bits from another position of RT. Optional. \\
-
-move          & 2.9 A &  0  & Load 32-bit constant into the high part of a general purpose register. The low part is zero. RD = IM2 \textless\textless{} 32. \\
+move          & 2.9 A &  0  & Load 32-bit constant into the high part of a general purpose register. The low part is zero. RD = IM6 $<<$ 32. p. \pageref{table:moveInstruction} \\
 insert\_hi    & 2.9 A &  1  & Insert 32-bit constant into the high part of a general purpose register, leaving the low part unchanged.
-RD = (RT \& 0xFFFFFFFF) \textbar{} (IM2 \textless\textless{} 32). \\
-add           & 2.9 A &  2  & Add zero-extended 32-bit constant to general purpose register. \\
-sub           & 2.9 A &  3  & Subtract zero-extended 32-bit constant from general purpose register. \\
-add           & 2.9 A &  4  & Add 32-bit constant to high part of general purpose register. RD = RT + (IM2 \textless\textless{} 32). \\
-and           & 2.9 A &  5  & AND high part of general purpose register with 32-bit constant. RD = RT \& (IM2 \textless\textless{} 32). \\
-or            & 2.9 A &  6  & OR high part of general purpose register with 32-bit constant. RD = RT \textbar{} (IM2 \textless\textless{} 32). \\
-xor           & 2.9 A &  7  & XOR high part of general purpose register with 32-bit constant. RD = RT \^{} (IM2 \textless\textless{} 32). \\
-address       & 2.9 A & 32  & RD = RS + IM2, RS can be THREADP (28), DATAP (29) or IP (30). \\
+RD = (RT \& 0xFFFFFFFF) \textbar{} (IM6 $<<$ 32). p. \pageref{table:insertHiInstruction} \\
+add           & 2.9 A &  2  & Add zero-extended 32-bit constant to general purpose register. p. \pageref{table:addInstruction} \\
+sub           & 2.9 A &  3  & Subtract zero-extended 32-bit constant from general purpose register. p. \pageref{table:subInstruction} \\
+add           & 2.9 A &  4  & Add 32-bit constant to high part of general purpose register. RD = RT + (IM6 $<<$ 32). p. \pageref{table:addInstruction} \\
+and           & 2.9 A &  5  & AND high part of general purpose register with 32-bit constant. RD = RT \& (IM6 $<<$ 32). p. \pageref{table:andInstruction} \\
+or            & 2.9 A &  6  & OR high part of general purpose register with 32-bit constant. RD = RT \textbar{} (IM6 $<<$ 32). p. \pageref{table:orInstruction} \\
+xor           & 2.9 A &  7  & XOR high part of general purpose register with 32-bit constant. RD = RT \^{} (IM6 $<<$ 32). p. \pageref{table:xorInstruction} \\
+address       & 2.9 A & 32  & RD = RS + IM6, RS can be THREADP (28), DATAP (29) or IP (30). p. \pageref{table:addressInstruction} \\
 \hline
 \end{longtable}
 
@@ -386,160 +383,155 @@ address       & 2.9 A & 32  & RD = RS + IM2, RS can be THREADP (28), DATAP (29) 
 \hline
 \bfseries Instruction & \bfseries Format &\bfseries OP1. OP2 & \bfseries Description \\
 \hline
-get\_len      & 1.2 A &  0 & Get length of vector register RT into general purpose register RD. \\
-get\_num      & 1.2 A &  1 & Get length of vector register RT divided by the operand size. \\
-set\_len      & 1.2 A &  2 & RD = vector register RS with length changed to value of RT. \\
-set\_num      & 1.2 A &  3 & Change the length of vector register RS to RT$\cdot$OS. \\
-insert        & 1.2 A &  4 & Replace one element in vector RD, starting at offset RT$\cdot$OS, with scalar RS. \\
-extract       & 1.2 A & 5 & Extract one element from vector RS, starting at offset RT$\cdot$OS, with size OS into scalar in vector register RD. \\
-broad         & 1.2 A & 6 & Broadcast first element of vector RS into all elements of RD with length RT bytes. \\
-compress\_ sparse& 1.2 A &  8 & Compress sparse vector elements indicated by mask bits into contiguous vector. (optional). \\
-expand\_sparse& 1.2 A & 9 & Expand contiguous vector into sparse vector with positions indicated by mask bits. RT = length of output vector. (optional). \\
+get\_len      & 1.2 A &  0 & Get length of vector register RT into general purpose register RD. p. \pageref{table:getLenInstruction} \\
+get\_num      & 1.2 A &  1 & Get length of vector register RT divided by the operand size. p. \pageref{table:getNumInstruction} \\
+set\_len      & 1.2 A &  2 & RD = vector register RS with length changed to value of RT. p. \pageref{table:setLenInstruction} \\
+set\_num      & 1.2 A &  3 & Change the length of vector register RS to RT$\cdot$OS. p. \pageref{table:setNumInstruction} \\
+insert        & 1.2 A &  4 & Replace one element in vector RD, starting at offset RT$\cdot$OS, with scalar RS. p. \pageref{table:insertInstruction} \\
+extract       & 1.2 A & 5 & Extract one element from vector RS, starting at offset RT$\cdot$OS, with size OS into scalar in vector register RD. p. \pageref{table:} \\
+broad         & 1.2 A & 6 & Broadcast first element of vector RS into all elements of RD with length RT bytes. p. \pageref{table:extractInstruction} \\
+compress\_ sparse& 1.2 A &  8 & Compress sparse vector elements indicated by mask bits into contiguous vector. (optional). p. \pageref{table:compressSparseInstruction} \\
+expand\_sparse& 1.2 A & 9 & Expand contiguous vector into sparse vector with positions indicated by mask bits. RT = length of output vector. (optional). p. \pageref{table:expandSparseInstruction} \\
 
-bits2bool     & 1.2 A & 12 & The lower n bits of RT are unpacked into a boolean vector RD with length RS, with one bit in each element, where n = RS / OS. \\
+bits2bool     & 1.2 A & 12 & The lower n bits of RT are unpacked into a boolean vector RD with length RS, with one bit in each element, where n = RS / OS. p. \pageref{table:bits2boolInstruction} \\
 
-shift\_expand & 1.2 A & 16 & Shift vector RS up by RT bytes and extend the vector length by RT. The lower RT bytes of RD will be zero. \\
-shift\_reduce & 1.2 A & 17 & Shift vector RS down RT bytes and reduce the length by RT. The lower RT bytes are lost. \\
-shift\_up     & 1.2 A & 18 & Shift elements of vector RS up RT elements. The lower RT elements of RD will be zero, the upper RT elements are lost. \\
-shift\_down   & 1.2 A & 19 & Shift elements of vector RS down RT elements. The upper RT elements of RD will be zero, the lower RT elements are lost. \\
-%rotate\_up  & 1.2 A & 20 & Rotate vector up one element. Optional. \\
-%rotate\_down  & 1.2 A & 21 & Rotate vector down one element. Optional. \\
+shift\_expand & 1.2 A & 16 & Shift vector RS up by RT bytes and extend the vector length by RT. The lower RT bytes of RD will be zero. p. \pageref{table:shiftExpandInstruction} \\
+shift\_reduce & 1.2 A & 17 & Shift vector RS down RT bytes and reduce the length by RT. The lower RT bytes are lost. p. \pageref{table:shiftReduceInstruction} \\
+shift\_up     & 1.2 A & 18 & Shift elements of vector RS up RT elements. The lower RT elements of RD will be zero, the upper RT elements are lost. p. \pageref{table:shiftUpInstruction} \\
+shift\_down   & 1.2 A & 19 & Shift elements of vector RS down RT elements. The upper RT elements of RD will be zero, the lower RT elements are lost. p. \pageref{table:shiftDownInstruction} \\
 
 div\_ex    & 1.2 A & 24 & Divide vector of double-size signed integers RS by signed integers RT. RS has element size 2$\cdot$OS. These are divided by the even numbered
 elements of RT with size OS. The truncated results are stored in
 the even-numbered elements of RD. The remainders are stored in
-the odd-numbered elements of RD. (Optional for vectors). \\
-div\_ex\_u    & 1.2 A & 25 & Same, with unsigned integers. (Optional for vectors). \\
-mul\_ex       & 1.2 A & 26 & Multiply even-numbered signed integer vector elements to double size result. \\
-mul\_ex\_u    & 1.2 A & 27 & Multiply even-numbered unsigned integer vector elements to double size result. \\
-sqrt          & 1.2 A & 28 & Square root (floating point, optional). \\
+the odd-numbered elements of RD. (Optional). p. \pageref{table:divExInstruction} \\
+div\_ex\_u    & 1.2 A & 25 & Same, with unsigned integers. (Optional). p. \pageref{table:divExUInstruction} \\
+mul\_ex       & 1.2 A & 26 & Multiply even-numbered signed integer vector elements to double size result. p. \pageref{table:mulExInstruction} \\
+mul\_ex\_u    & 1.2 A & 27 & Multiply even-numbered unsigned integer vector elements to double size result. p. \pageref{table:mulExUInstruction} \\
+sqrt          & 1.2 A & 28 & Square root (floating point, optional). p. \pageref{table:sqrtInstruction} \\
 
-add\_ss       & 1.2 A & 32 & Add integer vectors, signed with saturation (optional). \\
-add\_us       & 1.2 A & 33 & Add integer vectors, unsigned with saturation (optional). \\
-sub\_ss       & 1.2 A & 34 & Subtract integer vectors, signed with saturation (optional). \\
-sub\_us       & 1.2 A & 35 & Subtract integer vectors, unsigned with saturation (optional). \\
-mul\_ss       & 1.2 A & 36 & Multiply integer vectors, signed with saturation (optional). \\
-mul\_us       & 1.2 A & 37 & Multiply integer vectors, unsigned with saturation (optional). \\
-add\_oc       & 1.2 A & 38 & add with overflow check (optional). \\
-sub\_oc       & 1.2 A & 39 & subtract with overflow check (optional). \\
-mul\_oc       & 1.2 A & 40 & multiply with overflow check (optional). \\
-div\_oc       & 1.2 A & 41 & divide with overflow check (optional). \\
-add\_c        & 1.2 A & 42 & Add with carry. Vector has two elements. The upper element is used as carry on input and output (optional). \\
-sub\_b        & 1.2 A & 43 & Subtract with borrow. Vector has two elements. The upper element is used as borrow on input and output (optional). \\
+add\_ss       & 1.2 A & 32 & Add integer vectors, signed with saturation (optional). p. \pageref{table:addSsInstruction} \\
+add\_us       & 1.2 A & 33 & Add integer vectors, unsigned with saturation (optional). p. \pageref{table:addUsInstruction} \\
+sub\_ss       & 1.2 A & 34 & Subtract integer vectors, signed with saturation (optional). p. \pageref{table:subSsInstruction} \\
+sub\_us       & 1.2 A & 35 & Subtract integer vectors, unsigned with saturation (optional). p. \pageref{table:addUsInstruction} \\
+mul\_ss       & 1.2 A & 36 & Multiply integer vectors, signed with saturation (optional). p. \pageref{table:mulSsInstruction} \\
+mul\_us       & 1.2 A & 37 & Multiply integer vectors, unsigned with saturation (optional). p. \pageref{table:mulUsInstruction} \\
+add\_oc       & 1.2 A & 38 & add with overflow check (optional). p. \pageref{table:addOcInstruction} \\
+sub\_oc       & 1.2 A & 39 & subtract with overflow check (optional). p. \pageref{table:subOcInstruction} \\
+mul\_oc       & 1.2 A & 40 & multiply with overflow check (optional). p. \pageref{table:mulOcInstruction} \\
+div\_oc       & 1.2 A & 41 & divide with overflow check (optional). p. \pageref{table:divOcInstruction} \\
+add\_c        & 1.2 A & 42 & Add with carry. Vector has two elements. The upper element is used as carry on input and output (optional). p. \pageref{table:addCInstruction} \\
+sub\_b        & 1.2 A & 43 & Subtract with borrow. Vector has two elements. The upper element is used as borrow on input and output (optional). p. \pageref{table:subBInstruction} \\
 
-read\_spev    & 1.2 A & 56 & read special vector register. Length RT. \\
-read\_call\_ stack & 1.2 A & 58 & read internal call stack. RD = vector register destination of length RS, RT-RS = internal address (privileged instruction). \\
-write\_call\_ stack & 1.2 A & 59 & write internal call stack. RD = vector register source of length RS, RT-RS = internal address (privileged instruction). \\
+read\_spev    & 1.2 A & 56 & read special vector register. Length RT. p. \pageref{table:readSpevInstruction} \\
+read\_call\_ stack & 1.2 A & 58 & read internal call stack. RD = vector register destination of length RS, RT-RS = internal address (privileged instruction). p. \pageref{table:readCallStackInstruction} \\
+write\_call\_ stack & 1.2 A & 59 & write internal call stack. RD = vector register source of length RS, RT-RS = internal address (privileged instruction). p. \pageref{table:writeCallStackInstruction} \\
 
-read\_memory\_ map & 1.2 A & 60 & read memory map. RD = vector register destination of length RS, RT-RS = internal address (privileged instruction). \\
-write\_memory\_ map & 1.2 A & 61 & write memory map. RD = vector register source of length RS, RT-RS = internal address (privileged instruction). \\
+read\_memory\_ map & 1.2 A & 60 & read memory map. RD = vector register destination of length RS, RT-RS = internal address (privileged instruction). p. \pageref{table:readMemoryMapInstruction} \\
+write\_memory\_ map & 1.2 A & 61 & write memory map. RD = vector register source of length RS, RT-RS = internal address (privileged instruction). p. \pageref{table:readMemoryMapInstruction} \\
 
-input         & 1.2 A & 62 & read from input port. RD = vector register, RT = port address, RS = vector length (privileged instruction). \\
-output        & 1.2 A & 63 & write to output port. RD = vector register source operand, RT = port address, RS = vector length (privileged instruction). \\
+input         & 1.2 A & 62 & read from input port. RD = vector register, RT = port address, RS = vector length (privileged instruction). p. \pageref{table:inputInstruction} \\
+output        & 1.2 A & 63 & write to output port. RD = vector register source operand, RT = port address, RS = vector length (privileged instruction). p. \pageref{table:outputInstruction} \\
 
-gp2vec        & 1.3 B &  0 & Move value of general purpose register RS to scalar in vector register RD. \\
+gp2vec        & 1.3 B &  0 & Move value of general purpose register RS to scalar in vector register RD. p. \pageref{table:gp2vecInstruction} \\
 
-vec2gp        & 1.3 B &  1 & Move value of first element of vector register RS to general purpose register RD. \\
+vec2gp        & 1.3 B &  1 & Move value of first element of vector register RS to general purpose register RD. p. \pageref{table:vec2gpInstruction} \\
 
-make\_sequen-ce& 1.3 B & 3 & Make a vector with RS sequential numbers. First value is IM1. \\
+make\_sequen-ce& 1.3 B & 3 & Make a vector with RS sequential numbers. First value is IM1. p. \pageref{table:makeSequenceInstruction} \\
 
-insert        & 1.3 B &  4 & Replace one element in vector RD, starting at offset IM1$\cdot$OS, with first element in RS. \\
+insert        & 1.3 B &  4 & Replace one element in vector RD, starting at offset IM1$\cdot$OS, with first element in RS. p. \pageref{table:insertInstruction} \\
 
-extract       & 1.3 B & 5 & Extract one element from vector RS, starting at offset IM1$\cdot$OS into a scalar in vector register RD. \\
+extract       & 1.3 B & 5 & Extract one element from vector RS, starting at offset IM1$\cdot$OS into a scalar in vector register RD. p. \pageref{table:extractInstruction} \\
 
 compress      & 1.3 B  &  6 & Compress vector to half the length and half the element size. Double precision $\rightarrow$ single precision, 64-bit
-integer $\rightarrow$ 32-bit integer, etc. \\
+integer $\rightarrow$ 32-bit integer, etc. p. \pageref{table:compressInstruction} \\
 
-expand        & 1.3 B &  7 & Expand vector to the double length and the double element size. Half precision $\rightarrow$ single precision, 32-bit integer $\rightarrow$ 64-bit integer, etc. \\
+expand        & 1.3 B &  7 & Expand vector to the double length and the double element size. Half precision $\rightarrow$ single precision, 32-bit integer $\rightarrow$ 64-bit integer, etc. p. \pageref{table:expandInstruction} \\
 
-float2int     & 1.3 B & 12 & Conversion of floating point to integer with the same operand size. The rounding mode is specified in IM1. \\
-int2float     & 1.3 B & 13 & Conversion of integer to floating point with same operand size. \\
+float2int     & 1.3 B & 12 & Conversion of floating point to integer with the same operand size. The rounding mode is specified in IM1. p. \pageref{table:float2intInstruction} \\
+int2float     & 1.3 B & 13 & Conversion of integer to floating point with same operand size. p. \pageref{table:int2floatInstruction} \\
 
-round         & 1.3 B & 14 & Round floating point to integer in floating point  representation. The rounding mode is specified in IM1. \\
+round         & 1.3 B & 14 & Round floating point to integer in floating point  representation. The rounding mode is specified in IM1. p. \pageref{table:roundInstruction} \\
 round2n       & 1.3 B & 15 & Round to nearest multiple of $2^n$. \newline 
-RD = $2^n\cdot$ round($2^{-n}\cdot$ RS). $n$ is a signed integer constant in IM1 (optional). \\
-abs           & 1.3 B & 16 & Absolute value of integer. IM1 determines handling of overflow: 0: wrap around, 1: saturate, 2: zero. \\
+RD = $2^n\cdot$ round($2^{-n}\cdot$ RS). $n$ is a signed integer constant in IM1 (optional). p. \pageref{table:round2nInstruction} \\
+abs           & 1.3 B & 16 & Absolute value of integer. p. \pageref{table:absInstruction} \\
 
-fp\_category  & 1.3 B & 17 & Check if floating point numbers belong to the categories indicated by constant. \\
+fp\_category  & 1.3 B & 17 & Check if floating point numbers belong to the categories indicated by constant. p. \pageref{table:fpCategoryInstruction} \\
 
-broad         & 1.3 B & 18 & Broadcast 8-bit constant into all elements of RD with length RS (31 in RS field gives scalar output). \\
+broad         & 1.3 B & 18 & Broadcast 8-bit constant into all elements of RD with length RS (31 in RS field gives scalar output). p. \pageref{table:broadInstruction} \\
+broadcast\_ max & 1.3 B & 19 & Broadcast 8-bit constant into all elements of RD with maximum vector length. p. \pageref{table:broadcastMaxInstruction} \\
 
-broadcast\_ max & 1.3 B & 19 & Broadcast 8-bit constant into all elements of RD with maximum vector length. \\
+byte\_reverse & 1.3 B & 20 & Reverse the order of bytes in each element of vector. p. \pageref{table:byteReverseInstruction} \\
+bit\_reverse  & 1.3 B & 20 & Reverse the order of bits in each element of vector (optional). p. \pageref{table:bitReverseInstruction} \\
 
-byte\_reverse & 1.3 B & 20 & Reverse the order of bytes in each element of vector. \\
-bit\_reverse  & 1.3 B & 20 & Reverse the order of bits in each element of vector (optional). \\
+bitscan       & 1.3 B & 21 & Bit scan forward or reverse. Find index to lowest set bit. p. \pageref{table:bitscanInstruction} \\
 
-bitscan       & 1.3 B & 21 & Bit scan forward or reverse. Find index to lowest set bit. \\
+popcount      & 1.3 B & 22 & Count the number of bits that are 1 (optional for vectors). p. \pageref{table:popcountInstruction} \\
 
-popcount      & 1.3 B & 22 & Count the number of bits that are 1 (optional for vectors). \\
+bool2bits     & 1.3 B & 25 & A boolean vector with n elements is packed into the lower n bits of RD, taking bit 0 of each element. The length of RD is at least sufficient to contain n bits. p. \pageref{table:bool2bitsInstruction} \\
 
-bool2bits     & 1.3 B & 25 & A boolean vector with n elements is packed into the lower n bits of RD, taking bit 0 of each element. The length of RD is at least sufficient to contain n bits. \\
+bool\_reduce  & 1.3 B & 26 & Reduce a boolean vector to the AND, NAND, OR, NOR combination of all elements. p. \pageref{table:boolReduceInstruction} \\
 
-bool\_reduce  & 1.3 B & 26 & An integer vector is reduced by combining bit 0 of all elements. The output is a scalar integer where bit 0 is the
-AND combination of all the bits, and bit 1 is the OR combination of
-all the bits. The remaining bits are reserved for future use. \\
+fp\_category\_ reduce & 1.3 B & 27 & Test whether a floating point vector contains any elements belonging to specified categories, such as infinity, zero, normal positive, etc. p. \pageref{table:fpCategoryReduceInstruction} \\
 
-category\_ reduce & 1.3 B & 26 & A floating point vector is reduced to a scalar integer where each bit indicates that the source vector contains at least one element in a certain category, such as NAN, zero, normal positive, etc. \\
+push          & 1.3 B & 56  & Push vector register RS to stack with pointer RD. p. \pageref{table:pushInstruction} \\
+pop           & 1.3 B & 57  & Pop vector register RS from stack with pointer RD. p. \pageref{table:popInstruction} \\
+clear         & 1.3 B & 58  & Clear vector register RS. p. \pageref{table:clearInstruction} \\
 
-push          & 1.3 B & 56  & Push vector register RS to stack with pointer RD. \\
-pop           & 1.3 B & 57  & Pop vector register RS from stack with pointer RD. \\
-clear         & 1.3 B & 58  & Clear vector register RS. \\
+move          & 1.4 C &  0 & Move 16 bit integer constant to 16-bit scalar (optional). p. \pageref{table:moveInstruction} \\
+add           & 1.4 C &  1 & Add broadcasted 16 bit constant to 16-bit vector elements (optional). p. \pageref{table:addInstruction} \\
+and           & 1.4 C &  2 & AND broadcasted 16 bit constant with 16-bit vector elements (optional). p. \pageref{table:andInstruction} \\
+or            & 1.4 C &  3 & OR broadcasted 16 bit constant with 16-bit vector elements (optional). p. \pageref{table:orInstruction} \\
+xor           & 1.4 C &  4 & XOR broadcasted 16 bit constant with 16-bit vector elements (optional). p. \pageref{table:xorInstruction} \\
 
-move          & 1.4 C &  0 & Move 16 bit integer constant to 16-bit scalar (optional). \\
-add           & 1.4 C &  1 & Add broadcasted 16 bit constant to 16-bit vector elements (optional). \\
-and           & 1.4 C &  2 & AND broadcasted 16 bit constant with 16-bit vector elements (optional). \\
-or            & 1.4 C &  3 & OR broadcasted 16 bit constant with 16-bit vector elements (optional). \\
-xor           & 1.4 C &  4 & XOR broadcasted 16 bit constant with 16-bit vector elements (optional). \\
+move          & 1.4 C &  8 & RD = IM2 $<<$ IM1. Sign-extend IM2 to 32 bits and shift left by the unsigned value IM1 to make 32 bit scalar (optional). p. \pageref{table:moveInstruction} \\
+move          & 1.4 C &  9 & RD = IM2 $<<$ IM1. Sign-extend IM2 to 64 bits and shift left by the unsigned value IM1 to make 64 bit scalar (optional). p. \pageref{table:moveInstruction} \\
+add           & 1.4 C & 10 & RD += IM2 $<<$ IM1. Add broadcast shifted signed constant to 32-bit vector elements (optional). p. \pageref{table:addInstruction} \\
+add           & 1.4 C & 11 & RD += IM2 $<<$ IM1. Add broadcast shifted signed constant to 64-bit vector elements (optional). p. \pageref{table:addInstruction} \\
+and           & 1.4 C & 12 & RD \&= IM2 $<<$ IM1. AND broadcast shifted signed constant with 32-bit vector elements (optional). p. \pageref{table:andInstruction} \\
+and           & 1.4 C & 13 & RD \&= IM2 $<<$ IM1. AND broadcast shifted signed constant with 64-bit vector elements (optional). p. \pageref{table:andInstruction} \\
+or            & 1.4 C & 14 & RD \textbar{}= IM2 $<<$ IM1. OR broadcast shifted signed constant with 32-bit vector elements (optional). p. \pageref{table:orInstruction} \\
+or            & 1.4 C & 15 & RD \textbar{}= IM2 $<<$ IM1. OR broadcast shifted signed constant with 64-bit vector elements (optional). p. \pageref{table:orInstruction} \\
+xor           & 1.4 C & 16 & RD \^{}= IM2 $<<$ IM1. XOR broadcast shifted signed constant with 32-bit vector elements (optional). p. \pageref{table:xorInstruction} \\
+xor           & 1.4 C & 17 & RD \^{}= IM2 $<<$ IM1. XOR broadcast shifted signed constant with 64-bit vector elements (optional). p. \pageref{table:xorInstruction} \\
 
-move          & 1.4 C &  8 & RD = IM2 \textless\textless{} IM1. Sign-extend IM2 to 32 bits and shift left by the unsigned value IM1 to make 32 bit scalar (optional). \\
-move          & 1.4 C &  9 & RD = IM2 \textless\textless{} IM1. Sign-extend IM2 to 64 bits and shift left by the unsigned value IM1 to make 64 bit scalar (optional). \\
-add           & 1.4 C & 10 & RD += IM2 \textless\textless{} IM1. Add broadcast shifted signed constant to 32-bit vector elements (optional). \\
-add           & 1.4 C & 11 & RD += IM2 \textless\textless{} IM1. Add broadcast shifted signed constant to 64-bit vector elements (optional). \\
-and           & 1.4 C & 12 & RD \&= IM2 \textless\textless{} IM1. AND broadcast shifted signed constant with 32-bit vector elements (optional). \\
-and           & 1.4 C & 13 & RD \&= IM2 \textless\textless{} IM1. AND broadcast shifted signed constant with 64-bit vector elements (optional). \\
-or            & 1.4 C & 14 & RD \textbar{}= IM2 \textless\textless{} IM1. OR broadcast shifted signed constant with 32-bit vector elements (optional). \\
-or            & 1.4 C & 15 & RD \textbar{}= IM2 \textless\textless{} IM1. OR broadcast shifted signed constant with 64-bit vector elements (optional). \\
-xor           & 1.4 C & 16 & RD \^{}= IM2 \textless\textless{} IM1. XOR broadcast shifted signed constant with 32-bit vector elements (optional). \\
-xor           & 1.4 C & 17 & RD \^{}= IM2 \textless\textless{} IM1. XOR broadcast shifted signed constant with 64-bit vector elements (optional). \\
-
-move          & 1.4 C & 32 & Move converted half precision floating point constant to single
-precision scalar (optional). \\
-move          & 1.4 C & 33 & Move converted half precision floating point constant to double
-precision scalar (optional). \\
-add           & 1.4 C & 34 & Add broadcast half precision floating point constant to single
-precision vector (optional). \\
-add           & 1.4 C & 35 & Add broadcast half precision floating point constant to double
-precision vector (optional). \\
-mul           & 1.4 C & 36 & Multiply broadcast half precision floating point constant with single precision vector (optional). \\
-mul           & 1.4 C & 37 & Multiply broadcast half precision floating point constant with double precision vector (optional). \\
-add\_h        & 1.4 C & 40 & add constant to half precision vector (optional). \\
-mul\_h        & 1.4 C & 41 & multiply half precision vector with constant (optional). \\
-concatenate   & 2.2.6 E & 0.1 & A vector RU of length RT and a vector RS of length RT are concatenated into a vector RD of length 2$\cdot$RT. \\
+move          & 1.4 C & 32 & Move converted float16 constant to single
+precision scalar (optional). p. \pageref{table:moveInstruction} \\
+move          & 1.4 C & 33 & Move converted float16 constant to double
+precision scalar (optional). p. \pageref{table:moveInstruction} \\
+add           & 1.4 C & 34 & Add broadcast float16 constant to single
+precision vector (optional). p. \pageref{table:addInstruction} \\
+add           & 1.4 C & 35 & Add broadcast float16 constant to double
+precision vector (optional). p. \pageref{table:addInstruction} \\
+mul           & 1.4 C & 36 & Multiply broadcast half precision floating point constant with single precision vector (optional). p. \pageref{table:mulInstruction} \\
+mul           & 1.4 C & 37 & Multiply broadcast half precision floating point constant with double precision vector (optional). p. \pageref{table:mulInstruction} \\
+add           & 1.4 C & 40 & add constant to float16 vector (optional). p. \pageref{table:addInstruction} \\
+mul           & 1.4 C & 41 & multiply float16 vector with constant (optional). p. \pageref{table:mulInstruction} \\
+concatenate   & 2.2.6 E & 0.1 & A vector RU of length RT and a vector RS of length RT are concatenated into a vector RD of length 2$\cdot$RT. p. \pageref{table:concatenateInstruction} \\
 permute       & 2.2.6 E & 1.1 & The vector elements of RU are permuted within each block of size RT bytes, using indices in RS. Each index is relative to the
 beginning of a block. An index out of range produces zero. The
 maximum block size is implementation dependent. \\
-interleave    & 2.2.6 E & 2.1 & Interleave elements of vectors RU and RS of length RT/2 to produce vector RD of length RT. Even-numbered elements of the destination come from RU and odd-numbered elements from RS. (optional). \\
-truth\_tab3   & 2.2.6 E & 8.1 & Boolean function of three inputs, given by a truth table. \\
+interleave    & 2.2.6 E & 2.1 & Interleave elements of vectors RU and RS of length RT/2 to produce vector RD of length RT. Even-numbered elements of the destination come from RU and odd-numbered elements from RS. (optional). p. \pageref{table:permuteInstruction} \\
+truth\_tab3   & 2.2.6 E & 48.1 & Boolean function of three inputs, given by a truth table. p. \pageref{table:truthTab3Instruction} \\
 
-move\_bits    & 2.2.7 E & 0.1 & Replace one or more contiguous bits at one position of RS with contiguous bits from another position of RT. Optional \\
-mask\_length  & 2.2.7 E & 1.1 & Make mask with true in the first RT bytes. Option bits in IM2. \\
-repeat\_block  & 2.2.7 E & 8.1 & Repeat a block of data to make a longer vector. RS is input vector containing data block to repeat. IM2 is length in bytes of the block to repeat (must be a multiple of 4). RT is the length of destination vector RD. (optional). \\
-repeat\_within \_blocks & 2.2.7 E & 9.1 & Broadcast the first element of each block of data in a vector to the entire block. RS is input vector containing data blocks. IM2 is length in bytes of each block (must be a multiple of the operand size). RT is length of destination vector RD. The operand size must be at least 4 bytes. (optional). \\
+move\_bits    & 2.2.7 E & 0.1 & Replace one or more contiguous bits at one position of RS with contiguous bits from another position of RT. Optional.  p. \pageref{table:moveBitsInstruction} \\
+mask\_length  & 2.2.7 E & 1.1 & Make mask with true in the first RT bytes. Option bits in IM4. p. \pageref{table:maskLengthInstruction} \\
+repeat\_block  & 2.2.7 E & 8.1 & Repeat a block of data to make a longer vector. RS is input vector containing data block to repeat. IM4 is length in bytes of the block to repeat (must be a multiple of 4). RT is the length of destination vector RD. (optional). p. \pageref{table:repeatBlockInstruction} \\
+repeat\_within \_blocks & 2.2.7 E & 9.1 & Broadcast the first element of each block of data in a vector to the entire block. RS is input vector containing data blocks. IM4 is length in bytes of each block (must be a multiple of the operand size). RT is length of destination vector RD. The operand size must be at least 4 bytes. (optional). p. \pageref{table:repeatWithinBlocksInstruction} \\
 
-load\_hi      & 2.6 A & 0 & Make vector of two elements. dest[0] = 0, dest[1] = IM2. \\
-insert\_hi    & 2.6 A & 1 & Make vector of two elements. dest[0] = src1[0], dest[1] = IM2. \\
-make\_mask    & 2.6 A & 2 & Make vector where bit 0 of each element comes from bits in IM2, the remaining bits come from RT. \\
-replace       & 2.6 A & 3 & Replace elements in RT by constant IM2. \\
+load\_hi      & 2.6 A & 0 & Make vector of two elements. dest[0] = 0, dest[1] = IM6.  p. \pageref{table:loadHiInstruction} \\
+insert\_hi    & 2.6 A & 1 & Make vector of two elements. dest[0] = src1[0], dest[1] = IM6. p. \pageref{table:insertHiInstruction}\\
+make\_mask    & 2.6 A & 2 & Make vector where bit 0 of each element comes from bits in IM6, the remaining bits come from RT. p. \pageref{table:} \\
+replace       & 2.6 A & 3 & Replace elements in RT by constant IM6. p. \pageref{table:makeMaskInstruction} \\
 replace\_even & 2.6 A & 4 & Replace even-numbered elements in RT by constant
-IM2. \\
+IM6. p. \pageref{table:replaceEvenInstruction} \\
 replace\_odd  & 2.6 A & 5 & Replace odd-numbered elements in RT by constant
-IM2. \\
-broad         & 2.6 A & 6 & Broadcast 32-bit or float32 constant into all elements of RD with length RT (31 in RT field gives scalar output). \\
-permute       & 2.6 A & 8 & The vector elements of RS are permuted within each block of size RT bytes. The 4$\cdot$n bits of IM2 are used as index with 4 bits for
+IM6. p. \pageref{table:replaceOddInstruction} \\
+broad         & 2.6 A & 6 & Broadcast 32-bit or float32 constant into all elements of RD with length RT (31 in RT field gives scalar output). p. \pageref{table:broadInstruction} \\
+permute       & 2.6 A & 8 & The vector elements of RS are permuted within each block of size RT bytes. The 4$\cdot$n bits of IM6 are used as index with 4 bits for
 each element in blocks of size n. The same pattern is used in each
-block. The number of elements in each block, n = RT / OS $\leq$ 8. \\
-replace       & 3.1 A & 32 & Replace elements in RT by constant IM2,IM3. \\
-broad         & 3.1 A & 33 & Broadcast 64-bit or float64 constant into all elements of RD with length RT (31 in RT field gives scalar output). \\
+block. The number of elements in each block, n = RT / OS $\leq$ 8. p. \pageref{table:permuteInstruction} \\
+replace       & 3.1 A & 32 & Replace elements in RT by constant IM6-7. p. \pageref{table:replaceInstruction} \\
+broad         & 3.1 A & 33 & Broadcast 64-bit or float64 constant into all elements of RD with length RT (31 in RT field gives scalar output). p. \pageref{table:broadInstruction} \\
 \hline
 \end{longtable}
 
@@ -551,16 +543,16 @@ broad         & 3.1 A & 33 & Broadcast 64-bit or float64 constant into all eleme
 \hline
 \bfseries Instruction & \bfseries Format &\bfseries OP1, OP2 & \bfseries Description \\
 \hline
-store         & 2.5 B &  8 & Store 32-bit constant IM2 to memory operand [RS+IM1] (optional). \\
+store         & 2.5 B &  8 & Store 32-bit constant IM6 to memory operand [RS+IM1] (optional). p. \pageref{table:storeInstruction} \\
 
-fence         & 2.5 B & 16 & Memory fence at address [RS+IM2]. read, write or full indicated by IM1.\\
+fence         & 2.5 B & 16 & Memory fence at address [RS+IM6]. read, write or full indicated by IM1. p. \pageref{table:fenceInstruction}\\
 
-compare\_swap & 2.5 B & 18 & Atomic compare and exchange with address [RS+IM2].\\
+compare\_swap & 2.5 B & 18 & Atomic compare and exchange with address [RS+IM6]. Optional.  p. \pageref{table:compareSwapInstruction}\\
 
 read\_insert  & 2.5 A & 32 & Replace one element in vector RD, starting at offset 
-RT$\cdot$OS, with scalar memory operand [RS+IM2] (optional).  \\
+RT$\cdot$OS, with scalar memory operand [RS+IM6] (optional). p. \pageref{table:readInsertInstruction}  \\
 
-extract\_store& 2.5 A & 40 & Extract one element from vector RD, starting at offset RT$\cdot$OS, with size OS into memory operand [RS+IM2] (optional). \\
+extract\_store& 2.5 A & 40 & Extract one element from vector RD, starting at offset RT$\cdot$OS, with size OS into memory operand [RS+IM6] (optional). p. \pageref{table:extractStoreInstruction} \\
 
 \hline
 \end{longtable}
@@ -580,83 +572,83 @@ extract\_store& 2.5 A & 40 & Extract one element from vector RD, starting at off
 \hline
 \bfseries OPJ & \bfseries bit 0 \newline of OPJ & \bfseries Instruction & \bfseries Comment \\
 \hline
-0-7 & part of offset & Unconditional jump with 24-bit offset (jump) & Format 1.7 D. Bit 0-2 of OPJ are part of offset \\
+0-7 & part of offset & jump. Unconditional jump with 24-bit offset & Format 1.7 D. Bit 0-2 of OPJ are part of offset.  p. \pageref{table:jumpInstruction} \\
 \hline
-8-15 & part of offset & Unconditional call with 24-bit offset (call) & Format 1.7 D.  Bit 0-2 of OPJ are part of offset \\
+8-15 & part of offset & call. Unconditional call with 24-bit offset & Format 1.7 D.  Bit 0-2 of OPJ are part of offset. p. \pageref{table:callInstruction} \\
 \hline
-0-1 & invert & sub/jump\_zero, \newline sub/jump\_nzero & Not format 1.7. Not floating point \\
+0-1 & invert & sub/jump\_zero, \newline sub/jump\_nzero & Not format 1.7. Not floating point. p. \pageref{table:subJumpZeroInstruction} \\
 \hline
-2-3 & invert & sub/jump\_neg, \newline sub/jump\_nneg & Not format 1.7. Not floating point  \\
+2-3 & invert & sub/jump\_neg, \newline sub/jump\_nneg & Not format 1.7. Not floating point. p. \pageref{table:subJumpNegInstruction}  \\
 \hline
-4-5 & invert & sub/jump\_pos, \newline sub/jump\_npos & Not format 1.7. Not floating point \\
+4-5 & invert & sub/jump\_pos, \newline sub/jump\_npos & Not format 1.7. Not floating point. p. \pageref{table:subJumpPosInstruction} \\
 \hline
-6-7 & invert & sub/jump\_overfl, \newline sub/jump\_noverfl & Not format 1.7. Not floating point \\
+6-7 & invert & sub/jump\_overfl, \newline sub/jump\_noverfl & Not format 1.7. Not floating point. p. \pageref{table:subJumpOverflInstruction} \\
 \hline
-8-9 & invert & sub/jump\_borrow, \newline sub/jump\_nborrow & Not format 1.7. Not floating point \\
+8-9 & invert & sub/jump\_borrow, \newline sub/jump\_nborrow & Not format 1.7. Not floating point. p. \pageref{table:subJumpBorrowInstruction} \\
 \hline
-10-11 & invert & and/jump\_zero \newline and/jump\_nzero & Not format 1.7 \\
+10-11 & invert & and/jump\_zero \newline and/jump\_nzero & Not format 1.7. p. \pageref{table:andJumpZeroInstruction} \\
 \hline
-12-13 & invert & or/jump\_zero \newline or/jump\_nzero & Not format 1.7 \\
+12-13 & invert & or/jump\_zero \newline or/jump\_nzero & Not format 1.7. p. \pageref{table:orJumpZeroInstruction} \\
 \hline
-14-15 & invert & xor/jump\_zero, \newline xor/jump\_nzero & Not format 1.7 \\
+14-15 & invert & xor/jump\_zero, \newline xor/jump\_nzero & Not format 1.7. p. \pageref{table:xorJumpZeroInstruction} \\
 \hline
-16-17 & invert & add/jump\_zero, \newline add/jump\_nzero & Not floating point \\
+16-17 & invert & add/jump\_zero, \newline add/jump\_nzero & Not floating point. p. \pageref{table:addJumpZeroInstruction} \\
 \hline
-18-19 & invert & add/jump\_neg, \newline add/jump\_nneg & Not floating point \\
+18-19 & invert & add/jump\_neg, \newline add/jump\_nneg & Not floating point. p. \pageref{table:addJumpNegInstruction} \\
 \hline
-20-21 & invert & add/jump\_pos, \newline add/jump\_npos & Not floating point \\
+20-21 & invert & add/jump\_pos, \newline add/jump\_npos & Not floating point. p. \pageref{table:addJumpPosInstruction} \\
 \hline
-22-23 & invert & add/jump\_overfl, \newline add/jump\_noverfl & Not floating point \\
+22-23 & invert & add/jump\_overfl, \newline add/jump\_noverfl & Not floating point. p. \pageref{table:addJumpOverflInstruction} \\
 \hline
-24-25 & invert & add/jump\_carry, \newline add/jump\_ncarry & Not floating point \\
+24-25 & invert & add/jump\_carry, \newline add/jump\_ncarry & Not floating point. p. \pageref{table:addJumpCarryInstruction} \\
 \hline
-26-27 & invert & test\_bit/jump\_true, \newline test\_bit/jump\_false &  \\
+26-27 & invert & test\_bit/jump\_true, \newline test\_bit/jump\_false & p. \pageref{table:testBitJumpTrueInstruction} \\
 \hline
-28-29 & invert & test\_bits\_and/jump\_true, \newline test\_bits\_and/jump\_false &  \\
+28-29 & invert & test\_bits\_and/jump\_true, \newline test\_bits\_and/jump\_false &  p. \pageref{table:testBitsAndJumpInstruction} \\
 \hline
-30-31 & invert & test\_bits\_or/jump\_true, \newline test\_bits\_or/jump\_false & \\ 
+30-31 & invert & test\_bits\_or/jump\_true, \newline test\_bits\_or/jump\_false &  p. \pageref{table:testBitsOrJumpInstruction}\\ 
 \hline
-32-33 & invert & compare/jump\_equal, \newline compare/jump\_nequal & \\
+32-33 & invert & compare/jump\_equal, \newline compare/jump\_nequal &  p. \pageref{table:integerCompareJumpInstructions}\\
 \hline
-34-35 & invert & compare/jump\_sbelow, \newline compare/jump\_saboveeq &  \\
+34-35 & invert & compare/jump\_sbelow, \newline compare/jump\_saboveeq & p. \pageref{table:integerCompareJumpInstructions} \\
 \hline
-36-37 & invert & compare/jump\_sabove, \newline compare/jump\_sbeloweq &  \\
+36-37 & invert & compare/jump\_sabove, \newline compare/jump\_sbeloweq & p. \pageref{table:integerCompareJumpInstructions} \\
 \hline
-38-39 & invert & compare/jump\_ubelow, \newline compare/jump\_uaboveeq &  \\
+38-39 & invert & compare/jump\_ubelow, \newline compare/jump\_uaboveeq & p. \pageref{table:integerCompareJumpInstructions} \\
 \hline
-40-41 & invert & compare/jump\_uabove, \newline compare/jump\_ubeloweq & \\
+40-41 & invert & compare/jump\_uabove, \newline compare/jump\_ubeloweq & p. \pageref{table:integerCompareJumpInstructions}\\
 \hline
 42-47 & invert & Reserved for future use. & \\
 \hline
 
-48-49 & invert & increment\_compare/jump\_below, \newline /jump\_aboveeq & \\
+48-49 & invert & increment\_compare/jump\_below, \newline /jump\_aboveeq & p. \pageref{table:incrementCompareJumpInstructions}\\
 \hline
-50-51 & invert & increment\_compare/jump\_above, \newline /jump\_beloweq & \\
+50-51 & invert & increment\_compare/jump\_above, \newline /jump\_beloweq & p. \pageref{table:incrementCompareJumpInstructions} \\
 \hline
-52-53 & invert & sub\_maxlen/jump\_pos, \newline sub\_maxlen/jump\_npos &  \\
+52-53 & invert & sub\_maxlen/jump\_pos, \newline sub\_maxlen/jump\_npos & p. \pageref{table:subMaxlenJumpPosInstruction}  \\
 \hline
 54-57 &  & Reserved for future use. & \\
 \hline
-58-59 & 0 jump \newline 1 call & Indirect jump or call with memory operand. & Format 1.6 B and 2.5.2. \\
+58-59 & 0 jump \newline 1 call & Indirect jump or call with memory operand. & Format 1.6 B and 2.5.2. p. \pageref{table:indirectJumpInstruction}\\
 \hline
-58-59 & 0 jump \newline 1 call & Unconditional direct jump or call & 2.5.4, and 3.1.1. \\
+58-59 & 0 jump \newline 1 call & Unconditional direct jump or call & 2.5.4, and 3.1.1. p. \pageref{table:jumpInstruction}\\
 \hline
 60-61 & 0 jump\_ relative \newline 1 call\_ relative & Jump or call with relative address in memory, table index, and arbitrary reference point & 
-Format 1.6 A and 2.5.2 \\
+Format 1.6 A and 2.5.2. p. \pageref{table:multiwayJumpCallInstructions} \\
 \hline
-60-61 & 0 jump \newline 1 call & Indirect jump or call to value of register & Format 1.7 C \\
+60-61 & 0 jump \newline 1 call & Indirect jump or call to value of register & Format 1.7 C. p. \pageref{table:indirectJumpInstruction} \\
 \hline
-62 & 0 & return  & Format 1.6 C  \\
+62 & 0 & return  & Format 1.6 C. p. \pageref{table:returnInstruction}  \\
 \hline
-62 & 0 & sys\_return & Format 1.7 C  \\
+62 & 0 & sys\_return & Format 1.7 C. p. \pageref{table:sysReturnInstruction}  \\
 \hline
-63 & 1 & sys\_call. ID in register & Format 1.6 A \\
+63 & 1 & sys\_call. ID in register & Format 1.6 A. p. \pageref{table:sysCallInstruction} \\
 \hline
-63 & 1 & sys\_call. ID in constants & Format 2.5.7 and 3.1.1. \\
+63 & 1 & sys\_call. ID in constants & Format 2.5.7 and 3.1.1. p. \pageref{table:sysCallInstruction} \\
 \hline
-63 & 1 & trap or filler & Format 1.7 C \\
+63 & 1 & trap or filler & Format 1.7 C. p. \pageref{table:trapInstruction} \\
 \hline
-63 & 1 & Conditional traps & Format 2.5.5. \\
+63 & 1 & Conditional traps & Format 2.5.5. p. \pageref{table:conditionalTrapInstructions} \\
 \hline
 \end{longtable}
 
@@ -671,46 +663,45 @@ Format 1.6 A and 2.5.2 \\
 \hline
 OPJ & bit 0 \newline of OPJ & Instruction & Comment \\
 \hline
-32-33 & invert & compare/jump\_equal, \newline compare/jump\_nequal & false if unordered \\
+32-33 & invert & compare/jump\_equal, \newline compare/jump\_nequal & false if unordered. p. \pageref{table:floatCompareJumpInstructions} \\
 \hline
-0-1 & invert & compare/jump\_equal\_uo, \newline compare/jump\_nequal\_uo & true if unordered \\
+0-1 & invert & compare/jump\_equal\_uo, \newline compare/jump\_nequal\_uo & true if unordered. p. \pageref{table:floatCompareJumpInstructions} \\
 \hline
-34-35 & invert & compare/jump\_below, \newline compare/jump\_aboveeq & false if unordered \\
+34-35 & invert & compare/jump\_below, \newline compare/jump\_aboveeq & false if unordered. p. \pageref{table:floatCompareJumpInstructions} \\
 \hline
-2-3 & invert & compare/jump\_below\_uo, \newline compare/jump\_aboveeq\_uo & true if unordered \\
+2-3 & invert & compare/jump\_below\_uo, \newline compare/jump\_aboveeq\_uo & true if unordered. p. \pageref{table:floatCompareJumpInstructions} \\
 \hline
-36-37 & invert & compare/jump\_above, \newline compare/jump\_beloweq & false if unordered \\
+36-37 & invert & compare/jump\_above, \newline compare/jump\_beloweq & false if unordered. p. \pageref{table:floatCompareJumpInstructions} \\
 \hline
-4-5 & invert & compare/jump\_above\_uo, \newline compare/jump\_beloweq\_uo & true if unordered \\
+4-5 & invert & compare/jump\_above\_uo, \newline compare/jump\_beloweq\_uo & true if unordered. p. \pageref{table:floatCompareJumpInstructions} \\
 \hline
-38-39 & invert & compare/jump\_abs\_below, \newline compare/jump\_abs\_aboveeq & false if unordered \\
+38-39 & invert & compare/jump\_abs\_below, \newline compare/jump\_abs\_aboveeq & false if unordered. p. \pageref{table:floatCompareJumpInstructions} \\
 \hline
-6-7 & invert & compare/jump\_abs\_below\_uo, \newline compare/jump\_abs\_aboveeq\_uo & true if unordered \\
+6-7 & invert & compare/jump\_abs\_below\_uo, \newline compare/jump\_abs\_aboveeq\_uo & true if unordered. p. \pageref{table:floatCompareJumpInstructions} \\
 \hline
-40-41 & invert & compare/jump\_abs\_above, \newline compare/jump\_abs\_beloweq & false if unordered \\
+40-41 & invert & compare/jump\_abs\_above, \newline compare/jump\_abs\_beloweq & false if unordered. p. \pageref{table:floatCompareJumpInstructions} \\
 \hline
-8-9 & invert & compare/jump\_abs\_above\_uo, \newline compare/jump\_abs\_beloweq\_uo & true if unordered \\
+8-9 & invert & compare/jump\_abs\_above\_uo, \newline compare/jump\_abs\_beloweq\_uo & true if unordered. p. \pageref{table:floatCompareJumpInstructions} \\
 \hline
-24-25 & invert & fp\_category/jump\_true, \newline fp\_category/jump\_false &  \\
+24-25 & invert & fp\_category/jump\_true, \newline fp\_category/jump\_false &  p. \pageref{table:floatCompareJumpInstructions}\\
 \hline
-
 
 \multicolumn{4}{|c|}{} \\
 \multicolumn{4}{|c|}{ The following instructions treat floating point operands as integers in vector registers: } \\
 \multicolumn{4}{|c|}{} \\
 \hline
 
-10-11 & invert & and/jump\_zero \newline and/jump\_nzero & \\
+10-11 & invert & and/jump\_zero \newline and/jump\_nzero & p. \pageref{table:andJumpZeroInstruction}\\
 \hline
-12-13 & invert & or/jump\_zero \newline or/jump\_nzero &  \\
+12-13 & invert & or/jump\_zero \newline or/jump\_nzero & p. \pageref{table:orJumpZeroInstruction} \\
 \hline
-14-15 & invert & xor/jump\_zero, \newline xor/jump\_nzero &  \\
+14-15 & invert & xor/jump\_zero, \newline xor/jump\_nzero & p. \pageref{table:xorJumpZeroInstruction} \\
 \hline
-26-27 & invert & test\_bit/jump\_true, \newline test\_bit/jump\_false &  \\
+26-27 & invert & test\_bit/jump\_true, \newline test\_bit/jump\_false & p. \pageref{table:testBitJumpTrueInstruction} \\
 \hline
-28-29 & invert & test\_bits\_and/jump\_true, \newline test\_bits\_and/jump\_false &  \\
+28-29 & invert & test\_bits\_and/jump\_true, \newline test\_bits\_and/jump\_false & p. \pageref{table:testBitsAndJumpInstruction} \\
 \hline
-30-31 & invert & test\_bits\_or/jump\_true, \newline test\_bits\_or/jump\_false & \\
+30-31 & invert & test\_bits\_or/jump\_true, \newline test\_bits\_or/jump\_false & p. \pageref{table:testBitsOrJumpInstruction} \\
 \hline
 
 \end{longtable}
