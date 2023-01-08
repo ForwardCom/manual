@@ -751,19 +751,26 @@ This instruction cannot have a mask.
 \begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-multi & 4 & general purpose and integer scalar \\ \hline
+multi & 4 & general purpose registers and integer scalar \\ \hline
 \end{tabular}
 \vv
 
 int8 r0 = sign\_extend(r1)  // result is 64 bits\\
-int8 v0 = sign\_extend(v1)  // lower 8 bits of each 64-bit element is extended to 64 bits\\
-int8 v0 = sign\_extend([r1, scalar]) // memory operand is 8 bits, result is 64 bits scalar
+int16 v0 = sign\_extend(v1)  // lower 16 bits of each 64-bit element is extended to 64 bits\\
+int32 v0 = sign\_extend([r1, scalar]) // memory operand is 32 bits, result is 64 bits scalar
 \vv
 
 Sign-extend smaller integer to 64 bits.
-
 \vv
-The input can be an 8-bit, 16-bit or 32-bit integer. This integer is sign-extended to produce a 64-bit output in a general purpose register or a scalar in a vector register. If the input is a vector then only the first element in each 64-bit block of the input vector is used. Floating point types cannot be used.
+
+The input can be an 8-bit, 16-bit, or 32-bit integer. This integer is sign-extended to produce a 64-bit output. Floating point types cannot be used.
+\vv
+
+If the input is a vector then only the first element in each 64-bit block of the input vector is used. To convert all elements, use the expand instruction instead 
+(page \pageref{table:expandInstruction}).
+\vv
+%to do: make option bits to allow vector elements to be sign-extended to 32 bits
+
 
 \subsection{sign\_extend\_add}
 \label{table:signExtendAddInstruction}
