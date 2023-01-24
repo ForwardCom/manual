@@ -37,7 +37,7 @@ It is possible in most cases to avoid memory paging and use a memory map with a 
 
 \item There are no dynamic link libraries (DLLs) or shared objects. Instead, there is only one type of function libraries 
 that can be used for both static and dynamic linking. Only the part of the library that is actually used is loaded and linked. The library code is kept contiguous with the main program code to improve caching and reduce memory fragmentation. 
-Executable files can be re-linked to replace or update library functions and plug-ins and to support multiple user interface frameworks.
+Executable files can be relinked to replace or update library functions and plug-ins and to support multiple user interface frameworks.
 
 \item A mechanism for calculating the required stack size is provided. This can prevent stack overflow in most cases without making the data stack bigger than necessary.
 

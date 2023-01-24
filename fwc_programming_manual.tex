@@ -728,7 +728,7 @@ Examples:
 \end{lstlisting}
 \vv
 
-The conditions cannot be combined with \&\& $\vert$ $\vert$ etc. because the statement must fit into a single instruction.
+Complex conditions cannot be used because the statement must fit into a single instruction.
 \vv
 
 The 'while', 'do-while', and 'for' loops are written in the same way as if statements:
@@ -761,7 +761,8 @@ Examples:
 The initialization and increment instructions in the 'for' loop can be anything that fits into a single instruction with the specified data type.
 \vspace{4mm}
 
-ForwardCom has a very efficient way of doing vector loops as explained on page \pageref{vectorLoops}. Vector loops are written in the following way:
+\label{vectorLoopSyntax}
+ForwardCom has a very efficient way of doing vector loops as explained on page \pageref{vectorLoops}. Vector loops can be written in the following way:
 
 \begin{tabular}{|p{150mm}|}
 \hline
@@ -773,19 +774,31 @@ ForwardCom has a very efficient way of doing vector loops as explained on page \
 Example:
 
 \begin{lstlisting}[frame=single]
-  int64 r1 = address([my_array])      // address of my_array
-  int64 r2 = my_arraysize * 4         // size of my_array in bytes
-  int64 r1 += r2                      // point to end of my_array
-  for (float v1 in [r1 - r2]) {       // loop through my_array
-    float v1 = [r1 - r2, length = r2] // read vector
-    float v1 *= 2                     // multiply values by 2
-    float [r1 - r2, length = r2] = v1 // store results in my_array
+  int64 r1 = address([my_array1])     // address of array 1
+  int64 r2 = address([my_array2])     // address of array 2
+  int64 r3 = my_arraysize * 4         // size of arrays in bytes
+  int64 r1 += r3                      // point to end of my_array1
+  int64 r2 += r3                      // point to end of my_array2
+  for (float v0 in [r1 - r3]) {       // loop through arrays
+    float v0 = [r1 - r3, length = r3] // read vector
+    float v0 *= 2                     // multiply all values by 2
+    float [r2 - r3, length = r3] = v0 // store results in my_array2
   }
 \end{lstlisting}
 \vv
 
-This loop will subtract the maximum vector length from r2 for each iteration and continue as long as r2 (interpreted as a signed 64 bit integer) is positive. It will use the maximum vector length as long as r2 is bigger than the maximum vector length.
-The maximum vector length may depend on the data type. The loop will use the maximum vector length for the data type specified in the for statement (float in this case). It is possible to use more vector registers and more end-of-array pointers than the ones specified in the 'for' statement.
+The 'for' loop in this example works as follows: 
+This loop instruction will subtract the maximum vector length from {\ttfamily r3} for each iteration and continue as long as {\ttfamily r3} (interpreted as a signed 64 bit integer) is positive. It will use the maximum vector length as long as {\ttfamily r3} is bigger than the maximum vector length. 
+The maximum vector length may depend on the data type. The loop will use the maximum vector length for the data type specified in the 'for' statement (float in this case).
+\vv
+
+The syntax for the vector loop may be confusing. 
+The line \hspace{1mm} {\ttfamily for (float v0 in [r1 - r3])} \hspace{1mm} generates a loop instruction that affects only {\ttfamily r3}. 
+The registers {\ttfamily v0} and {\ttfamily r1} are not involved in the loop instruction itself, and we could have written any other registers in their place. As a courtesy to whoever reads the code, it is recommended here to insert a vector register and an end-of-array pointer that play important roles in the loop body. 
+\vv
+
+The expression \hspace{1mm} {\ttfamily [r1 - r3]} \hspace{1mm} is a hint that this is a vector loop that fits the special addressing mode with negative index. 
+It is possible to use more vector registers and more end-of-array pointers than the ones specified in the 'for' statement.
 \vv
 
 It is recommended to use optimization level 1 or higher when assembling branches and loops.
