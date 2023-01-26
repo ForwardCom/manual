@@ -28,7 +28,7 @@ An application can have access to the following sections of data:
 \item Program heap (HEAP). Used for dynamic memory allocation by an application program. 
 \end{itemize}
 
-References within the CODE section use 8-bit, 16-bit, 24-bit, and 32-bit signed references relative to the instruction pointer, scaled by the code word size which is 4 bytes. 
+References within the CODE section use 8-bit, 16-bit, 24-bit, and 32-bit signed offsets relative to the instruction pointer, scaled by the code word size which is 4 bytes. 
 \vv
 
 A CONST section may be placed either near the CODE section and addressed relative to the instruction pointer (IP), or together with the other data sections and addressed relative to the the data section pointer (DATAP).
@@ -79,7 +79,7 @@ It is recommended to use this inter-thread memory protection in all cases except
 It is possible to make a system function that allocates an isolated memory block surrounded by inaccessible memory on both sides. Such a memory block, which will be accessible only to a specific thread, can be used for example for a data buffer in cases where security requirements are high. Each thread can have only a limited number of such protected memory blocks because of the limited size of the memory map.
 
 \section{Memory management} \label{memoryManagement}
-It is a design goal to minimize memory fragmentation and to minimize the need for virtual address translation. Traditional designs often have very complicated memory management systems with multilevel address translation, large translation-lookaside-buffers (TLB), and huge page tables. 
+It is a design goal to minimize memory fragmentation and to minimize the need for virtual address translation. Current designs have very complicated memory management systems with large translation-lookaside-buffers (TLB), huge page tables,  and address translation in up to five levels. The fixed page size means that a lot of memory is wasted when allocating a memory page of up to 2 MB when only 1 kB is needed.
 \vv
 
 The reason why many current systems have large page tables with fixed-size memory pages is that this is the only efficient way to look up an address in a heavily fragmented memory space. It is a design goal of ForwardCom to minimize or eliminate memory fragmentation. This is achieved in several ways explained below. If there are only a few memory blocks visible to a particular thread, then it is possible to have variable-size memory blocks. It requires only a limited number of hardware comparators to look up an address in a table of only a few memory blocks with variable size. The ambition is to replace the TLB, which has a large number of fixed-size memory blocks, by a memory map with a few memory blocks of variable size. 
@@ -95,7 +95,7 @@ The memory map supports virtual address translation in the form of a constant of
 A limited number of extra entries are needed in the memory map to deal with cases where the memory becomes fragmented, but memory fragmentation can be avoided in most cases. The following techniques are provided to simplify memory management and avoid memory fragmentation:
 
 \begin{itemize}
-\item There is only one type of function libraries which can be used for both static and dynamic linking. These are linked with a mechanism that keeps the CONST, CODE and DATA sections contiguous with the similar sections of the main program. It is described on page \pageref{libraryLinkMethods} below how this avoids memory fragmentation and improves caching.
+\item There is only one type of function libraries which can be used for both static and dynamic linking. These are linked with a mechanism that keeps the CONST, CODE and DATA sections contiguous with the similar sections of the main program. It is described on page \pageref{libraryLinkMethods} how this avoids memory fragmentation and improves caching.
 
 \item The required stack size is calculated by the compiler and the linker so that stack overflow can be avoided in most cases. This technique is described on page \pageref{predictingStackSize}.
 
@@ -105,20 +105,20 @@ A limited number of extra entries are needed in the memory map to deal with case
 The memory space may become fragmented despite the use of these techniques. Problems that can result in memory fragmentation are listed below. 
 
 \begin{itemize}
-\item Recursive functions can use unlimited stack space. We may require that the programmer specifies a maximum recursion level in a pragma.
+\item Recursive functions can use unlimited stack space. We may require that the programmer specifies a maximum recursion level.
 
 \item Allocation of variable-size arrays on the stack using the alloca function in C. We may require that the programmer specifies a maximum size. 
 
 \item Runtime linking. The program can reserve space for loading and linking function libraries at run time (see page \pageref{runtimeLinking}). The memory may become fragmented if the memory space reserved for this purpose turns out to be insufficient.
 
-\item Script languages and byte code languages. It is difficult to predict the required size of stack and heap when running interpreted or emulated code. It is recommended to use a just-in-time compiler instead. Self-modifying scripts cannot be compiled. The same problem can occur with large user-defined macros.
+\item Script languages and byte code languages. It is difficult to predict the required size of stack and heap when running interpreted or emulated code. It is recommended to use a just-in-time compiler instead. Self-modifying scripts cannot easily be compiled. The same problem can occur with large user-defined macros.
 
 \item Unpredictable number of threads without protection. The required stack size for a thread may be computed in advance, but in some cases it may be difficult to predict the number of threads that a program will generate. Multiple threads will mostly share the same code sections, but they need separate stacks. The stack of a thread can be placed anywhere in memory without problems if inter-thread memory protection is used. But if memory is shared between threads and the number of threads is unpredictable then the shared 
 memory space may become fragmented. 
 
 \item Unpredictable heap size. Programs that process large amounts of data, e. g. multimedia processing, may need a large heap. A program heap can use discontiguous memory, but this will require extra entries in the memory map. 
 
-\item Lazy loading and code overlay. A large program may have certain code units that are rarely used and loaded only when needed. Lazy loading can be useful to save memory, but it may require virtual memory translation and it may cause memory fragmentation. A straightforward solution is to implement such code units as separate executable programs. 
+\item Lazy loading and code overlay. A large program may have certain code units that are rarely used and loaded only when needed. Lazy loading can be useful to save memory, but it may require virtual memory translation and it may cause memory fragmentation. This problem may be solved by implementing such code as function libraries with runtime loading and reserving sufficient memory for this purpose at load time. Another possibility is to implement the extra code as separate executable programs. 
 
 \item Hot patching, i. e. updating of code while it is running. 
 
@@ -126,7 +126,7 @@ memory space may become fragmented.
 
 \item Many programs running. The memory can become fragmented when many programs of different sizes are loaded and unloaded randomly or swapped to memory. 
 
-\item Memory mapping of files and devices. 
+\item Memory mapping of files and devices. This practice should be avoided if possible.
 
 \end{itemize}
 
@@ -142,11 +142,14 @@ An application that needs many independent memory blocks can make a separate thr
 \label{sharedMemory} Shared memory can be used when there is a need to transfer large amounts of data between two processes. One process shares a part of its memory with another process. The receiving process needs an extra entry in its memory map to indicate read and/or write access rights to the shared memory block. The process that owns the shared memory block does not need any extra entry in its memory map. There is a limit to how many shared memory blocks an application can receive access to, if we want to keep the memory map small. If one program needs to communicate with a large number of other programs then we can use one of these solutions: (1) let the program that needs many connections own the shared memory and give each of its clients access to one part of it, (2) run multiple threads in (or multiple instances of) the program that needs many connections so that each thread has access to only one shared memory block, (3) let multiple communication channels use the same shared memory block or parts of it, (4) communicate through function calls, (5) communicate through network sockets, or (6) communicate through files. 
 \vv
 
-Executable memory cannot be shared between different applications. A function that is used by multiple different applications will usually be placed in a function library that these applications are linking to. 
+Executable memory can be shared between different processes running the same application, but not between different applications. A function that is used by multiple different applications will usually be placed in a function library that these applications are linking to. 
 The mechanism of interprocess calls must be used if one application needs to call a function in another application. This is described on page \pageref{interProcessCalls}. 
 \vv
 
 Software that relies heavily on memory mapping should be avoided. As the trend in microprocessor technology goes towards an increasing number of CPU cores, it should be possible to give critical applications and critical threads each their core with its own memory space so that context switching and memory fragmentation can be avoided or minimized.
+\vv
+
+Memory sizes have grown exponentially for several decades thanks to Moore's law, while code sizes have grown less. The size of compiled library functions grow only linearly with the complexity. This means that we can now afford to reserve sufficiently large memory blocks for runtime linking to prevent any memory fragmentation. Likewise, we can usually afford to reserve ample amounts of memory in cases where stack size or heap size is unpredictable.
 \vv
 
 
