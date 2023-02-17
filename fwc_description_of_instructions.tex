@@ -2973,7 +2973,7 @@ Not 1.7 &  1 & sub/jump\_nzero  & integer\\ \hline
 Subtract two integer operands and jump if the result is zero.
 \vv
 
-Immedate constants are not supported. The assembler will automatically convert a sub/jump\_zero instruction to an add/jump\_zero instruction with the negative constant.
+The assembler will automatically convert a sub/jump\_zero instruction with a small constant to an add/jump\_zero instruction with the negative constant if this makes it fit into format 1.7. 
 \vv
 
 \subsection{sub/jump\_neg}
@@ -2991,7 +2991,7 @@ Subtract two integer operands and jump if the signed result is negative.
 The result will wrap around in the case of overflow and jump if the result has the sign bit set.
 \vv
 
-Immedate constants are not supported. The assembler will automatically convert a sub/jump\_neg instruction to an add/jump\_neg instruction with the negative constant.
+The assembler will automatically convert a sub/jump\_neg instruction with a small constant to an add/jump\_neg instruction with the negative constant if this makes it fit into format 1.7.
 \vv
 
 \subsection{sub/jump\_pos}
@@ -3009,7 +3009,7 @@ Subtract two integer operands and jump if the signed result is positive.
 The result will wrap around in the case of overflow and jump if the result is not zero and does not have the sign bit set.
 \vv
 
-Immedate constants are not supported. The assembler will automatically convert a sub/jump\_pos instruction to an add/jump\_pos instruction with the negative constant.
+The assembler will automatically convert a sub/jump\_pos instruction with a small constant to an add/jump\_pos instruction with the negative constant if this makes it fit into format 1.7.
 \vv
 
 \subsection{sub/jump\_overflow}
@@ -3025,7 +3025,7 @@ Not 1.7 &  7 & sub/jump\_noverflow & integer\\ \hline
 Subtract two signed integer operands and jump if the result overflows.
 \vv
 
-Immedate constants are not supported. The assembler will automatically convert a sub/jump\_overflow instruction to an add/jump\_overflow instruction with the negative constant.
+The assembler will automatically convert a sub/jump\_overflow instruction with a small constant to an add/jump\_overflow instruction with the negative constant if this makes it fit into format 1.7.
 \vv
 
 \subsection{sub/jump\_borrow}
@@ -3041,7 +3041,7 @@ Not 1.7 &  9 & sub/jump\_nborrow & integer\\ \hline
 Subtract two unsigned integer operands and jump if the operation produces a borrow.
 \vv
 
-Immedate constants are not supported. The assembler will automatically convert a sub/jump\_borrow instruction to an add/jump\_borrow instruction with the negative constant.
+The assembler will automatically convert a sub/jump\_borrow instruction with a small constant to an add/jump\_carry instruction with the negative constant if this makes it fit into format 1.7.
 \vv
 
 \subsection{sub\_maxlen/jump\_pos}
