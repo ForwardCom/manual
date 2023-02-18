@@ -2880,8 +2880,11 @@ all & 17 & add/jump\_nzero & integer\\ \hline
 \end{tabular}
 \vv
 
-Add two integer operands and jump if the result is zero.
+int32 r1 = add(r1, 5), jump\_zero Label
+\vv
 
+Add two integer operands and jump if the result is zero.
+\vv
 
 \subsection{add/jump\_neg}
 \label{table:addJumpNegInstruction}
@@ -3305,8 +3308,13 @@ page \pageref{table:jumpInstructionFormats}.
 \end{tabular}
 \vv
 
-Unconditional jump.
+jump Label \\
+... \\
+Label:
+\vv
 
+Unconditional jump.
+\vv
 
 \subsection{Direct function call}
 \label{table:callInstruction}
@@ -3320,10 +3328,14 @@ Unconditional jump.
 \end{tabular}
 \vv
 
+call Function\_name
+\vv
+
 Function call.
 \vv
 
 The return address is stored on the call stack. The calling conventions are described in chapter \ref{chap:functionCallingConventions}.
+\vv
 
 
 \subsection{Indirect jump}
@@ -3339,6 +3351,11 @@ The return address is stored on the call stack. The calling conventions are desc
 \end{tabular}
 \vv
 
+{\ttfamily
+jump (r1) \ \ // jump to 64-bit address in r1 \\
+jump ([r2]) // jump to 64-bit address in memory operand
+}
+\vv
 
 \subsection{Indirect call}
 \label{table:IndirectCallInstruction}
@@ -3352,6 +3369,12 @@ The return address is stored on the call stack. The calling conventions are desc
 \end{tabular}
 \vv
 
+{\ttfamily
+call (r1) \ \ // call to 64-bit address in r1 \\
+call ([r2]) // call to 64-bit address in memory operand
+}
+\vv
+
 
 \subsection{Relative and multi-way jump and call}
 \label{table:multiwayJumpCallInstructions}
@@ -3363,6 +3386,12 @@ The return address is stored on the call stack. The calling conventions are desc
 1.6 A   & 61 & Call with table of relative addresses. \linebreak Has reference point, base and scaled index    \\ \hline
 2.5.2 B & 61 & Call with relative address. \linebreak Has reference point, base and offset \\ \hline
 \end{tabular}
+\vv
+
+{\ttfamily
+int16 jump\_relative (r8, [r10+r20*2]) \ // 16-bit signed table entries \\
+int32 jump\_relative (r8, [r10+16]) \ \ \ \ // 32-bit signed table entries
+}
 \vv
 
 \label{relativeJumpInstruction}
