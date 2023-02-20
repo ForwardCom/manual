@@ -32,7 +32,7 @@ Most instructions can have a mask register which is used for predication in scal
 The introduction of vector registers with variable length is an important improvement over the most common current architectures. The ForwardCom vector system has the following advantages: 
 
 \begin{itemize}
-\item The system is scalable. Different microprocessors can have different maximum vector lengths with no upper limit. It can be used for small embedded systems as well as large supercomputers with very long vectors. 
+\item The system is scalable. Different microprocessors can have different maximum vector lengths with no upper limit. It can be used for small embedded systems as well as for large supercomputers with very long vectors. 
 
 \item The same code can run on different microprocessors with different maximum vector lengths and automatically utilize the full vector capabilities of each microprocessor. 
 
@@ -58,8 +58,13 @@ The introduction of vector registers with variable length is an important improv
 
 \end{itemize}
 
-The memory model is flexible with relative addresses. Everything is position-independent. Memory management is simpler than in many current systems. 
-There is little or no need for virtual address translation. The preferred implementation has no translation lookaside buffer (TLB) and no memory paging, but a simple on-chip memory map with variable-size memory sections. Problems with stack overflow, memory fragmentation, etc. can be avoided completely in most cases. Task switches will be fast because of the small memory map and because of the efficient mechanism for saving vector registers. 
+The memory model is flexible with relative addresses. Everything is position-independent. Memory management is simpler than in most current systems. 
+There is little or no need for virtual address translation. 
+A simple on-chip memory map with variable-size memory sections is used as as 
+efficient replacement for the traditional translation lookaside buffer (TLB) 
+and large page tables in most cases. This is made possible by several methods 
+for avoiding memory fragmentation. 
+Task switches will be fast because of the small memory map and because of the efficient mechanism for saving vector registers. 
 \vv
 
 The principle that a fundamental redesign enables us to learn from history and integrate late additions into the basic design also applies to the whole ecosystem of ABI standard, function libraries, compilers, linkers, and operating system. By defining not only an instruction set, but also ABI standard, binary file format, interface library standard, etc. we get the further advantage that different compilers and different programming languages will be compatible with each other. It will be possible to write different parts of a program in different programming languages and to use the same function libraries with all compilers. Even different operating systems will be compatible to some degree. A feature for relinking an executable file makes it possible to run the same binary program file in different operating systems or on different platforms where the appropriate user interface framework is selected when the program is installed.
@@ -68,5 +73,5 @@ The principle that a fundamental redesign enables us to learn from history and i
 We have also learned from past mistakes that it is difficult to predict future needs. While the ForwardCom instruction set is intended to be flexible with room for future extensions, we may ask whether the future will bring needs for new features that are difficult to integrate into our design and standards. The best way to prevent such unforeseen problems is to allow input and suggestions from the entire community of hardware and software developers. It is important that the design and standards are developed through an open process that allows everybody to comment and make suggestions. We have often seen the problems of leaving this to a commercial industry. The industry often makes short-term decisions for marketing reasons. Patents, license restrictions, and trade secrets harm competition and prevent niche operators from entering the market. The microprocessor industry often keeps new features and instruction set extensions secret for competitive reasons until it is too late to change them in case the IT community comes up with better proposals.
 \vv
 
-The ForwardCom project is being developed in an open process with contributions and ideas from various people based on the philosophy that the problems mentioned above can best be avoided through openness and collaboration.
+The ForwardCom project is being developed in an open process with contributions and ideas from many people based on the philosophy that the problems mentioned here can best be avoided through openness and collaboration.
 \end{document}

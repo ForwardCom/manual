@@ -11,11 +11,14 @@ The details of the ELF format for ForwardCom are specified in a file named elf\_
 This specification includes details for section types, symbol types, relocation types, etc. Additional information about event handlers (see page \pageref{EventHandlers}), register use (see page \pageref{chap:registerUsageConvention}) and stack use (see page \pageref{predictingStackSize}) is included in the file format. 
 \vv
 
+Relinkable executable files are similar to non-relinkable files but contain more relocation records. The relocation records are discarded when an executable file is loaded.
+\vv
+
 File names must have extensions that indicate their type. The following extensions are preferred:  Assembly code: .as, object file: .ob, library file: .li, executable file: .ex. 
 \vv
 
 \section{Function libraries and link methods} \label{libraryLinkMethods}
-Dynamic link libraries (DLLs) and shared objects (SOs) are not used in the ForwardCom system. Instead, we will use only one type of function libraries that can be used in several different ways: 
+Dynamic link libraries (DLLs) and shared objects (SOs) are not used in the ForwardCom system. Instead, ForwardCom is using only one type of function libraries that can be used in several different ways: 
 
 \begin{enumerate}
 \item Static linking. \label{staticLinking} The linker finds the required functions in the library and copies them into the executable file. Only the parts of the library that are actually needed by the specific main program are included. This is the normal way that static libraries are used in current systems (.lib files in Windows, .a files in Unix-like systems such as Linux, BSD, and Mac OS). 
@@ -23,16 +26,21 @@ Dynamic link libraries (DLLs) and shared objects (SOs) are not used in the Forwa
 \item  Relinking. \label{InstallationReLinking} The library can be linked or relinked into the executable during the installation process. There may be a selection of different libraries for different platforms. Third party libraries may also be added in this way.
 The library may be updated at any time, if needed, by the relinking method without updating the main program.
 
-\item  Run-time linking. \label{runtimeLinking} The required function is extracted from the library and loaded into memory, preferably at a memory space reserved for this purpose by the main program. Any reference from the newly loaded function to other functions, whether already loaded or not, can be resolved in the same way as for static linking. 
+\item  Run-time linking. \label{runtimeLinking} The required function is extracted from the library and loaded into memory, preferably at a memory space reserved for this purpose by the main program. 
+The new function is accessed through a pointer. 
+Any reference from the newly loaded function to other functions, whether already loaded or not, can be resolved in the same way as for static linking. 
+
+\item  Plugin extensions. \label{addOnExtensions} Extensions to an existing program can be added by the relinking method. Such extensions can be called through the event handler mechanism or by weak linking. See page \pageref{AddingAPlugin}.
 \end{enumerate}
 
 These methods will improve the performance and remedy many of the problems that we encounter with the traditional DLLs and SOs. It also helps solve the frequent problems with missing or incompatible library versions.
 \vv
 
-A typical program in Windows and Unix systems will require several DLLs or SOs when it is loaded. These dynamic libraries will all be loaded into each their memory block, using an integral number of memory pages each, and possibly scattered over the memory space. This leads to a waste of memory space and poor caching. A further performance disadvantage with shared objects is that they use procedure linkage tables (PLT) and global offset tables (GOT) for all accesses to public functions and variables in order to support the rarely used feature of symbol interposition. This requires a lookup in the PLT or GOT for every access to a function or variable in the library, including internal references to globally visible symbols.
+A typical program in Windows and Unix systems will require several DLLs or SOs when it is loaded. These dynamic libraries will all be loaded into each their memory block, using an integral number of memory pages each, and possibly scattered over the memory space. This leads to a waste of memory space and poor caching. A further performance disadvantage with shared objects is that they use procedure linkage tables (PLT) and global offset tables (GOT) for all accesses to public functions and variables in order to support the rarely used feature of symbol interposition. This requires a lookup in the PLT or GOT for every access to a function or variable in the library, including internal references to globally visible symbols. 
+Windows DLLs use import tables that are similar to PLT.
 \vv
 
-The ForwardCom system replaces the traditional dynamic linking with method 2 or 3 above, which will make the code just as efficient as with static linking because the library sections are contiguous with the main program sections, and all access is immediate with no intermediate tables. The time required to load the library will be similar to the time required for dynamic linking because the bottleneck will be disk access, not calculation of function addresses. 
+The ForwardCom system replaces the traditional dynamic linking with the methods listed above, which will make the code just as efficient as with static linking because the library sections are contiguous with the main program sections, and all access is immediate with no intermediate tables. 
 \vv
 
 A traditional DLL or SO can share its code section (but not its data section) between multiple running programs that use the same library. A ForwardCom library can share its code section between multiple running instances of the same program, but not between different programs. The amount of memory that is wasted by possibly loading multiple instances of the same library code is more than compensated for by the fact that we are loading only the part of the library that is actually needed and that the library does not require its own memory pages. It is not uncommon in Windows and Unix systems to load a dynamic library of one megabyte and use only one kilobyte of it. 
