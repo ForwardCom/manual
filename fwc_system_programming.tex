@@ -68,7 +68,7 @@ The methods described on page \pageref{memoryManagement} for avoiding memory fra
 Task switches can be fast because we have replaced the large page tables and translation-lookaside-buffer (TLB) of traditional systems with a small on-chip memory map. This makes the system suitable for real-time operating systems.
 
 \section{Call stack}
-It is preferred to have a separate call stack as discussed on page \pageref{callStackAlternatives}. \vv
+It is preferred to have a separate call stack as discussed on page \pageref{callStackImplementation}. \vv
 
 The two-stack system has the call stack stored inside the CPU rather than in RAM memory. A method may be required for saving this stack to memory when it is full. This method may use vector-size memory access. It should be possible to manipulate the call stack for task switches and for stack unwinding in an exception handler.
 

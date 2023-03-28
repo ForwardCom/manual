@@ -347,7 +347,7 @@ popcount      & 1.8 B &  4 & Count the number of bits that are 1. p. \pageref{ta
 read\_spec    & 1.8 B & 32  & Read special register RS into g. p. register RD. p. \pageref{table:readSpecInstruction} \\
 write\_spec   & 1.8 B & 33  & Write g. p. register RS to special register RD. p. \pageref{table:readSpecInstruction} \\
 read\_capabi-lities & 1.8 B & 34  & Read capabilities register RS into g. p. register RD. p. \pageref{table:readCapabilitiesInstruction} \\
-write\_capabi-lities & 1.8 B & 35  & Write g. p. register RS to capabilities register RD. p. \pageref{table:writeCapabilitiesInstruction} \\
+write\_capabi-lities & 1.8 B & 35  & Write g. p. register RS to capabilities register RD. p. \pageref{table:readCapabilitiesInstruction} \\
 read\_perf    & 1.8 B & 36  & Read performance counter. p. \pageref{table:readPerfInstruction} \\
 read\_perfs   & 1.8 B & 37  & Read performance counter, serializing. p. \pageref{table:readPerfSInstruction} \\
 read\_sys     & 1.8 B & 38  & Read system register RS into g. p. register RD. p. \pageref{table:readSysInstruction} \\
@@ -388,7 +388,7 @@ get\_num      & 1.2 A &  1 & Get length of vector register RT divided by the ope
 set\_len      & 1.2 A &  2 & RD = vector register RS with length changed to value of RT. p. \pageref{table:setLenInstruction} \\
 set\_num      & 1.2 A &  3 & Change the length of vector register RS to RT$\cdot$OS. p. \pageref{table:setNumInstruction} \\
 insert        & 1.2 A &  4 & Replace one element in vector RD, starting at offset RT$\cdot$OS, with scalar RS. p. \pageref{table:insertInstruction} \\
-extract       & 1.2 A & 5 & Extract one element from vector RS, starting at offset RT$\cdot$OS, with size OS into scalar in vector register RD. p. \pageref{table:} \\
+extract       & 1.2 A & 5 & Extract one element from vector RS, starting at offset RT$\cdot$OS, with size OS into scalar in vector register RD. p. \pageref{table:extractInstruction} \\
 broad         & 1.2 A & 6 & Broadcast first element of vector RS into all elements of RD with length RT bytes. p. \pageref{table:extractInstruction} \\
 compress\_ sparse& 1.2 A &  8 & Compress sparse vector elements indicated by mask bits into contiguous vector. (optional). p. \pageref{table:compressSparseInstruction} \\
 expand\_sparse& 1.2 A & 9 & Expand contiguous vector into sparse vector with positions indicated by mask bits. RT = length of output vector. (optional). p. \pageref{table:expandSparseInstruction} \\
@@ -424,7 +424,7 @@ sub\_b        & 1.2 A & 43 & Subtract with borrow. Vector has two elements. The 
 
 read\_spev    & 1.2 A & 56 & read special vector register. Length RT. p. \pageref{table:readSpevInstruction} \\
 read\_call\_ stack & 1.2 A & 58 & read internal call stack. RD = vector register destination of length RS, RT-RS = internal address (privileged instruction). p. \pageref{table:readCallStackInstruction} \\
-write\_call\_ stack & 1.2 A & 59 & write internal call stack. RD = vector register source of length RS, RT-RS = internal address (privileged instruction). p. \pageref{table:writeCallStackInstruction} \\
+write\_call\_ stack & 1.2 A & 59 & write internal call stack. RD = vector register source of length RS, RT-RS = internal address (privileged instruction). p. \pageref{table:readCallStackInstruction} \\
 
 read\_memory\_ map & 1.2 A & 60 & read memory map. RD = vector register destination of length RS, RT-RS = internal address (privileged instruction). p. \pageref{table:readMemoryMapInstruction} \\
 write\_memory\_ map & 1.2 A & 61 & write memory map. RD = vector register source of length RS, RT-RS = internal address (privileged instruction). p. \pageref{table:readMemoryMapInstruction} \\
@@ -460,7 +460,7 @@ fp\_category  & 1.3 B & 17 & Check if floating point numbers belong to the categ
 broad         & 1.3 B & 18 & Broadcast 8-bit constant into all elements of RD with length RS (31 in RS field gives scalar output). p. \pageref{table:broadInstruction} \\
 broadcast\_ max & 1.3 B & 19 & Broadcast 8-bit constant into all elements of RD with maximum vector length. p. \pageref{table:broadcastMaxInstruction} \\
 
-byte\_reverse & 1.3 B & 20 & Reverse the order of bytes in each element of vector. p. \pageref{table:byteReverseInstruction} \\
+byte\_reverse & 1.3 B & 20 & Reverse the order of bytes in each element of vector. p. \pageref{table:bitReverseInstruction} \\
 bit\_reverse  & 1.3 B & 20 & Reverse the order of bits in each element of vector (optional). p. \pageref{table:bitReverseInstruction} \\
 
 bitscan       & 1.3 B & 21 & Bit scan forward or reverse. Find index to lowest set bit. p. \pageref{table:bitscanInstruction} \\
@@ -516,11 +516,11 @@ truth\_tab3   & 2.2.6 E & 48.1 & Boolean function of three inputs, given by a tr
 move\_bits    & 2.2.7 E & 0.1 & Replace one or more contiguous bits at one position of RS with contiguous bits from another position of RT. Optional.  p. \pageref{table:moveBitsInstruction} \\
 mask\_length  & 2.2.7 E & 1.1 & Make mask with true in the first RT bytes. Option bits in IM4. p. \pageref{table:maskLengthInstruction} \\
 repeat\_block  & 2.2.7 E & 8.1 & Repeat a block of data to make a longer vector. RS is input vector containing data block to repeat. IM4 is length in bytes of the block to repeat (must be a multiple of 4). RT is the length of destination vector RD. (optional). p. \pageref{table:repeatBlockInstruction} \\
-repeat\_within \_blocks & 2.2.7 E & 9.1 & Broadcast the first element of each block of data in a vector to the entire block. RS is input vector containing data blocks. IM4 is length in bytes of each block (must be a multiple of the operand size). RT is length of destination vector RD. The operand size must be at least 4 bytes. (optional). p. \pageref{table:repeatWithinBlocksInstruction} \\
+repeat\_within \_blocks & 2.2.7 E & 9.1 & Broadcast the first element of each block of data in a vector to the entire block. RS is input vector containing data blocks. IM4 is length in bytes of each block (must be a multiple of the operand size). RT is length of destination vector RD. The operand size must be at least 4 bytes. (optional). p. \pageref{table:repeatWithinBlockInstruction} \\
 
 load\_hi      & 2.6 A & 0 & Make vector of two elements. dest[0] = 0, dest[1] = IM6.  p. \pageref{table:loadHiInstruction} \\
 insert\_hi    & 2.6 A & 1 & Make vector of two elements. dest[0] = src1[0], dest[1] = IM6. p. \pageref{table:insertHiInstruction}\\
-make\_mask    & 2.6 A & 2 & Make vector where bit 0 of each element comes from bits in IM6, the remaining bits come from RT. p. \pageref{table:} \\
+make\_mask    & 2.6 A & 2 & Make vector where bit 0 of each element comes from bits in IM6, the remaining bits come from RT. p. \pageref{table:makeMaskInstruction} \\
 replace       & 2.6 A & 3 & Replace elements in RT by constant IM6. p. \pageref{table:makeMaskInstruction} \\
 replace\_even & 2.6 A & 4 & Replace even-numbered elements in RT by constant
 IM6. p. \pageref{table:replaceEvenInstruction} \\
