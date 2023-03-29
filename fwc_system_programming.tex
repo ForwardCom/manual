@@ -3,7 +3,7 @@
 \begin{document}
 \RaggedRight
 
-\chapter{System programming}
+\chapter{System programming} \label{SystemProgramming}
 
 The system instructions have not been fully defined yet. There is more work to do making an efficient system design. However, the first experimental implementations of ForwardCom do not include an operating system so the details of system design do not have to be fixed yet. It is preferred to spend more time on optimizing the system design rather than to define a complete standard at this stage of development.
 \vv
@@ -70,7 +70,7 @@ Task switches can be fast because we have replaced the large page tables and tra
 \section{Call stack}
 It is preferred to have a separate call stack as discussed on page \pageref{callStackImplementation}. \vv
 
-The two-stack system has the call stack stored inside the CPU rather than in RAM memory. A method may be required for saving this stack to memory when it is full. This method may use vector-size memory access. It should be possible to manipulate the call stack for task switches and for stack unwinding in an exception handler.
+The two-stack system has the call stack stored inside the CPU rather than in RAM memory. A method is required for saving this stack to memory in case it overflows.  This method may use vector-size memory access. It should be possible to manipulate the call stack for task switches and for stack unwinding.
 
 \section{System calls and system functions} \label{systemCallIDSystem}
 Calls to system functions are made with a system call instruction (sys\_call). The system functions are identified by ID numbers rather than addresses. Each ID number consists of a function ID in the lower half and a module ID in the upper half. The module ID identifies a system module or device driver. The system core has ID = 0 and basic system functions have ID = 1. Each part of the ID can be either 16 bits or 32 bits so that the combined ID is 32, 48, or 64 bits. 
