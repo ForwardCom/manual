@@ -761,7 +761,7 @@ a 24-bit jump offset (IM6 bit 0-23), and a memory operand with base RS and 32-bi
 The jump, call, and branch instructions have signed jump offsets of 8, 16, 24, or 32 bits relative to the instruction pointer. Or, more precisely, relative to the end of the instruction. This jump offset is multiplied by the instruction word size (= 4 bytes) to cover an address range of $\pm$ 512 bytes for short conditional jumps with 8 bits offset, $\pm$ 128 kilobytes for jumps and calls with 16 bits offset, $\pm$ 32 megabytes for 24 bits offset, and $\pm$ 8 gigabytes for 32 bits offsets.
 \vv
 
-The OPJ field defines the operation and jump condition. This field has 6 bits in the single size version and 8 bits in the longer format versions. The two extra bits in the longer versions are reserved for future use. It is not possible to use a mask for additional jump conditions.
+The OPJ field defines the operation and jump condition. This field has 6 bits in the single size version and 8 bits in the longer format versions. The two extra bits in the longer versions are reserved for future security features. It is not possible to use a mask for additional jump conditions.
 \vv
 
 The versions with template C and C2 have no OT field. The operand type is 32-bit integer when there is no OT field, unless otherwise noted. It is not possible to use formats with template C or C2 with other operand types. 
