@@ -92,7 +92,7 @@ bit 0-2 & Integer overflow control: \newline
 bit 3-5 & Floating point rounding mode: \newline
 000 = rounding mode determined by NUMCONTR \newline
 001 = odd if not exact \newline
-100 = nearest or even \newline
+100 = nearest, with ties to even \newline
 101 = down \newline
 110 = up \newline
 111 = towards zero
@@ -283,7 +283,7 @@ The bits in IM1 specify rounding mode and error control, according to the follow
 111 = unsigned integer overflow gives unsigned saturation \\
 \hline
 3-4 & rounding mode: \newline
-00 = nearest or even\newline
+00 = nearest, with ties to even\newline
 01 = down\newline
 10 = up\newline
 11 = truncate towards zero \\ 
@@ -1285,7 +1285,7 @@ This instruction has multiple rounding modes. The rounding mode for integer oper
  0 0 & Truncate towards zero (default) \\
  0 1 & Down \\
  1 0 & Up \\
- 1 1 & Nearest or even \\
+ 1 1 & Nearest, with ties to even \\
 \hline
 other values & Reserved for future use \\ 
 \hline
@@ -1669,8 +1669,10 @@ dest = src1 * $2^{src2}$
 src1 and dest are floating point vectors, while src2 is interpreted as a signed integer vector with the same element size as src1 and dest.
 \vv
 
-Overflow will produce infinity. The result will be zero rather than a subnormal number in case of underflow, regardless of control bits in the mask or numeric control register. 
-The reason for this is that
+Overflow will produce infinity. 
+The instruction produces zero rather than a subnormal number in case of underflow, regardless of control bits in the mask or numeric control register.
+\vv
+
 speed has priority here. This instruction will typically take a single clock cycle, while floating point multiplication by a power of 2 takes multiple clock cycles. 
 This is useful for fast multiplication or division by a power of 2.
 \vv
@@ -4052,6 +4054,22 @@ Small systems with no operating system and no trap support should define alterna
 This section describes proposals for new single-format instructions. The descriptions are preliminary and not certain to be implemented.
 \vv
 
+\subsection{Reciprocal}
+Calculates 1/x with reduced precision.
+\vv
+
+Depending on hardware technology, it may be possible to calculate a reciprocal or division faster with less precision.
+\vv
+
+
+\subsection{ReciprocalSquareRoot}
+Calculates 1/sqrt(x) with reduced precision.
+\vv
+
+Depending on hardware technology, it may be possible to calculate a reciprocal square root faster with less precision.
+\vv
+
+
 \subsection{Augmented addition}
 This instruction will produce the difference between the exact sum of two floating point numbers and the same sum rounded to the current precision (float or double). Augmented addition is defined in the IEEE754-2019 standard.
 \vv
@@ -4096,7 +4114,10 @@ The following option bits are provided:
 \end{itemize}
 \vv
 
-This instruction will be useful for complex number multiplication and division, as well as dot products and other applications, with high precision.
+This instruction will be useful for complex number multiplication and division, as well as cross products, dot products, and other applications, with high precision.
+\vv
+
+It is possible to do a complex number multiplication by using this instruction twice. First calculate the real part of the product by changing the sign of a1, then calculate the imaginary part of the product by swapping b0 and b1 and placing it in y1, while retaining the real part in y0.
 \vv
 
  
