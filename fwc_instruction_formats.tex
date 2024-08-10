@@ -521,6 +521,9 @@ The type and size of operands is determined by the OT field as indicated above. 
 Some instructions have optional support for half precision (float16). Half precision instructions are coded with the value 1 in the OT field, corresponding to int16. Option bit 5 in the IM5 field in E formats is used for indicating that operands are float16 rather than int16, except for add, sub, mul, and compare instructions that have separate op1 values for float16.
 \vv
 
+Special versions of ForwardCom may support additional data types. Instructions for such data types may be coded with the same opcode as for float16, but with a different OT.
+\vv
+
 \subsection{Register type}
 The instructions can use either general purpose registers or vector registers. General purpose registers are used for source and destination operands and for masks if the Mode field is 0 or 1 (with M = 0 or 1). Vector registers are used for source and destination operands and for masks if Mode is 2-7. Jump instructions use vector registers if M = 1. A few single-format instructions deviate from this rule and use mixed register types.
 \vv
@@ -583,7 +586,7 @@ An instruction can be made compact by using the smallest size that fits the actu
 \vv
 
 \subsection{Option bits}
-Several instructions can have option bits that specify details of the operation, for example condition codes in the compare instruction, sign of operands in the mul\_add instruction, rounding mode in integer division, or treatment of NAN values in max and min instructions.
+Several instructions can have option bits that specify details of the operation, for example condition codes in the compare instruction, sign of operands in the mul\_add instruction, rounding mode in integer division, or treatment of NaN values in max and min instructions.
 \vv
 
 The option bits are coded mainly in the IM5 field in E formats. These bits are considered zero in formats that do not have an IM5 field. 
@@ -664,26 +667,29 @@ The bits in the mask register are coded as follows.
 \bfseries Bit number & \bfseries Meaning \\
  \hline
 0 & Predicate or mask. The operation is executed only if this bit is one.\\
-1 & Guaranteed to be ignored. \\
+1 & Available for future use. \\
 \hline
-2-7 & Numerical exception control. See page \pageref{table:FPExceptionResults}. \\
-2 & Floating point division by zero generates NAN \\
-3 & Floating point overflow generates NAN \\
-4 & Floating point underflow generates NAN \\
-5 & Floating point inexact generates NAN \\
-  & Bits 2-7 may also be used for controlling integer overflow (currently not used).\\ \hline
+2-5 & Numerical exception control. See page \pageref{table:FPExceptionTypes}. \\
+2 & Floating point division by zero generates NaN \\
+3 & Floating point overflow generates NaN \\
+4 & Floating point underflow generates NaN \\
+5 & Floating point inexact generates NaN \\
+  & Bits 2-7 may also be used for controlling integer overflow in non-standard versions.\\ \hline
 10-12 & Floating point rounding mode: \newline
-000 = nearest, with ties to even \newline
-001 = down \newline
-010 = up \newline
-011 = towards zero \newline
+000 = round to nearest, with ties to even \newline
+001 = round down \newline
+010 = round up \newline
+011 = truncate towards zero \newline
+100 = odd if not exact \newline
 This feature is optional.\\ \hline
-13 & Support subnormal numbers in single and higher precision. 
-(Subnormal numbers are always supported for half precision). This feature is optional.\\ \hline  
-  
-18-23 & Instruction-specific option bits (currently not used). \\
+13 & Support subnormal numbers in single precision. \\
+14 & Support subnormal numbers in double precision. \\
+ &  (Subnormal numbers are always supported for half precision). This feature is optional.\\ \hline  
+18-23 & float16: Numerical exception control of next element. \newline
+        Higher precision: Instruction-specific option bits (currently unused). \\
 \hline
-26 - 30 & Possible use for enabling numerical traps. Not used in the standard version. \\
+26 - 30 & float16: Rounding mode of next element. \newline
+        Higher precision: Possible use for enabling numerical traps (not used in the standard version). \\
 \hline
 31 & Constant execution time. This bit makes instructions take the same number of clock cycles regardless of the values of mask and operands. The guarantee provided by this bit is useful for cryptographic applications. This feature is optional. \\
 \hline
@@ -701,6 +707,9 @@ Bit 0 of NUMCONTR is always 1.
 \vv
 
 The instruction-specific option bits (bit 18-23) may be used in the future for various options in specific instructions. The option bits in the mask are considered zero in vector operands with an 8-bit or 16-bit operand type because each mask element has too few bits in this case. 
+\vv
+
+The "odd if not exact" rounding mode gives the nearest odd number unless the value is exact. This rounding mode is used for double rounding and for interval arithmetic, etc. This rounding mode is expected to be described in a future version of the IEEE 754 floating point standard. Another rounding mode: "nearest, with ties away from zero" is supported only in the float2int instruction (page \pageref{table:float2intInstruction}).
 \vv
 
 \section{Format for jump, call and branch instructions}

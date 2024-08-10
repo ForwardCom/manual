@@ -64,7 +64,11 @@ Broadcast a small constant to all elements of a vector with maximum length.
 double v0 = compress(v1, 0)
 \vv
 
-All the elements of a vector are converted to half the element size. The length of the output vector will be half the length of the input vector. The OT field specifies the operand type of the input vector. Double precision floating point numbers are converted to single precision. Integer elements are converted to half the size. Support for the following conversions are optional: single precision float to half precision, quadruple precision to double precision, 8-bit integer to 4-bit.
+All the elements of a vector are converted to half the element size. The length of the output vector will be half the length of the input vector.
+Double precision floating point numbers are converted to single precision. Integer elements are converted to half the size. Support for the following conversions are optional: single precision float to half precision, quadruple precision to double precision, 8-bit integer to 4-bit.
+\vv
+
+The OT field specifies the operand type of the input vector. The operand type indicated in assembly code specifies the type of the output vector.
 \vv
 
 Overflow options and rounding mode are specified in IM1 as follows:
@@ -73,14 +77,12 @@ Overflow options and rounding mode are specified in IM1 as follows:
 \begin{tabular}{|p{16mm}|p{130mm}|}
 \hline
 \bfseries IM1 bits & \bfseries meaning \\ \hline
-bit 0-2 & Floating point exception control: \newline
-000 = exceptions are controlled by NUMCONTR. See page \pageref{table:FPExceptionResults} \newline
-001 = overflow generates NAN code \newline
-010 = underflow generates NAN code \newline
-011 = overflow and underflow generate NAN code \newline
-100 = underflow and inexact generate NAN code \newline
-101 = overflow, underflow, and inexact generate NAN code \newline
-111 = no conditions generate NAN code
+bit 0-3 & Floating point exception control: \newline
+0000 = exceptions are controlled by NUMCONTR. See page \pageref{table:FPExceptionTypes} \newline
+1001 = overflow generates NaN code \newline
+1010 = underflow generates NaN code \newline
+1100 = inexact generate NaN code \newline
+(bits may be combined)
 \\ \hline
 bit 0-2 & Integer overflow control: \newline
 000 = integer overflow wraps around \newline
@@ -89,13 +91,13 @@ bit 0-2 & Integer overflow control: \newline
 110 = unsigned integer overflow gives zero \newline
 111 = unsigned integer overflow gives unsigned saturation
 \\ \hline
-bit 3-5 & Floating point rounding mode: \newline
-000 = rounding mode determined by NUMCONTR \newline
-001 = odd if not exact \newline
-100 = nearest, with ties to even \newline
-101 = down \newline
-110 = up \newline
-111 = towards zero
+bit 4-7 & Floating point rounding mode: \newline
+0000 = rounding mode determined by NUMCONTR \newline
+1000 = nearest, with ties to even \newline
+1001 = down \newline
+1010 = up \newline
+1011 = towards zero \newline
+1100 = odd if not exact \newline
 \\ \hline
 \end{tabular}
 \vv
@@ -109,8 +111,6 @@ For example, to convert from double precision to half precision, use the odd rou
 Overflow in integer conversion can be detected by doing the conversion twice, using an "overflow gives zero" option and the corresponding saturation option. Overflow has occurred if the two results are different.
 \vv
 
-NANs are converted by preserving the least significant bits of the payload and the quiet bit. This differs from most other microprocessors, which preserve the most significant bits of binary floating point NAN payloads.
-\vv
 
 
 \subsection{compress\_sparse}
@@ -275,20 +275,23 @@ The bits in IM1 specify rounding mode and error control, according to the follow
 \begin{tabular}{|p{16mm}|p{120mm}|}
 \hline
 \bfseries IM1 bit & \bfseries Meaning \\ \hline
-0-2 & overflow control: \newline
-000 = integer overflow wraps around \newline
-100 = signed integer overflow gives zero \newline
-101 = signed integer overflow gives signed saturation \newline
-110 = unsigned integer overflow gives zero \newline
-111 = unsigned integer overflow gives unsigned saturation \\
+0-2 & sign and overflow control: \newline
+000 = signed integer. Overflow gives INT\_MIN \newline
+001 = unsigned integer. Overflow gives UINT\_MAX \newline
+010 = signed integer. Overflow gives zero \newline
+011 = unsigned integer. Overflow gives zero \newline
+100 = signed integer. Overflow saturates to INT\_MAX / INT\_MIN \\
 \hline
-3-4 & rounding mode: \newline
-00 = nearest, with ties to even\newline
-01 = down\newline
-10 = up\newline
-11 = truncate towards zero \\ 
+3 & 0: NaN gives 0. 1: NaN gives INT\_MIN \\
 \hline
-5 & 0: NAN gives 0. 1: NAN gives MIN\_INT \\
+4-7 & rounding mode: \newline
+0000 = rounding mode determined by NUMCONTR \newline
+1000 = nearest, with ties to even \newline
+1001 = down (floor) \newline
+1010 = up (ceiling) \newline
+1011 = towards zero (truncate) \newline
+1100 = odd if not exact \newline
+1101 = nearest, with ties away from zero \\
 \hline
 \end{tabular}
 \vv
@@ -296,6 +299,7 @@ The bits in IM1 specify rounding mode and error control, according to the follow
 To check for overflow: Compare the results for overflow gives zero and overflow gives saturation. 
 
 To check if the result is exact: Compare the results for round down and round up.
+\vv
 
 
 \subsection{get\_len}
@@ -403,7 +407,7 @@ dest[0] = src1[0], dest[1] = IM6.
 \end{tabular}
 \vv
 
-int64 v0 = int2float(v1, 0)
+float64 v0 = int2float(v1, 0)
 \vv
 
 Conversion of signed or unsigned integers to floating point numbers with same operand size.\\
@@ -417,7 +421,7 @@ Options are coded in IM1:
 \hline
 \bfseries IM1\newline bit number & \bfseries Meaning \\ \hline
 0 & The integer is unsigned \\
-2 & Inexact result gives NAN. See page \pageref{table:FPExceptionResults}.
+2 & Inexact result gives NaN. See page \pageref{table:FPExceptionTypes}.
 \\ \hline
 \end{tabular}
 \vv
@@ -1158,9 +1162,6 @@ This gives two additions in one instruction:
 dest = $\pm$ src1 $\pm$ src2 $\pm$ src3
 \vv
 
-For optimal precision with floating point operands, the intermediate sum of the two numerically largest operands should preferably be calculated first with extended precision.
-\vv
-
 The signs of the operands can be inverted as indicated by the following option bits:
 
 \begin{longtable} {|p{20mm}|p{75mm}|}
@@ -1182,6 +1183,10 @@ There is no sign change if there are no option bits.
 
 This instruction may be supported for integer operands or floating point or both.
 \vv
+
+The precision of floating point results may vary between implementations. For optimal precision with floating point operands, the intermediate sum of the two numerically largest operands should preferably be calculated first with extended precision. This instruction may not support all rounding modes.
+\vv
+
 
 \subsection{compare} \label{compare}
 \label{table:compareInstruction}
@@ -1224,7 +1229,7 @@ The compare instruction compares two source operands and generates a boolean sca
 \hline
 \end{longtable}
 
-Option bit 3 indicates how to threat floating point NAN inputs. A compare operation is considered unordered if at least one floating point input operand is NAN. The translation of high level language operators to ordered and unordered compare operations are listed on page \pageref{table:floatCompareJumpInstructions}.
+Option bit 3 indicates how to threat floating point NaN inputs. A compare operation is considered unordered if at least one floating point input operand is NaN. The translation of high level language operators to ordered and unordered compare operations are listed on page \pageref{table:floatCompareJumpInstructions}.
 \vv
 
 The result is indicated in bit 0 of the destination register. It is 1 for true and 0 for false. The remaining bits are copied from a mask register, or zero if there is no mask register. The number of mask bits available depends on the hardware implementation (typically 16 or 32).
@@ -1296,7 +1301,7 @@ Truncation is used with integer operands if there are no option bits.
 The rounding mode for floating point operands is controlled by the mask or numeric control register. Option bits must be zero for floating point operands.
 
 \vv
-Division of floating point operands by zero gives $\pm$INF (or NAN if exceptions are enabled).
+Division of floating point operands by zero gives $\pm$INF (or NaN if exceptions are enabled).
 \vv
 
 Division of integer values by zero gives the maximum or minimum possible value, i.e. INT\_MAX or INT\_MIN, according to the sign of the dividend. 
@@ -1418,7 +1423,7 @@ Get the highest of two numbers.
 \hline
 \bfseries Option bits & \bfseries Integer operands & \bfseries floating point operands   \\
 \hline
-bit 0 &  & 0: NANs propagate \newline 1: get src2 if src1 is NAN \\
+bit 0 &  & 0: NaNs propagate \newline 1: get src2 if src1 is NaN \\
 \hline
 bit 1 &  & max(abs(src1), abs(src2)) \\
 \hline
@@ -1429,8 +1434,8 @@ bit 5 &  & float16 (optional) \\
 \end{longtable}
 
 
-Floating point NAN values are propagated if option bit 0 is 0 (in accordance with the 2019 revision of the IEEE-754 floating point standard). 
-Setting option bit 0 to one makes the instruction equivalent to the high-level language code:  max(src1,src2) = src1 $>$ src2 ? src1 : src2. This is useful when compiling high-level language code. The instruction will give src2 if src1 is NAN in this case. 
+Floating point NaN values are propagated if option bit 0 is 0 (in accordance with the 2019 revision of the IEEE-754 floating point standard). 
+Setting option bit 0 to one makes the instruction equivalent to the high-level language code:  max(src1,src2) = src1 $>$ src2 ? src1 : src2. This is useful when compiling high-level language code. The instruction will give src2 if src1 is NaN in this case. 
 %\textgreater{}
 \vv
 
@@ -1467,7 +1472,7 @@ Get the smallest of two numbers.
 \hline
 \bfseries Option bits & \bfseries Integer operands & \bfseries floating point operands   \\
 \hline
-bit 0 &  & 0: NANs propagate \newline 1: get src2 if src1 is NAN \\
+bit 0 &  & 0: NaNs propagate \newline 1: get src2 if src1 is NaN \\
 \hline
 bit 1 &  & min(abs(src1), abs(src2)) \\
 \hline
@@ -1480,8 +1485,8 @@ bit 5 &  & float16 (optional) \\
 \end{longtable}
 
 
-Floating point NAN values are propagated if option bit 0 is 0 (in accordance with the 2019 revision of the IEEE-754 floating point standard). 
-Setting option bit 0 to one makes the instruction equivalent to the high-level language code:  min(src1,src2) = src1 $<${} src2 ? src1 : src2. This is useful when compiling high-level language code. The instruction will give src2 if src1 is NAN in this case.
+Floating point NaN values are propagated if option bit 0 is 0 (in accordance with the 2019 revision of the IEEE-754 floating point standard). 
+Setting option bit 0 to one makes the instruction equivalent to the high-level language code:  min(src1,src2) = src1 $<${} src2 ? src1 : src2. This is useful when compiling high-level language code. The instruction will give src2 if src1 is NaN in this case.
 \vv
 
 Option bit 1 gives the minimum of absolute values for floating point operands.
@@ -1653,16 +1658,16 @@ A 32-bit operand size is used if 64 bits is specified on a hardware that has onl
 \vv
 
 
-\subsection{mul\_2pow}
-\label{table:mul2PowInstruction}
+\subsection{mul\_pow2}
+\label{table:mulPow2Instruction}
 \begin{tabular}{|p{12mm}|p{15mm}|p{100mm}|}
 \hline
 \bfseries format & \bfseries opcode & \bfseries operands \\ \hline
-multi & 32 & all floating point types \\ \hline
+multi & 32 & float32 and float64 \\ \hline
 \end{tabular}
 \vv
 
-Multiply by power of 2.
+Multiply a floating point value by an integer power of 2.
 
 dest = src1 * $2^{src2}$
 
@@ -1699,7 +1704,7 @@ This is defined as rem(a,b) = a - a / b * b.
 This implies that rem(a,0) = a, and that rem(a,b) is negative only if a is negative.
 \vv
 
-The operation for floating point operands is not defined yet. 
+The operation for floating point operands is optional. The function is the same as the C++ standard function 'fmod'. The rounding mode is ignored.
 \vv
 
 
@@ -1737,7 +1742,21 @@ float v0 = round(v1, 0)
 Round floating point number to integer in floating point representation.
 \vv
 
-The rounding mode is specified in bit 0-1 of IM1. See table \ref{table:maskBits} page \pageref{table:maskBits}.
+The rounding mode is determined by bit 0-3 of IM1.
+\vv
+
+\label{table:roundOptions}
+\begin{tabular}{|p{20mm}|p{110mm}|}
+\hline
+\bfseries IM1 bit 0-3 & \bfseries Rounding mode \\ \hline
+0000 & rounding mode determined by NUMCONTR \\
+1000 & nearest, with ties to even \\
+1001 & down (floor) \\
+1010 & up (ceiling) \\
+1011 & towards zero (truncate) \\
+1100 & odd if not exact \\
+\hline
+\end{tabular}
 \vv
 
 
@@ -2377,7 +2396,7 @@ The input is a floating point vector. The output is a boolean vector where bit 0
 \hline
 \bfseries Bit number & \bfseries Category  \\
 \hline
-0 & $\pm$ NAN \\
+0 & $\pm$ NaN \\
 1 & $\pm$ Zero \\
 2 & $-$ Subnormal \\
 3 & $+$ Subnormal \\
@@ -2415,7 +2434,7 @@ For example, category\_reduce(v1, 0xC1) will give true if at least one element o
 \begin{tabular}{|p{24mm}|p{115mm}|}
 \hline
 \bfseries Bit number & \bfseries Category \\ \hline
-0 & at least one element is NAN \\
+0 & at least one element is NaN \\
 1 & at least one element is $\pm$ zero \\
 2 & at least one element is negative subnormal \\
 3 & at least one element is positive subnormal \\
@@ -2594,7 +2613,7 @@ dest = src1 $<<$ src2
 The result is zero if src2 is outside the range 0 $\leq$ src2 $<$ number\_of\_bits.
 \vv
 
-This instruction has the same op1 code as mul\_2pow, but applies to integer operand types only.
+This instruction has the same op1 code as mul\_pow2, but applies to integer operand types only.
 \vv
 
 
@@ -3251,14 +3270,14 @@ Overflow cannot occur. \\
 0.0 and -0.0 are treated as equal.
 \vv
 
-The unordered versions of floating point compare instructions are true when any input operand is NAN. The versions without \_uo suffix are false when any operand is NAN. 
-The unordered versions are needed because conditions are often inversed in the compilation process. For example the inverse of compare/jump\_below is not compare/jump\_aboveeq but compare/jump\_aboveeq\_uo. This is a consequence of the rule that  all comparisons except '!=' return false when the inputs are unordered, i.e. when at least one operand is NAN, according to the IEEE-754 standard for floating point arithmetic.
+The unordered versions of floating point compare instructions are true when any input operand is NaN. The versions without \_uo suffix are false when any operand is NaN. 
+The unordered versions are needed because conditions are often inversed in the compilation process. For example the inverse of compare/jump\_below is not compare/jump\_aboveeq but compare/jump\_aboveeq\_uo. This is a consequence of the rule that  all comparisons except '!=' return false when the inputs are unordered, i.e. when at least one operand is NaN, according to the IEEE-754 standard for floating point arithmetic.
 \vspace{4mm}
 
 \label{table:floatCompareJumpInstructions}
-\begin{tabular}{|p{12mm}|p{60mm}|p{40mm}|p{40mm}|}
+\begin{tabular}{|p{12mm}|p{60mm}|p{50mm}|p{30mm}|}
 \hline
-\bfseries opcode & \bfseries instruction & \bfseries jump condition & \bfseries high level language \\ \hline
+\bfseries opcode & \bfseries instruction & \bfseries jump condition & \bfseries high level \newline language \\ \hline
 32 & compare/jump\_equal & v1 = v2 & a == b \\ \hline
 0 & compare/jump\_equal\_uo & v1 = v2 &  \\ \hline
 33 & compare/jump\_nequal  & v1 $\neq$ v2 &  \\ \hline
@@ -3280,6 +3299,11 @@ The unordered versions are needed because conditions are often inversed in the c
 8 & compare/jump\_abs\_above\_uo & abs(v1) $>$ abs(v2) &    \\ \hline
 41 & compare/jump\_abs\_beloweq  & abs(v1) $\leq$ abs(v2) &   \\ \hline
 9 & compare/jump\_abs\_beloweq\_uo  & abs(v1) $\leq$ abs(v2) &   \\ \hline
+
+22 & compare/jump\_unordered & one or both operands are NaN &  \\ \hline
+23 & compare/jump\_ordered & no operand is NaN &  \\ \hline
+
+
 24 & fp\_category/jump\_true & value belongs to one of the indicated categories &   \\ \hline
 25 &  fp\_category/jump\_false & value does not belong to any of the indicated categories &  \\ \hline
 \hline
@@ -3287,6 +3311,9 @@ The unordered versions are needed because conditions are often inversed in the c
 \vv
 
 The \_abs conditions ignore the sign bits and compare the absolute values of the two operands.
+\vv
+
+The compare/jump\_unordered instruction jumps only if at least one of the two operands is NaN. This is useful for checking both operands for NaN before doing a normal compare.
 \vv
 
 The fp\_category/jump\_true instruction tests if the value of the first operand belongs to any of the categories indicated by the second source operand, which is an integer. The categories are indicated according to table \ref{table:fpCategoryInstructionBits} on page \pageref{table:fpCategoryInstructionBits}

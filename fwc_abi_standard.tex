@@ -74,7 +74,7 @@ Integer variables are represented with 8, 16, 32, 64, and optionally 128 bits, s
 Floating point numbers are coded with half precision (16 bits), single precision (32 bits), and double precision (64 bits). Support for quadruple precision (128 bits) is optional. Floating point numbers are coded in the binary format according to the IEEE 754-2019 standard, or later. Subnormal numbers are supported for half precision. Support for subnormal numbers in other precisions is optional.
 \vv
 
-Floating point errors are preferably indicated with NAN payloads as explained on page \pageref{FloatingPointErrors}, rather than with traps. Trapping of signaling NANs is not required. Error information in NAN payloads is propagated as discussed on page \pageref{nanPropagation}. The highest payload is propagated when two different NANs are combined.
+Floating point errors are preferably indicated with NaN payloads as explained on page \pageref{ADifferentWayOfTrackingErrors}, rather than with traps. Trapping of signaling NANs is not required. Error information in NaN payloads is propagated as discussed on page \pageref{nanPropagation}. The highest payload is propagated when two different NANs are combined.
 \vv
 
 \label{booleanRepresentation}

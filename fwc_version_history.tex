@@ -1,0 +1,192 @@
+% chapter included in forwardcom.tex
+\documentclass[forwardcom.tex]{subfiles}
+\begin{document}
+\RaggedRight
+
+\chapter{Version history}
+
+\subsubsection{Version 1.13, 2024-08-07.}
+\begin{itemize}
+\item The coding of floating point exception codes in NaN payloads is modified.
+\item The NaN payload is left-justified when converting to a different precision.
+\item An extra rounding mode is added.
+\item Exception control and rounding control in the instructions 'compress', 'round', and 'float2int' modified.
+\item New conditional jump instruction: compare/jump\_unordered
+\item Instruction mul\_2pow renamed to mul\_pow2.
+\end{itemize}
+
+
+\subsubsection{Version 1.12, 2023-01-01.}
+\begin{itemize}
+\item Names of immediate fields in instruction templates changed to avoid ambiguity. IM2 in D format renamed to IM3. IM2 and IM3 in E formats renamed to IM4 and IM5. IM2 and IM3 in A and B formats renamed to IM6 and IM7. IM4 in E3 format renamed to IM7.
+\item Instructions category\_reduce and bool\_reduce modified.
+\item Instruction div\_rev\_u added.
+\item Minor changes to instructions div, div\_rev, div\_u, rem, rem\_u, truth\_tab3.
+\item Various options for max and min instructions added. max\_u and min\_u replaced by options in max and min instructions.
+\item Options and details for instructions push and pop modified.
+\item Support for the float16 type modified and extended. Add, sub, mul, and compare instructions have dedicated op1 values for float16. mul\_add, div, max, and min instructions use an option bit for indicating float16. sqrt, fp\_category, and fp\_category\_reduce use operand type 1 for indicating float16.
+
+\end{itemize}
+
+\subsubsection{Version 1.11, 2021-08-07.}
+
+\begin{itemize}
+\item Templates E2 and E3 are reorganized so that the immediate fields and OP2 are adjacent. IM5 (formerly called IM3) can now be extended into OP2 to form an 8-bit immediate operand.
+
+\item New instruction formats 2.0.5, 2.2.5, 3.0.5, and 3.2.5 with both memory and immediate operands. Special cases for bit manipulation instructions with both memory and immediate operands are no longer needed.
+
+\item New branch instruction formats 2.5.2 and 3.1.2 for conditional jumps with a memory operand. Format 2.5.0 modified to allow three registers. Other jump instruction formats modified to facilitate these changes.
+
+\item Instruction formats with memory operands are modified so that the base pointer always uses the RS field while index and vector length always use the RT field. Other instructions with a length parameter are modified to use RT for the length parameter.
+
+\item Optional support for push and pop instructions with a sequence of registers in one instruction.
+
+\item Performance monitoring counters and error tracking features added.
+
+\item New instructions: select\_bits, funnel\_shift, breakpoint.
+
+\item Removed instructions: and\_not, and\_bit, rotate\_up, rotate\_down, truth\_tab2, replace\_bits.
+
+\item Renamed instructions: test\_bits\_and, test\_bits\_or, test\_bits\_and/jump\_true
+
+\item Modified instructions: sign\_extend\_add, mul\_add, mul\_add2, truth\_tab3, input, output.
+
+\item New branch instructions: increment\_compare/jump\_below, test\_bits\_or/jump\_true,  
+compare\_abs/jump\_below/above, fp\_category/jump\_true.
+
+\item Removed branch instructions: shift\_right/left/jump\_zero, 
+rotate/jump\_carry, compare/jump\_finite
+
+\item Modified branch instructions: and, or, xor/jump\_zero, test\_bit/jump\_true.
+
+\item Operand size for some instructions with C template changed from int64 to int32.
+
+\item Op1 code changed in several instructions.
+
+\end{itemize}
+
+
+\subsubsection{Version 1.10, 2020-05-21.}
+
+\begin{itemize}
+\item Tiny instructions are dropped. Earlier versions defined a compact instruction format that allowed two tiny instructions to be packed into a single 32-bit code word. However, it was found that most tiny instructions go unpaired so that they use 32 bits anyway. The limited advantage of tiny instructions did not justify the extra complexity. The code space that was occupied by tiny instruction pairs are reused for other purposes.
+
+\item Single-word jump instructions are moved from format 1.4 and 1.5 to format 1.6 and 1.7, formerly used for tiny instructions. Format 1.3B and 1.3C is split into 1.3B and 1.4C. Format 1.5 is now vacant for application-specific vector instructions.
+
+\item New push, pop, and clear instructions to replace the former tiny instruction pairs with the same functionality. These instructions may generate multiple micro-operations.
+
+\end{itemize}
+
+
+\subsubsection{Version 1.09, 2020-04-14.}
+
+\begin{itemize}
+\item Methods for detecting floating point and integer numerical errors modified and specified.
+\item Mask register bits changed to support floating point exception tracking.
+\item Some instructions with format 1.0, 1.2 and 1.3 modified or moved to different formats.
+\end{itemize}
+
+
+\subsubsection{Version 1.08, 2018-03-30.}
+\begin{itemize}
+
+\item Binary tools now include assembler, disassembler, linker, library manager, emulator, and debugger
+\item Function libraries and code examples are provided
+\item ID numbers for system functions, events, and interrupts defined in the file system\_functions.h
+\item Format for library files defined in the file elf\_forwardcom.h
+\item Format for event handlers and other features defined in the file elf\_forwardcom.h
+\item File header modified to remove the limitation of 64000 sections
+\item Improved NaN propagation made mandatory. Combination of NaNs gives the highest payload. 
+Min and max instructions propagate NaNs according to the forthcoming revision of the IEEE-754 standard.
+\item Floating point compare/jump instructions have ordered and unordered versions.
+\item Better support for half precision floating point vectors.
+\item Many small changes in instruction list. 
+\end{itemize}
+
+
+\subsubsection{Version 1.07, 2017-11-03.}
+\begin{itemize}
+\item The first version of binary tools is published, including a high-level assembler and disassembler. A manual is included in chapter \ref{chap:binTools}. The assembly language is modified.
+\item A feature for relinking of executable files replaces the previous idea of load-time library dispatching.
+\item Triple size formats with template E added. Some formats renumbered.
+\item Some support for half precision floating point vectors.
+\item Function calling convention allows return using two registers.
+\item 4-bit constants in tiny format changed from signed to unsigned.
+\item Many small changes in instruction list.
+\item Object file format modified to indicate IP, DATAP, or THREADP addressing for sections and symbols
+\end{itemize}
+
+
+\subsubsection{Version 1.06, 2017-02-14.}
+\begin{itemize}
+\item Added chapter: Proposal for reducing branch misprediction delay
+\item Added instruction: increment\_jump\_sabove.
+\item Modified various conditional jump instructions. More detailed descriptions.
+\end{itemize}
+
+
+\subsubsection{Version 1.05, 2017-01-22.}
+\begin{itemize}
+\item Systematic description of all instructions.
+\item Instruction list updated.
+\item Added chapter: Support for multiple instruction sets.
+\item Added chapter: Software optimization guidelines.
+\item Bit manipulation instructions improved.
+\item Shift instructions can multiply float by power of 2.
+\item Integer division with different rounding modes.
+\item Source of option bits for mul\_add, add\_add and compare instructions modified.
+\end{itemize}
+
+
+\subsubsection{Version 1.04, 2016-12-08.}
+\begin{itemize}
+\item Instruction formats made more consistent. Template E2 modified.
+\item Masking principle changed. Fallback value option. r0 and v0 allowed as masks.
+\item Compare instruction has additional features.
+\item Conditional jumps modified
+\item Several other instructions modified.
+\end{itemize}
+
+
+\subsubsection{Version 1.03, 2016-08-01.}
+\begin{itemize}
+\item Minor changes and additions to manual.
+\item Three new instructions added.
+\end{itemize}
+
+\subsubsection{Version 1.02, 2016-06-25.}
+\begin{itemize}
+\item Name changed to ForwardCom.
+\item Moved to github.
+\item Various security features added.
+\item Support for dual stack.
+\item Some instruction formats modified, including more formats for jump and call instructions.
+\item System call, system return and trap instructions added.
+\item New addressing mode for arrays with bounds checking.
+\item Several instructions modified or added.
+\item Memory management and ABI standards described in more detail.
+\item Instruction list in comma separated file instruction\_list.csv.
+\item Object file format defined in file elf\_forwardcom.h
+\end{itemize}
+
+\subsubsection{Version 1.01, 2016-05-10.}
+\begin{itemize}
+\item The instruction set is given the name CRISC1.
+\item The length of a vector register is stored in the register itself. The basic code structure is modified as a consequence of this. Function calling conventions are also simplified as a consequence of this.
+\item All user-level instructions are defined.
+\item The entire text has been rewritten and updated.
+\end{itemize}
+
+\subsubsection{Version 1.00, 2016-03-22.}
+This document is the result of a long discussion on 
+\href{http://www.agner.org/optimize/blog/read.php?i=421}{Agner Fog's blog}, starting on 2015-12-27, as well as input from the RISC-V mailing list and the Opencores forum.
+\vv
+
+Additional inspiration was found in various sources listed on page \pageref{referencesToIntroduction}. 
+\vv
+
+Version 1.00 of this manual was published at 
+\href{http://www.agner.org/optimize}{www.agner.org/optimize}.
+
+
+\end{document}

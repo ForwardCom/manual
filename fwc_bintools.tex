@@ -78,11 +78,11 @@ The following options are supported:\\
 -O0 & Optimization level 0: The assembler finds the smallest possible instruction that fits the specified operands. \\
 -O1 & Optimization level 1 (default): An instruction may be replaced by another instruction that does the same thing more efficiently. For example, \linebreak
 {\ttfamily float v1 *= 4} can be replaced by
- {\ttfamily float v1 = mul\_2pow(v1, 2)}. \linebreak
+ {\ttfamily float v1 = mul\_pow2(v1, 2)}. \linebreak
 A conditional jump statement is merged with a preceding arithmetic instruction when possible.
  An {\ttfamily if} statement immediately followed by an
  unconditional jump is converted to a single conditional jump.\\
--O3 & Optimization level 3. Enable optimizations that ignore subnormal numbers. For example, {\ttfamily float v1 *= 0.25} can be replaced by {\ttfamily float v1 = mul\_2pow(v1, -2)}.\\
+-O3 & Optimization level 3. Enable optimizations that ignore subnormal numbers. For example, {\ttfamily float v1 *= 0.25} can be replaced by {\ttfamily float v1 = mul\_pow2(v1, -2)}.\\
 -debug=1  & Include debug information in object file. Currently, debug information includes only label names.\\
 -maxerrors=n & Specify maximum number of error messages from the assembler.\\
 -datasize=n & Specify maximum combined size of writeable static data sections. Static data can be accessed with 16 bit relative addresses if datasize $\leq$ 32000. 

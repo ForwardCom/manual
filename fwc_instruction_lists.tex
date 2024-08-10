@@ -287,7 +287,7 @@ max          & 21 & 2 & Maximum of two numbers. p. \pageref{table:maxInstruction
 and          & 26 & 2 & Bitwise and. src1 \& src2. p. \pageref{table:andInstruction}\\
 or           & 27 & 2 & Bitwise or. src1 \textbar{} src2. p. \pageref{table:orInstruction}\\
 xor          & 28 & 2 & Bitwise exclusive or. src1 \^{} src2. p. \pageref{table:xorInstruction}\\
-mul\_2pow    & 32 & 2 & src1 * $2^{src2}$. Multiply by integer power of 2. Floating point only. p. \pageref{table:mul2PowInstruction}\\
+mul\_pow2    & 32 & 2 & src1 * $2^{src2}$. Multiply by integer power of 2. Floating point only. p. \pageref{table:mulPow2Instruction}\\
 shift\_left  & 32 & 2 & src1 $<<$ src2. Shift left. Integer only. p. \pageref{table:shiftLeftInstruction}\\
 rotate       & 33 & 2 & Rotate left if src2 positive, right if negative. p. \pageref{table:rotateInstruction}\\
 shift\_right\_s & 34 & 2 & src1 $>>$ src2. Integer shift right with sign extension. p. \pageref{table:shiftRightSInstruction}\\
@@ -389,7 +389,7 @@ set\_len      & 1.2 A &  2 & RD = vector register RS with length changed to valu
 set\_num      & 1.2 A &  3 & Change the length of vector register RS to RT$\cdot$OS. p. \pageref{table:setNumInstruction} \\
 insert        & 1.2 A &  4 & Replace one element in vector RD, starting at offset RT$\cdot$OS, with scalar RS. p. \pageref{table:insertInstruction} \\
 extract       & 1.2 A & 5 & Extract one element from vector RS, starting at offset RT$\cdot$OS, with size OS into scalar in vector register RD. p. \pageref{table:extractInstruction} \\
-broad         & 1.2 A & 6 & Broadcast first element of vector RS into all elements of RD with length RT bytes. p. \pageref{table:extractInstruction} \\
+broad         & 1.2 A & 6 & Broadcast first element of vector RS into all elements of RD with length RT bytes. p. \pageref{table:broadInstruction} \\
 compress\_ sparse& 1.2 A &  8 & Compress sparse vector elements indicated by mask bits into contiguous vector. (optional). p. \pageref{table:compressSparseInstruction} \\
 expand\_sparse& 1.2 A & 9 & Expand contiguous vector into sparse vector with positions indicated by mask bits. RT = length of output vector. (optional). p. \pageref{table:expandSparseInstruction} \\
 
@@ -521,7 +521,7 @@ repeat\_within \_blocks & 2.2.7 E & 9.1 & Broadcast the first element of each bl
 load\_hi      & 2.6 A & 0 & Make vector of two elements. dest[0] = 0, dest[1] = IM6.  p. \pageref{table:loadHiInstruction} \\
 insert\_hi    & 2.6 A & 1 & Make vector of two elements. dest[0] = src1[0], dest[1] = IM6. p. \pageref{table:insertHiInstruction}\\
 make\_mask    & 2.6 A & 2 & Make vector where bit 0 of each element comes from bits in IM6, the remaining bits come from RT. p. \pageref{table:makeMaskInstruction} \\
-replace       & 2.6 A & 3 & Replace elements in RT by constant IM6. p. \pageref{table:makeMaskInstruction} \\
+replace       & 2.6 A & 3 & Replace elements in RT by constant IM6. p. \pageref{table:replaceInstruction} \\
 replace\_even & 2.6 A & 4 & Replace even-numbered elements in RT by constant
 IM6. p. \pageref{table:replaceEvenInstruction} \\
 replace\_odd  & 2.6 A & 5 & Replace odd-numbered elements in RT by constant
@@ -682,6 +682,9 @@ OPJ & bit 0 \newline of OPJ & Instruction & Comment \\
 40-41 & invert & compare/jump\_abs\_above, \newline compare/jump\_abs\_beloweq & false if unordered. p. \pageref{table:floatCompareJumpInstructions} \\
 \hline
 8-9 & invert & compare/jump\_abs\_above\_uo, \newline compare/jump\_abs\_beloweq\_uo & true if unordered. p. \pageref{table:floatCompareJumpInstructions} \\
+\hline
+22-23 & invert & compare\_jump\_unordered \newline compare\_jump\_ordered
+& jump if unordered. p. \pageref{table:floatCompareJumpInstructions} \\
 \hline
 24-25 & invert & fp\_category/jump\_true, \newline fp\_category/jump\_false &  p. \pageref{table:floatCompareJumpInstructions}\\
 \hline

@@ -75,6 +75,7 @@ Previously published open instruction sets are suitable for small, cheap micropr
 
 The ForwardCom instruction set architecture is based on the following priorities:
 \begin{itemize}
+\item Everything must be open source with open licences and no patents.
 \item The instruction set should have a simple and consistent modular design.
 \item The instruction set represents a suitable compromise between the RISC principle that enables fast decoding, and the CISC principle that makes it possible to do more work per instruction and to use the code cache and data cache more efficiently.
 \item The design should be extensible so that new instructions and extensions can be added in a consistent and predictable way.
@@ -111,8 +112,7 @@ The design of ForwardCom was prompted by many years of frustration with existing
 
 \item Data coherency. The ForwardCom design makes it possible to store constant data in instruction codes instead of constants scattered in static data memory. This reduces cache misses.
 
-\item Suitable for out-of-order execution. ForwardCom has no global status flags or status register that would complicate parallel and out-of-order execution. The need for speculative execution is reduced or eliminated by a handling of numerical errors that does not rely on traps. 
-The efficiency of out-of-order scheduling is also improved by avoiding instructions that modify a partial register and leave the rest of the register unchanged.
+\item Efficient out-of-order execution. Instructions generally have only one output register. There are no global status flags or status register. This makes the hardware design simpler and more efficient and makes out-of-order scheduling more efficient. There is no need for speculative execution of instructions that may be effected by preceding traps. The efficiency of out-of-order scheduling is also improved by avoiding instructions that modify a partial register and leave the rest of the register unchanged.
 
 \item No microcode. Complex instructions in x86 and other architectures use microcode. This makes decoding inefficient. ForwardCom avoids microcode by using only instructions that fit into the pipeline design. A few more complex instructions can be implemented with hardware state machines or application-specific FPGA modules.
 
@@ -122,7 +122,7 @@ The efficiency of out-of-order scheduling is also improved by avoiding instructi
 
 \item Avoid memory fragmentation. The design of function libraries, stack size calculation, position independent code, and other efforts are able to reduce memory fragmentation to a level where the TLB (translation lookaside buffer) can be replaced by a memory map with a limited number of variable-size memory blocks in most cases.
 
-\item Error tracking and exception handling. The design has no traps for numerical exceptions and no status register. Instead, floating point errors are indicated in propagating NAN payloads. Integer overflow can be indicated in propagating extra vector elements if needed. This makes out-of-order parallelism and SIMD parallelism simpler and more efficient.
+\item Parallel error tracking and exception handling. The design has no traps for numerical exceptions, no status flags and no status register. Instead, floating point errors are indicated in NAN payloads that propagate through a sequence of calculations. Integer overflow can be indicated in propagating extra vector elements if needed. This solves a common problem with error handling in out-of-order processors and SIMD parallelism.
 
 \item Avoid register spilling. Object files and library files contain information about which registers each function is using. This makes it possible to keep most or all variables in registers without ever spilling to memory.
 
@@ -135,7 +135,7 @@ Branches and loops can be coded with C-style syntax such as \\
 \item Security. A lot of security features are part of the basic design. 
 See page \pageref{securityFeatures}
 
-\item Free and open. A noncommercial development process and a free license improves the possibilities for synergy between different hardware and software developers and university scientists. Commercial CPU vendors have often produced suboptimal designs due to the priority of short-term marketing goals. This is avoided with an open development process.
+\item Free and open. A noncommercial development process, a free license, and a no-patent policy improves the possibilities for synergy between different hardware and software developers and university scientists. Commercial CPU vendors have often produced suboptimal designs due to the priority of short-term marketing goals. This is avoided with an open development process.
 
 \end{itemize}
 \vv

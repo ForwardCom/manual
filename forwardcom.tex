@@ -3,7 +3,7 @@
 
 \documentclass[11pt,a4paper,oneside,openright]{report}
 \usepackage[bindingoffset=5mm,left=20mm,right=20mm,top=20mm,bottom=20mm,footskip=10mm]{geometry}
-\usepackage[utf8x]{inputenc}
+%\usepackage[utf8x]{inputenc}
 %\usepackage{hyperref}
 \usepackage[bookmarksopen=0,bookmarksdepth=2]{hyperref} %bookmarks depth higher than TOC depth 
 \usepackage[english]{babel}
@@ -17,6 +17,11 @@
 \usepackage[T1]{fontenc} % fix problem with underscore not searchable
 \usepackage{fontspec}
 \usepackage{tocloft}  % adjust TOC format
+%\usepackage{titling}
+\usepackage{titlepic}
+
+\usepackage{graphicx}
+
 \defaultfontfeatures{Mapping=tex-text, Ligatures=NoCommon}
 \setmainfont{Arial}[Ligatures=NoCommon] %prevent copy-and-paste problem
 \setsansfont{Arial}
@@ -33,12 +38,18 @@
 \newcommand{\vv}{ \vspace{2mm} }        % vertical space
 
 
-\begin{document}
 \title{ForwardCom: An open-standard instruction set for high-performance microprocessors}
 \author{Agner Fog}
 \date{\today}
+
+\titlepic{\includegraphics[width=100pt]{oshw-logo.png}}
+
+\begin{document}
 \maketitle
+
 \RaggedRight
+
+
 
 \tableofcontents
 \setcounter{secnumdepth}{1}
@@ -83,11 +94,18 @@
 % - Unused instructions
 \subfile{fwc_description_of_instructions.tex}
 
+% Numerical errors and exceptions
+% - A different way of tracing errors
+% - Floating point error types
+% - Propagation of NaNs
+% - Detecting integer overflow
+\subfile{fwc_numerical_errors_and_exceptions.tex}
+
 % Other implementation details
 % - Endianness
+% - Pointers and addresses
 % - Implementation of call stack
-% - Floating point errors and exceptions
-% - Detecting integer overflow
+% - Performance monitoring and error tracking
 % - Multithreading
 % - Security features
 \subfile{fwc_other_implementation_details.tex}
@@ -148,8 +166,8 @@
 % Conclusion
 \subfile{fwc_conclusion.tex}
 
-% Revision history
-\subfile{fwc_revision_history.tex}
+% Version history
+\subfile{fwc_version_history.tex}
 
 % Copyright notice
 \subfile{fwc_copyright_notice.tex}

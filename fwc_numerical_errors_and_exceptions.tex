@@ -1,0 +1,195 @@
+% chapter included in forwardcom.tex
+\documentclass[forwardcom.tex]{subfiles}
+\begin{document}
+\RaggedRight
+
+
+\chapter{Numerical errors and exceptions}
+
+\section{A different way of tracking errors}
+\label{ADifferentWayOfTrackingErrors}
+The two most common ways of detecting numerical errors during floating point calculations are:
+\begin{enumerate}
+  \item Trapping of exceptions (i.e. software interrupts)
+  \item Clearing a global status register before the calculations and reading it afterwards
+\end{enumerate}
+
+These systems of error detection were designed before parallel execution were common. There is a big problem when calculations are done in parallel or out of order while the error detection systems are based on sequential logic without regard for parallel execution. Optimizations of both hardware and software are hampered by this incongruity.
+\vv
+
+SIMD code with vector registers is typically handling branches by executing both sides of a branch with the whole vector and then combining the two vector results by picking each element from one side or the other depending on a boolean vector representing the branch condition for each element. This has the consequence that a not-taken branch can cause a spurious error. Most compilers are unable to generate SIMD code for loops that contain branches for this reason when error detection is used.
+\vv
+
+A further problem with trapping is that traps are supposed to occur in order. A microprocessor with out-of-order execution has to execute every instruction speculatively until it is certain that no preceding instruction will generate a trap.
+\vv
+
+The many problems with error detection during parallel execution are further discussed in the document 
+\href{https://www.agner.org/optimize/nan_propagation.pdf}{www.agner.org/optimize/nan\_propagation.pdf}.
+\vv
+
+The most obvious solution to the problem of error detection in parallel systems is to use the same kind of parallelism for error detection as for program execution and to let the error information follow the same data paths as the normal calculation results.
+\vv
+
+The floating point standard (IEEE 754) defines a data type called NaN (Not a Number) that can be generated as the result of a faulty calculation. Such NaNs can propagate through a series of calculations because a calculation with a NaN input will generate an identical NaN output in most cases. This is called NaN propagation. A NaN contains a series of bits called a payload that is intended for containing diagnostic information. The payload feature is hardly ever used in common systems today, but the time has come to activate this dormant feature. The NaN propagation mechanism is further explained below on page \pageref{nanPropagation}.
+\vv
+
+ForwardCom is using NaN payloads and NaN propagation in the following way. When a calculation instruction detects a numerical error, for example overflow, then it will generate a NaN result with a payload indicating the kind of error and possibly additional diagnostic information. This NaN is contained in the same register that would contain the normal result if there was no error. 
+If this register is used in further calculations, then the NaN will propagate through the series of calculations until the end result. The payload is preserved during the NaN propagation so that the cause of error can be analyzed.
+\vv
+
+This method for error detection is perfect for parallel execution. The result of a series of calculations is guaranteed to be independent of the level of parallelism because an error in one vector element will not affect the other elements of the vector.
+\vv
+
+The detection of floating point errors through NaNs can be turned on or off for each kind of error or exception by setting a control bit in NUMCONTR or in a mask register (see page \pageref{table:maskBits}).
+\vv
+
+While ForwardCom has no status flags, the NaN payload is replacing the 
+status flags for floating point exceptions specified by the IEEE 754 standard. 
+Any arithmetic operation can signal at most one exception per vector element, according to the standard.
+\vv
+
+
+\section{Floating point exception types}
+\label{FloatingPointExceptionTypes}
+
+The floating point standard (IEEE 754) defines five types of exceptions or errors:
+
+\begin{enumerate}
+  \item Invalid operation, for example $0 / 0$ or sqrt$(-1)$
+  \item Division by zero, when a non-zero number is divided by 0
+  \item Overflow, when the result of a calculation is too big to fit the specified format
+  \item Underflow, when the result of a calculation is too small to fit the specified format 
+  \item Inexact, when the result of a calculation cannot fit the specified format without loss of precision  
+\end{enumerate}
+
+Each type of exception can be detected or ignored. Underflow is usually ignored and the result is set to zero. The inexact exception is also usually ignored and the result is rounded according to the specified rounding mode. 
+\vv
+
+ForwardCom is using a more detailed distinction between exception types. Each error or exception type has a unique exception code that is indicated in a NaN payload.
+The exception types and corresponding exception codes are listed in table \ref{table:FPExceptionTypes}.
+
+\begin{longtable}
+{|p{50mm}|p{28mm}|p{15mm}|p{26mm}|}
+\caption{Floating point exception types}
+\label{table:FPExceptionTypes}
+\endfirsthead
+\endhead
+\hline
+\bfseries Exception & \bfseries Exception code & \bfseries Control bit & \bfseries Defalt result \\ \hline
+
+data error                & \texttt{111111111} &       &  NaN \\
+division by zero          & \texttt{111110111} & bit 2 & $\pm$ INF \\
+division overflow         & \texttt{111101111} & bit 3 & $\pm$ INF \\
+multiplication overflow   & \texttt{111101110} & bit 3 & $\pm$ INF \\
+FMA overflow              & \texttt{111101101} & bit 3 & $\pm$ INF \\
+add/sub overflow          & \texttt{111101100} & bit 3 & $\pm$ INF \\
+conversion overflow       & \texttt{111101011} & bit 3 & $\pm$ INF \\
+other overflow            & \texttt{111101010} & bit 3 & $\pm$ INF \\
+$0 / 0$ invalid           & \texttt{111100111} & & NaN \\
+$\infty / \infty$ invalid & \texttt{111100110} & & NaN \\
+$0 * \infty$ invalid      & \texttt{111100101} & & NaN \\
+$\infty - \infty$ invalid & \texttt{111100100} & & NaN \\
+underflow                 & \texttt{111011111} & bit 4 & $\pm$ 0 \\
+inexact                   & \texttt{111010111} & bit 5 & rounded result \\
+sqrt of negative          & \texttt{111001111} &  & NaN \\
+log of negative           & \texttt{111001110} &  & NaN \\
+pow invalid               & \texttt{111001101} &  & NaN \\
+modulo/remainder invalid  & \texttt{111001100} &  & NaN \\
+asin invalid              & \texttt{111000111} &  & NaN \\
+acos invalid              & \texttt{111000110} &  & NaN \\
+acosh invalid             & \texttt{111000011} &  & NaN \\
+atanh invalid             & \texttt{111000010} &  & NaN \\
+
+other standard math \newline functions  & \texttt{110xxxxxx} &  & NaN \\
+other math functions      & \texttt{101xxxxxx} &  & NaN \\
+other functions           & \texttt{100xxxxxx} &  & NaN \\
+user-defined  & \texttt{0xxxxxxxx} &  & NaN \\
+\hline
+\end{longtable}
+\vv
+
+The exception codes listed above are binary numbers that are included in the payload. The 'invalid' exception cannot be disabled because there is no other meaningful result than NaN. The other exceptions can be enabled or disabled by setting the indicated control bit in the NUMCONTR register or in a mask register.
+\vv
+
+The result register will contain a NaN with the indicated exception code when an exception occurs and it is enabled by the corresponding control bit. If the control bit is off, then the result register will instead contain the default result listed in table \ref{table:FPExceptionTypes}. The 'underflow' and 'inexact' exceptions are usually disabled so that underflow produces zero and inexact results are rounded.
+\vv
+
+The control bits have full granularity when a mask register is used. In other words, it is possible to enable a particular exception in one vector element and disable it in another element of the same vector register by setting the control bits of a mask register accordingly. This makes it possible to do the same calculation with different settings simultaneously.
+\vv
+
+The 'data error' is not the result of a calculation. It is intended to indicate that no valid data are available. This can be useful for detecting missing or uninitialized data. If an uninitialized range of memory is set to all 1-bits, then we will get the 'data error' when this is read as floating point data, regardless of the specified precision.
+\vv
+
+The number of payload bits available in a NaN depends on the precision. Float16 has 10 payload bits, float32 has 23 bits, and float64 has 52 bits. These bits are used in the following way. The leftmost or most significant bit is the 'quiet' bit which must be 1 for a quiet NaN. The next 9 bits contain the exception code. Then follows 10 user bits that can be used for arbitrary purposes. Last comes 32 bits containing the code address of the instruction that generated the error. All fields are left-justified for reasons explained below.
+\vv
+
+The payload contains as many of these fields as it has space for. Float16 payloads can contain only the quiet bit and the exception code. Float32 also has space for the user bits, while float64 and float128 have space also for the code address. The optional type bfloat16 can hold only the quiet bit and the six most significant bits of the exception code. This is enough to identify the general type of exception, while the missing last three bits indicate a subtype. (bfloat16 has one sign bit, 8 exponent bits, and 7 fraction or payload bits. This type is not supported in the standard version of ForwardCom).
+\vv
+
+The NaN payload is useful for identifying errors and exceptions. Debuggers will show the exception type when a NaN is displayed. Standard print functions may do the same. For example, when printing out the result of a series of calculations that involved an overflow, the result may show as "NaN(multiplication overflow)".
+\vv
+
+
+\section{Propagation of NaNs}
+\label{nanPropagation}
+
+Most floating point operations are sure to propagate NaNs. An instruction with a NaN input will generate an identical NaN output. However, we must be aware of cases where the propagation of NaNs may fail. 
+\vv
+
+The 2019 version of the IEEE 754 standard has been corrected to make sure that the max and min functions propagate NaNs, which was not the case in previous versions. Unfortunately, a few cases remain where NaNs are not sure to propagate. Most importantly, the pow function fails to propagate a NaN in the special cases pow(NaN,0) = 1 and pow(1,NaN) = 1. ForwardCom deviates from the standard here and makes sure that pow and similar functions propagate NaNs in all cases.
+\vv
+
+Obviously, NaNs cannot propagate when floating point values are converted to integers or booleans. It is the responsibility of the programmer to check for NaNs before any such conversion or making sure the conversion instruction generates an appropriate code in case of NaN inputs. Floating point compare instructions and branch instructions are treating cases with NaN inputs as unordered. These instructions can be adjusted to treat unordered cases as either true of false (see page \pageref{table:conditionCodesForCompareInstruction} and \pageref{table:floatCompareJumpInstructions}).
+\vv
+
+Propagation of NaN payloads is rarely used in current systems and the current standard is not very specific about this topic. When two NaNs with different payloads are combined, i.e. NaN1 + NaN2, then one of the two payloads is propagated, but the standard does not specify which one. Current microprocessors propagate only the first NaN operand. This can lead to unpredictable behaviour since the compiler is allowed to swap the two operands. ForwardCom solves this ambiguity by forwarding the highest of the payloads (interpreted as fractions while ignoring the sign bit and exponent).
+\vv
+
+Another uncertainty is that the standard does not specify how a NaN payload is treated when converting floating point data to a different precision. A test on several common platforms has shown that the payload is left-justified during conversion. This means that the most significant bits of the payload are preserved  when converting a NaN to a lower precision. The payload is padded with trailing zeroes when converting a NaN to a higher precision. This corresponds to the way the fraction bits are treated when converting a normal number, except that the payload is not rounded when converting to a lower precision. ForwardCom follows this undocumented de facto standard. (This observation applies to computers with binary floating point formats. Computers with decimal floating point formats are right-justifying the payload, but this does not affect ForwardCom which does not support decimal floating point formats).
+\vv
+
+The IEEE 754 standard makes a distinction between quiet NaNs and signalling NaNs. Signalling NaNs are intended to generate a trap when loaded from memory. ForwardCom does not support this feature because traps are inefficient, as explained above, and because signalling NaNs are rarely used for their intended purpose anyway. Instead, it is recommended to use the 'data error' exception code to detect uninitialized data.
+\vv
+
+The most significant bit of the payload is 1 for quiet NaNs and 0 for signalling NaNs. This is called the quiet bit. This distinction is not important in ForwardCom where signalling NaNs and quiet NaNs are behaving in exactly the same way. While signalling NaNs are rarely used for their original purpose, they are commonly used for NaN-boxing of non-numerical data in programming languages with weak typing of variables. This use is also possible in ForwardCom.
+\vv
+
+We have to place the most important information in the most significant bits of the NaN payload because these bits are sure to be preserved when converting to a different precision. The position of the quiet bit in the most significant bit is a de facto standard. The exception code is left-justified next to the quiet bit so that all floating point precisions can contain an exception code.
+\vv
+
+The sign bit of a NaN has no meaning. Whether the sign bit of a NaN is set or cleared by a particular operation is implementation-dependent. The sign bit may change during the propagation of a NaN. The sign bit may not be shown when printing out a NaN result.
+\vv
+
+
+\section{Detecting integer overflow} 
+\label{integerOverflowDetection}
+There is no common standard method for detecting overflow in integer calculations. The detection of overflow in signed integer operations is a real nightmare in some programming languages like C++ (see 
+\href{https://stackoverflow.com/questions/3944505/detecting-signed-overflow-in-c-c}{stackoverflow.com/questions/3944505/detecting-signed-overflow-in-c-c}).
+\vv
+
+Possible solutions with a status register or fault trapping are not recommended in ForwardCom for the same reasons as explained above for floating point errors. 
+Instead, the following methods may be used for detecting signed and unsigned integer overflow: 
+
+\begin{itemize}
+  \item Use conditional jump instructions. \\
+    Signed: add/jump\_overfl, sub/jump\_overfl. \\
+    Unsigned: add/jump\_carry, sub/jump\_borrow. \\
+    Division: compare with zero and jump if equal before dividing. \\
+    This method cannot detect multiplication overflow.  
+  
+  \item Use instructions with overflow check in a vector register. 
+    The even-numbered vector elements are used for calculations, while
+    the odd-numbered vector elements are used for propagating error flags. 
+    See page \pageref{table:addOcInstruction} for details. 
+    
+  \item Use floating point instructions with integer data. 
+    Enable the mask bits for detection of overflow and inexact.
+  
+\end{itemize}
+\vv
+
+Other methods for generating error messages in function libraries are discussed on page \pageref{errorMessageHandling}.
+\vv
+
+
+\end{document}
