@@ -78,7 +78,7 @@ Overflow options and rounding mode are specified in IM1 as follows:
 \hline
 \bfseries IM1 bits & \bfseries meaning \\ \hline
 bit 0-3 & Floating point exception control: \newline
-0000 = exceptions are controlled by NUMCONTR. See page \pageref{table:FPExceptionTypes} \newline
+0000 = exceptions are controlled by NUMCONTR. See page \pageref{table:FPErrorTypes} \newline
 1001 = overflow generates NaN code \newline
 1010 = underflow generates NaN code \newline
 1100 = inexact generate NaN code \newline
@@ -421,7 +421,7 @@ Options are coded in IM1:
 \hline
 \bfseries IM1\newline bit number & \bfseries Meaning \\ \hline
 0 & The integer is unsigned \\
-2 & Inexact result gives NaN. See page \pageref{table:FPExceptionTypes}.
+2 & Inexact result gives NaN. See page \pageref{table:FPErrorTypes}.
 \\ \hline
 \end{tabular}
 \vv

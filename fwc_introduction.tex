@@ -122,7 +122,7 @@ The design of ForwardCom was prompted by many years of frustration with existing
 
 \item Avoid memory fragmentation. The design of function libraries, stack size calculation, position independent code, and other efforts are able to reduce memory fragmentation to a level where the TLB (translation lookaside buffer) can be replaced by a memory map with a limited number of variable-size memory blocks in most cases.
 
-\item Parallel error tracking and exception handling. The design has no traps for numerical exceptions, no status flags and no status register. Instead, floating point errors are indicated in NAN payloads that propagate through a sequence of calculations. Integer overflow can be indicated in propagating extra vector elements if needed. This solves a common problem with error handling in out-of-order processors and SIMD parallelism.
+\item Parallel error tracking and exception handling. The design has no traps for numerical exceptions, no status flags and no status register. Instead, floating point errors are indicated in NaN payloads that propagate through a sequence of calculations. Integer overflow can be indicated in propagating extra vector elements if needed. This solves a common problem with error handling in out-of-order processors and SIMD parallelism.
 
 \item Avoid register spilling. Object files and library files contain information about which registers each function is using. This makes it possible to keep most or all variables in registers without ever spilling to memory.
 
@@ -183,7 +183,7 @@ Darek Mihocka: Standard Need To Be Forward Looking, 2007. Blog post criticizing 
 \href{http://www.emulators.com/docs/nx02_standards.htm}{www.emulators.com/docs/nx02\_standards.htm}. See also the following pages.
 
 \item
-Agner Fog: Floating point exception tracking and NAN propagation, 2020. 
+Agner Fog: Floating point exception tracking and NaN propagation, 2024. 
 \href{https://www.agner.org/optimize/nan_propagation.pdf}{www.agner.org/optimize/nan\_propagation.pdf}
 
 
